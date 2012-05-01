@@ -31,7 +31,7 @@ Quick-Start
 1. Finish the installation (as above).
 2. Type M-x shx <enter> to begin a shell session using shx
 3. Type :man ls
-4. Type echo -e "\n##done-"
+4. Type echo -e "\n##done()"
 5. Type :help
 6. Type :test  (hopefully you see nothing but a success message)
 7. Try to page up, run a command at the prompt, then page back down

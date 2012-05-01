@@ -18,17 +18,15 @@
 ;;
 ;; shx has been tested with Emacs 23 and 24 on Mac OS X.
 ;;
-;; If you like using the shell, check out:
-;;         http://www.commandlinefu.com/commands/browse/sort-by-votes
-;;
-;;
 ;; Installation
 ;; ============
 ;;
-;; Put shx.el somewhere in your `load-path' and add this line to your ~/.emacs:
+;; Put shx.el somewhere in your `load-path` and add this line to your ~/.emacs:
+;;
 ;;; (require 'shx)
 ;;
 ;; If you want shx to run in ANY comint-mode buffer, add this line too:
+;;
 ;;; (add-hook 'comint-mode-hook 'shx-activate)
 ;;
 ;; Full graphical functionality requires the following:
@@ -36,7 +34,7 @@
 ;; - gnuplot (for all plotting functions)
 ;; - wget    (for pulling image files from google maps)
 ;;
-;; The variables `shx-convert-cmd' `shx-gnuplot-cmd' and `shx-wget-cmd' can be
+;; The variables `shx-convert-cmd` `shx-gnuplot-cmd` and `shx-wget-cmd` can be
 ;; customized as necessary to point to these executables.
 ;;
 ;;
@@ -46,7 +44,7 @@
 ;; 1. Finish the installation (as above).
 ;; 2. Type M-x shx <enter> to begin a shell session using shx
 ;; 3. Type :man ls
-;; 4. Type echo -e "\n##done-"
+;; 4. Type echo -e "\n##done()"
 ;; 5. Type :help
 ;; 6. Type :test  (hopefully you see nothing but a success message)
 ;; 7. Try to page up, run a command at the prompt, then page back down
@@ -58,7 +56,7 @@
 ;; ==================
 ;;
 ;; shx's support for input commands written in elisp give it a lot of the same
-;; advantages as the `eshell'.
+;; advantages as `eshell`.
 ;;
 ;; Everything you need to know about shx's input commands can be found in the
 ;; help.  Just type :help on an empty line and press enter.
@@ -67,15 +65,19 @@
 ;; because emacs intercepts them as soon as you hit enter.  For example you can
 ;; type ":man ssh" even while the underlying process is busy.
 ;;
-;; You can change `shx-prefix' from ":" to "# ",
+;; You can change `shx-prefix` from ":" to "# ",
+;;
 ;;; (setq shx-prefix "# ")
-;; in which case you would, for example, type '# help' to access the help.
+;;
+;; in which case you would, for example, type `# help` to access the help.
+;;
 ;; Or you can set the prefix to nothing all:
+;;
 ;;; (setq shx-prefix "")
 ;;
-;; The commands that get intercepted by shx will have the `shx-highlights' face,
+;; The commands that get intercepted by shx will have the `shx-highlights` face,
 ;; whereas commands which were not intercepted will have the default
-;; `comint-highlight-input' face.
+;; `comint-highlight-input` face.
 ;; 
 ;; Many existing commands are for displaying graphics such as plots in a shell
 ;; buffer.  These require ImageMagick, wget, and gnuplot to be installed.
@@ -84,9 +86,11 @@
 ;; Users can write new commands by defining a single-argument function of the
 ;; form shx-COMMAND, where COMMAND (which must be capitalized) is what the user
 ;; would type to invoke it.  For example if you put this in your .emacs:
+;;
 ;;; (defun shx-BREAK (arg) (insert "Break!") (shx-send-break))
-;; ... a user can type :break to send <C-c> straight through.  See `shx-DIFF',
-;; `shx-GREP' for examples.
+;;
+;; ... a user can type :break to send <C-c> straight through.  See `shx-DIFF`,
+;; `shx-GREP` for examples.
 ;;
 ;; If you write a new command that you think might be useful to others, send it
 ;; along to me and hopefully I can include it.
@@ -100,11 +104,14 @@
 ;; trigger on a new line by itself: ##COMMAND(ARGUMENT)
 ;; 
 ;; For example if a program outputs the following line:
+;;
 ;;; ##view(mountains.png)
+;;
 ;; ... then mountains.png will be displayed in the shell, scaled to fit.
 ;;
 ;; You can control how large the image appears on-screen by customizing
-;; the variable `shx-imgsize', or by executing:
+;; the variable `shx-imgsize`, or by executing:
+;;
 ;;; (setq shx-imgsize 300)
 ;;
 ;;
@@ -131,16 +138,16 @@
 ;; - C-c C-c sends <C-c> to the foreground process (rather than kill the shell)
 ;; - C-c C-k sends SIGKILL to the shell (what C-c C-c did before).
 ;;
-;; - When the prompt is a ":" (such as when reading through a man page), spaces
-;;   are sent straight through to the process rather than being inserted into
-;;   the buffer, for simpler paging.
+;; - When the prompt is a ":" (such as when reading through a man page), leading
+;;   spaces are sent straight through to the process rather than being inserted
+;;   into the buffer, for simpler paging.
 ;;
 ;;
 ;; Priorities
 ;; ==========
 ;;
-;; TODO -- SPEDIT doesn't work quite right if the doc is already visible...:O
-;; TODO -- only catches 1 url per line oh no
+;; TODO -- SPEDIT doesn't work quite right if the doc is already visible...
+;; TODO -- only catches 1 url per line
 
 
 ;;; Change Log:
@@ -314,7 +321,7 @@ is found, delete the text and call the corresponding function."
   (let ((inhibit-field-text-motion t)) (beginning-of-line))
   ;;(insert "**") ; debug
   (while (< (point) (point-max))
-    (when (re-search-forward "##\\(\\w+\\)(\\(.*\\))" nil t)
+    (when (re-search-forward "^##\\(\\w+\\)(\\(.*\\))" nil t)
       (let ((cmd (intern (format "shx-%s" (upcase (match-string 1))))))
         (when (and (fboundp cmd)        ; text matches a command!
                    (shx-safe-to-trigger (match-string 1))) ; safe?
