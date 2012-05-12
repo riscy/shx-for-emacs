@@ -1,27 +1,27 @@
 ;;; shx.el --- shell-extras, extras for the (comint-mode) shell
-
+;;
 ;; Copyright (C) 2012 Chris Rayner
-
+;;
 ;; Author: rayner AT cs DOT ualberta DOT ca
 ;; Created: 23 May 2011
-;; Version: 0.1a
+;; Version: alpha
 ;; Keywords: comint-mode, shell-mode
 ;; URL: http://www.cs.ualberta.ca/~rayner/
-;; Git Repository: not yet
-
-
+;; Git: https://github.com/riscy/shx-for-emacs
+;;
+;;
 ;;; Commentary:
 ;;
-;; shx ("shell-extras") is an emacs extension to shell-mode.  It enables
-;; displaying small plots and graphics, changes how page up/down work, and
-;; intercepts commands entered at the shell to call elisp functions.
+;; `shx', "shell-extras", extends comint-mode in a couple small ways.
+;; It displays small plots and graphics, changes how page up/down work,
+;; and intercepts commands entered at the shell to call elisp functions.
 ;;
-;; shx has been tested with Emacs 23 and 24 on Mac OS X.
+;; This version has been tested with Emacs 24.0.94 on Mac OS X.
 ;;
 ;; Installation
 ;; ============
 ;;
-;; Put shx.el somewhere in your `load-path` and add this line to your ~/.emacs:
+;; Put shx.el somewhere in your `load-path' and add this line to your ~/.emacs:
 ;;
 ;;; (require 'shx)
 ;;
@@ -34,8 +34,8 @@
 ;; - gnuplot (for all plotting functions)
 ;; - wget    (for pulling image files from google maps)
 ;;
-;; The variables `shx-convert-cmd` `shx-gnuplot-cmd` and `shx-wget-cmd` can be
-;; customized as necessary to point to these executables.
+;; The variables `shx-convert-cmd' `shx-gnuplot-cmd' and `shx-wget-cmd'
+;; can be customized as necessary to point to these executables.
 ;;
 ;;
 ;; Quick-Start
@@ -55,53 +55,59 @@
 ;; shx Input Commands
 ;; ==================
 ;;
-;; shx's support for input commands written in elisp give it a lot of the same
-;; advantages as `eshell`.
+;; shx's support for input commands written in elisp give it a lot of
+;; the same advantages as `eshell'.
 ;;
-;; Everything you need to know about shx's input commands can be found in the
-;; help.  Just type :help on an empty line and press enter.
+;; Everything you need to know about shx's input commands can be found
+;; in the help.  Just type :help on an empty line and press enter.
 ;;
-;; These special commands are executed asynchronously of the underlying process
-;; because emacs intercepts them as soon as you hit enter.  For example you can
-;; type ":man ssh" even while the underlying process is busy.
+;; These special commands are executed asynchronously of the underlying
+;; process because emacs intercepts them as soon as you hit enter.  For
+;; example you can type ":man ssh" even while the underlying process is
+;; busy.
 ;;
-;; You can change `shx-prefix` from ":" to "# ",
+;; You can change `shx-prefix' from ":" to "# ",
 ;;
 ;;; (setq shx-prefix "# ")
 ;;
-;; in which case you would, for example, type `# help` to access the help.
+;; in which case you would, for example, type "# help" to access the
+;; help.
 ;;
 ;; Or you can set the prefix to nothing all:
 ;;
 ;;; (setq shx-prefix "")
 ;;
-;; The commands that get intercepted by shx will have the `shx-highlights` face,
-;; whereas commands which were not intercepted will have the default
-;; `comint-highlight-input` face.
+;; The commands that get intercepted by shx will have the
+;; `shx-highlights' face, whereas commands which were not intercepted
+;; will have the default `comint-highlight-input' face.
 ;; 
-;; Many existing commands are for displaying graphics such as plots in a shell
-;; buffer.  These require ImageMagick, wget, and gnuplot to be installed.
-;; Others invoke built-in emacs functionality, like :man, :edit, :grep, :delay.
+;; Many existing commands are for displaying graphics such as plots in a
+;; shell buffer.  These require ImageMagick, wget, and gnuplot to be
+;; installed.  Others invoke built-in emacs functionality, like :man,
+;; :edit, :grep, :delay.
 ;;
-;; Users can write new commands by defining a single-argument function of the
-;; form shx-COMMAND, where COMMAND (which must be capitalized) is what the user
-;; would type to invoke it.  For example if you put this in your .emacs:
+;; Users can write new commands by defining a single-argument function
+;; of the form shx-COMMAND, where COMMAND (which must be capitalized) is
+;; what the user would type to invoke it.  For example if you put this
+;; in your .emacs:
 ;;
 ;;; (defun shx-BREAK (arg) (insert "Break!") (shx-send-break))
 ;;
-;; ... a user can type :break to send <C-c> straight through.  See `shx-DIFF`,
-;; `shx-GREP` for examples.
+;; ... a user can type :break to send <C-c> straight through.  See
+;; `shx-DIFF', `shx-GREP' for examples.
 ;;
-;; If you write a new command that you think might be useful to others, send it
-;; along to me and hopefully I can include it.
+;; If you write a new command that you think might be useful to others,
+;; send it along to me and hopefully I can include it.
 ;;
 ;;
 ;; shx Command Triggers
 ;; ====================
 ;;
-;; Triggers can use many of the input commands (above) to enhance command-line
-;; applications.  This is done by having the application echo a shx command
-;; trigger on a new line by itself: ##COMMAND(ARGUMENT)
+;; Triggers can use many of the input commands (above) to enhance
+;; command-line applications.  This is done by having the application
+;; echo a shx command trigger on a new line by itself:
+;;
+;;; ##COMMAND(ARGUMENT)
 ;; 
 ;; For example if a program outputs the following line:
 ;;
@@ -110,7 +116,7 @@
 ;; ... then mountains.png will be displayed in the shell, scaled to fit.
 ;;
 ;; You can control how large the image appears on-screen by customizing
-;; the variable `shx-imgsize`, or by executing:
+;; the variable `shx-imgsize', or by executing:
 ;;
 ;;; (setq shx-imgsize 300)
 ;;
@@ -118,11 +124,12 @@
 ;; shx Scrolling
 ;; =============
 ;;
-;; shx supports splitting of a shell window on paging up and down.  When you
-;; page up, the frame is split in two with a larger "scrolling frame" on top and
-;; a smaller "input frame" preserved on the bottom.  This lets you enter text at
-;; the prompt (in the input frame) and monitor new input while consulting
-;; previous output (in the scrolling frame) uninterrupted.
+;; shx supports splitting of a shell window on paging up and down.  When
+;; you page up, the frame is split in two with a larger "scrolling
+;; frame" on top and a smaller "input frame" preserved on the bottom.
+;; This lets you enter text at the prompt (in the input frame) and
+;; monitor new input while consulting previous output (in the scrolling
+;; frame) uninterrupted.
 ;;
 ;; You can change the default size of the input frame to something else:
 ;;
@@ -132,28 +139,22 @@
 ;; shx Keybinding Modifications
 ;; ============================
 ;;
-;; - Recognizable URLs are turned into mouse/keyboard accessible (C-c b) links
-;;   and a history of previous links is maintained.
+;; - Recognizable URLs are turned into mouse/keyboard accessible (C-c b)
+;;   links and a history of previous links is maintained.
 ;;
-;; - C-c C-c sends <C-c> to the foreground process (rather than kill the shell)
+;; - C-c C-c sends <C-c> to the foreground process
+;;
 ;; - C-c C-k sends SIGKILL to the shell (what C-c C-c did before).
 ;;
-;; - When the prompt is a ":" (such as when reading through a man page), leading
-;;   spaces are sent straight through to the process rather than being inserted
-;;   into the buffer, for simpler paging.
+;; - When the prompt is a ":" (such as when reading through a man page),
+;;   leading spaces are sent straight through to the process rather than
+;;   being inserted into the buffer, for simpler paging.
 ;;
 ;;
 ;; Priorities
 ;; ==========
 ;;
-;; TODO -- SPEDIT doesn't work quite right if the doc is already visible...
-;; TODO -- only catches 1 url per line
-
-
-;;; Change Log:
-;;
-;; Version 0.1a
-;; * initial release
+;; Testing
 
 
 ;;; Code:
@@ -339,18 +340,18 @@ is found, delete the text and call the corresponding function."
 
 (defun shx-check-output-for-trigger (rexp func)
   "Scan the output for the supplied REXP; on a match call func."
-  (goto-char comint-last-output-start)
+  (save-excursion
+  (goto-char comint-last-output-start) ; go to prompt, then to the end
   (while (< (point) (point-max))
-    (when (and (re-search-forward rexp nil t)
-               (not (eq (get-char-property ; don't trigger on user input
-                         (point) 'face) 'comint-highlight-input)))
+    (when (re-search-forward rexp nil t)
       (add-text-properties (match-beginning 0) (match-end 0)
                            (list 'mouse-face 'link
                                  'font-lock-face 'shx-highlights
-                                 'help-echo (concat "Triggered on match: " rexp)))
+                                 'help-echo
+                                 (concat "Trigger on match: " rexp)))
       (condition-case nil (funcall func)
-        (error "Somehow can't run this trigger command!!")))
-    (forward-line)))
+        (error "Sorry for the bug - can't run this trigger!!")))
+    (forward-char))))
 
 
 ;; cribbed from emud.el
@@ -586,11 +587,11 @@ and `shx-scroll-down'."
   (recenter -1))
 
 (defun shx-safe-to-trigger (arg)
-  "Return t if the shx-COMMAND specified by ARG makes for a safe
-trigger -- e.g., you can't have your file system nuked by running
-this command in a malicious way, or it's not open to logic bombs.
-It does this by looking for the string (SAFE) at the start of the
-command's documentation string."
+  "Return t if the shx-COMMAND specified by ARG is safe to use as
+a trigger (e.g., you can't have your file system nuked by running
+this command in a malicious way, or it's not open to substantial
+logic bombs).  It does this by looking for the string (SAFE) at
+the start of the command's documentation string."
   (condition-case nil 
       (string= "(SAFE)"
                (substring (documentation
@@ -624,36 +625,38 @@ general help list."
                     " on a line by itself")
           (insert "\n\tNot safe to use as a trigger.") ))
     ;; It would be nice to automate this list (how?)
-    (insert "General:\n"
-            "\t" shx-prefix "help\n"
-            "\t" shx-prefix "help <command>             (specific help)\n"
-            "\t" shx-prefix "[w]ww                      (open a link)\n"
-            "\t" shx-prefix "echo <text>                (echo some text)\n"
-            "\t" shx-prefix "[e]dit <filename>          (edit a file, this window)\n"
-            "\t" shx-prefix "[sp]edit <filename>        (edit a file, split window)\n"
-            "\t" shx-prefix "oedit <filename>           (edit a file, other window)\n"
-            "\t" shx-prefix "man <command>              (show a man page)\n"
-            "\t" shx-prefix "woman <command>            (show a man page)\n"
-            "\t" shx-prefix "diff <file1> <file2>       (launch a diff)\n"
-            "\t" shx-prefix "ediff <file1> <file2>      (launch an ediff)\n"
-            "\t" shx-prefix "grep '<pattern>' <file1>   (launch a grep)\n"
-            "\t" shx-prefix "delay <seconds> <command>  (send <command> after <seconds>)\n"
-            "\t" shx-prefix "done                       (display 'done' message)\n"
-            "\t" shx-prefix "showdone                   (like done but display buffer)\n"
-            "Graphical:\n"
-            "\t" shx-prefix "map <location>             (google maps)\n"
-            "\t" shx-prefix "view image.png             (view any image)\n"
-            "\t" shx-prefix "plot data.dat              (gnuplot lineplot)\n"
-            "\t" shx-prefix "scatter data.dat           (gnuplot scatterplot)\n"
-            "\t" shx-prefix "plot3d data3d.dat          (gnuplot 3D surface)\n"
-            "\t" shx-prefix "barplot databars.dat       (gnuplot barplot)\n"
-            "\t" shx-prefix "matrix mtx.dat             (gnuplot heatmap)\n"
-            "Examples:\n"
-            "\t$ " shx-prefix "help scatter\n"
-            "\t$ " shx-prefix "map University of Alberta\n"
-            "\t$ " shx-prefix "view image.png\n"
-            "\t$ " shx-prefix "e ~\n"
-            "\t$ " shx-prefix "plot rewardVStime.dat")))
+    (let ((nn (concat "\t" shx-prefix)))
+      (insert
+       "General:\n"
+       nn "help\n"
+       nn "help <command>             (specific help)\n"
+       nn "[w]ww                      (open a link)\n"
+       nn "echo <text>                (echo some text)\n"
+       nn "[e]dit <filename>          (edit a file, this window)\n"
+       nn "[sp]edit <filename>        (edit a file, split window)\n"
+       nn "oedit <filename>           (edit a file, other window)\n"
+       nn "man <command>              (show a man page)\n"
+       nn "woman <command>            (show a man page)\n"
+       nn "diff <file1> <file2>       (launch a diff)\n"
+       nn "ediff <file1> <file2>      (launch an ediff)\n"
+       nn "grep '<pattern>' <file1>   (launch a grep)\n"
+       nn "delay <seconds> <command>  (send <command> after <seconds>)\n"
+       nn "done                       (display 'done' message)\n"
+       nn "showdone                   (like done but display buffer)\n"
+       "Graphical:\n"
+       nn "map <location>             (google maps)\n"
+       nn "view image.png             (view any image)\n"
+       nn "plot data.dat              (gnuplot lineplot)\n"
+       nn "scatter data.dat           (gnuplot scatterplot)\n"
+       nn "plot3d data3d.dat          (gnuplot 3D surface)\n"
+       nn "barplot databars.dat       (gnuplot barplot)\n"
+       nn "matrix mtx.dat             (gnuplot heatmap)\n"
+       "Examples:\n"
+       nn "help scatter\n"
+       nn "map University of Alberta\n"
+       nn "view image.png\n"
+       nn "e ~\n"
+       nn "plot rewardVStime.dat"))))
   
 
 
@@ -678,14 +681,16 @@ delay a directory listing: \":delay 3 ls\".  Definitely UNSAFE."
   (if (string-match "^[\s\t]*\\([0-9]+\\)[\s\t]+\\([^\s\t].*\\)$" arg)
       (progn
         (insert "Delaying execution of `"
-                (match-string 2 arg) "' for " (match-string 1 arg) " seconds.")
+                (match-string 2 arg) "' for "
+                (match-string 1 arg) " seconds.")
         (shx-delay-cmd (concat (match-string 1 arg) " sec")
                        (concat (match-string 2 arg) "\n")))))
 
 
 (defun shx-DIFF (arg)
   "(SAFE) shx.el command to launch a diff window in emacs."
-  (insert "Invoking diff `" arg "' in other window; use M-n/N-p to browse results.")
+  (insert "Invoking diff `" arg
+          "' in other window; use M-n/N-p to browse results.")
   (let ((arglist (mapcar 'expand-file-name (split-string arg))))
     (diff (car arglist)
           (car (cdr arglist)))))
@@ -702,7 +707,8 @@ delay a directory listing: \":delay 3 ls\".  Definitely UNSAFE."
 (defun shx-GREP (arg)
   "(SAFE) shx.el command to launch an emacs grep window.  Here's
 an example to try: \":grep '^(defun shx-[A-Z]\+ (' shx.el\""
-  (insert "Grepping " arg " in other window; use n/p to browse results.")
+  (insert "Grepping " arg
+          " in other window; use n/p to browse results.")
   (grep (concat "grep -nH " arg)))
 
 
@@ -758,7 +764,8 @@ You won't need to (and shouldn't!) escape spaces and special
 characters.  That is, if you have a file called 'my\ file', you
 can just open it using ':edit my file'."
   (insert "Editing " arg "...")
-  (shx-delay-funcall "0.25 sec" 'find-file (list (expand-file-name arg))))
+  (shx-delay-funcall "0.25 sec"
+                     'find-file (list (expand-file-name arg))))
 (defalias 'shx-E 'shx-EHERE)
 (defalias 'shx-OPEN 'shx-EHERE)
 
@@ -783,7 +790,7 @@ buffer isn't visible."
   (insert "shx.el: ** done **")
   (message (format "** shx job finished in %S **" shx-buffer))
   (display-buffer shx-buffer)
-  ;; TODO Show window buffer using set-window-buffer...!
+  ;; IDEA Show window buffer using set-window-buffer...!
   )
 
 
@@ -886,14 +893,20 @@ installed."
   (goto-char (point-max))
   ;; scrolling tests
   (if (< (window-height) 40)
-      (message "Scrolling tests cannot run unless (window-height) >= 40.")
-    (assert (let ((currpt (point))) (shx-scroll-up) (shx-scroll-end) (eq currpt (point))))
-    (assert (let ((currpt (point))) (shx-scroll-home) (shx-scroll-down) (eq currpt (point))))
-    (assert (let ((currpt (point))) (shx-scroll-end) (eq currpt (point))))
-    (assert (let ((currpt (point))) (shx-scroll-home) (eq currpt (point))))
-    (assert (let ((currpt (point))) (shx-scroll-home) (shx-scroll-end) (eq currpt (point))))
-    (assert (let ((currpt (point))) (shx-scroll-end) (shx-scroll-up)
-                 (shx-scroll-down) (shx-scroll-down) (eq currpt (point))))
+      (message "Scroll tests need window-height >= 40.")
+    (assert (let ((currpt (point)))
+              (shx-scroll-up) (shx-scroll-end) (eq currpt (point))))
+    (assert (let ((currpt (point)))
+              (shx-scroll-home) (shx-scroll-down) (eq currpt (point))))
+    (assert (let ((currpt (point)))
+              (shx-scroll-end) (eq currpt (point))))
+    (assert (let ((currpt (point)))
+              (shx-scroll-home) (eq currpt (point))))
+    (assert (let ((currpt (point)))
+              (shx-scroll-home) (shx-scroll-end) (eq currpt (point))))
+    (assert (let ((currpt (point)))
+              (shx-scroll-end) (shx-scroll-up)
+              (shx-scroll-down) (shx-scroll-down) (eq currpt (point))))
     (assert (null (shx-scroll-find-split)))
     (message "Scrolling tests passed!"))
   (assert (numberp shx-imgsize))
@@ -923,12 +936,14 @@ installed."
   (set (make-local-variable 'shx-urls) nil)
   (set (make-local-variable 'shx-buffer) (current-buffer))
   (setq comint-input-ring-size 500)
-  (add-hook 'comint-input-filter-functions 'shx-show-echo-hook nil t)
-  (add-hook 'comint-output-filter-functions 'shx-parse-output-hook nil t))
+  (add-hook 'comint-input-filter-functions 'shx-show-echo-hook
+            nil t)
+  (add-hook 'comint-output-filter-functions
+            'shx-parse-output-hook nil t))
 
 
-;; Tell less to suppress warnings about how dumb our terminal is, and to use a
-;; consistently simple prompt (just a colon).
+;; Tell less to suppress warnings about how dumb our terminal is, and to
+;; use a consistently simple prompt (just a colon).
 (setenv "LESS" "--dumb --prompt=s")
 
 (add-hook 'comint-mode-hook 'shx-activate)
