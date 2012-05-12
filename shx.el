@@ -326,9 +326,6 @@ is found, delete the text and call the corresponding function."
       (let ((cmd (intern (format "shx-%s" (upcase (match-string 1))))))
         (when (and (fboundp cmd)        ; text matches a command!
                    (shx-safe-to-trigger (match-string 1))) ; safe?
-          (message "Got some potential here...")
-          (message (match-string 1))
-          (message (match-string 2))
           (let ((str (match-string-no-properties 2))
                 (buf shx-buffer))
             (replace-match "")          ; hide the trigger text
