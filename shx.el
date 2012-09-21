@@ -35,16 +35,17 @@
 ;; Either:
 ;; 
 ;; 1. Move shx.el to a directory in your `load-path' or alternatively
-;; add the directory shx.el is in to your `load-path' by adding this
-;; line to your ~/.emacs:
+;;    add the directory shx.el is in to your `load-path' by adding
+;;    this line to your ~/.emacs:
 ;;
 ;;; (add-to-list 'load-path "~/Downloads/elisp/")
 ;;
-;; 2.Add this line to your ~/.emacs:
+;; 2. Add this line to your ~/.emacs:
 ;;
 ;;; (require 'shx)
 ;;
-;; If you want shx to run in any comint-mode buffer, add this line too:
+;; If you want shx to run in any comint-mode buffer, add this too:
+;;
 ;;; (add-hook 'comint-mode-hook 'shx-activate)
 ;;
 ;; Graphical functions (like plotting) use these programs:
@@ -75,7 +76,7 @@
 ;; shx Input Commands
 ;; ==================
 ;;
-;; shx's support for input commands written in elisp give it a lot of
+;; shx's support for input commands written in elisp gives it a lot of
 ;; the same advantages as `eshell'.
 ;;
 ;; Everything you need to know about shx's input commands can be found
@@ -85,17 +86,6 @@
 ;; underlying shell process because EMACS actually intercepts them.
 ;; For example you can type ":man gcc" even while gcc is busy
 ;; compiling and a window with the gcc man page will come up in EMACS.
-;;
-;; You can change `shx-prefix' from ":" to "# ",
-;;
-;;; (setq shx-prefix "# ")
-;;
-;; in which case you would, for example, type "# help" to access the
-;; help.
-;;
-;; Or you can set the prefix to nothing all:
-;;
-;;; (setq shx-prefix "")
 ;;
 ;; The commands that get intercepted by shx will have the
 ;; `shx-highlights' face, whereas commands which were not intercepted
@@ -107,9 +97,9 @@
 ;; :edit, :grep, :delay.
 ;;
 ;; Users can write new commands by defining a single-argument function
-;; of the form shx-COMMAND, where COMMAND (which must be capitalized)
-;; is what the user would type to invoke it.  For example if you put
-;; this in your .emacs:
+;; named shx-COMMAND, where COMMAND (which must be capitalized) is
+;; what the user would type to invoke it.  For example if you put this
+;; in your .emacs:
 ;;
 ;;; (defun shx-BREAK (arg) (insert "Break!") (shx-send-break))
 ;;
@@ -156,19 +146,32 @@
 ;;; (setq shx-split-rows 15)
 ;;
 ;;
-;; shx Keybinding Modifications
-;; ============================
+;; shx Keys
+;; ========
 ;;
-;; - Recognized URLs are turned into mouse/keyboard accessible (C-c b)
-;;   links and a history of previous links is maintained.
+;; - Recognized URLs are turned into mouse/keyboard accessible links
+;;   (C-c b) and a history of previous links is maintained.
 ;;
-;; - C-c C-c sends C-c to the foreground process
+;; - C-c C-c sends the break character (C-c).
 ;;
-;; - C-c C-k sends SIGKILL to the shell (what C-c C-c did before).
+;; - C-c C-k sends a SIGKIL to the current subjob (what C-c C-c did
+;; - before).
 ;;
 ;; - When the prompt is a ":" (such as when reading through a man
 ;;   page), leading spaces and 'q's are sent straight to the process
 ;;   rather than being inserted into the buffer.
+;;
+;; You can change the `shx-prefix' (the prefix you type at the prompt
+;; before shx commands) from (say) ":" to "# " as follows:
+;;
+;;; (setq shx-prefix "# ")
+;;
+;; in which case you would, for example, type "# help" to access the
+;; help.
+;;
+;; Or you can set the prefix to nothing all:
+;;
+;;; (setq shx-prefix "")
 ;;
 ;;
 ;; Priorities
@@ -630,8 +633,8 @@ general help list."
        "General:\n"
        nn "help\n"
        nn "help <command>             (specific help)\n"
-       nn "[w]ww                      (open a link)\n"
-       nn "echo <text>                (echo some text)\n"
+       ;;;nn "[w]ww                      (open a link)\n"
+       ;;;nn "echo <text>                (echo some text)\n"
        nn "[e]dit <filename>          (edit a file, this window)\n"
        nn "[sp]edit <filename>        (edit a file, split window)\n"
        nn "oedit <filename>           (edit a file, other window)\n"
@@ -785,7 +788,7 @@ buffer isn't visible."
 
 
 (defun shx-MAP (arg)
-  "(SAFE) shx.el command to produce a Google map mage from a
+  "(SAFE) shx.el command to produce a Google map image from a
 location string ARG that Google Maps can parse... this can be a
 street, city, lat/long, whatever.  e.g., \":map University of
 Alberta\".  Requires wget and ImageMagick to be installed."
@@ -875,6 +878,12 @@ Requires gnuplot and ImageMagick to be installed."
                          ( 0 \"black\",2 \"blue\",3 \"#ddccbb\",4 \"#00cc00\");
                          set view 0,0,1.5,1;
                          splot" "w pm3d"))
+
+
+(defun shx-TEST (arg)
+  "(SAFE) Run tests."
+  (insert "Running tests (watch for success message)...")
+  (shx-tests))
 
 
 ;;; =====================================================================
