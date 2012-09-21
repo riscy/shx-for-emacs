@@ -3,51 +3,71 @@
 ;; Copyright (C) 2012 Chris Rayner
 ;;
 ;; Author: rayner AT cs DOT ualberta DOT ca
-;; Created: 23 May 2011
+;; Created: (Mon May 23 2011)
+;; Updated: (Mon Sep 12 2012) 
 ;; Version: alpha
 ;; Keywords: comint-mode, shell-mode
 ;; URL: http://www.cs.ualberta.ca/~rayner/
 ;; Git: https://github.com/riscy/shx-for-emacs
-;;
-;;
+
 ;;; Commentary:
 ;;
 ;; `shx', "shell-extras", extends comint-mode in a couple small ways.
 ;; It displays small plots and graphics, changes how page up/down work,
 ;; and intercepts commands entered at the shell to call elisp functions.
 ;;
-;; This version has been tested with Emacs 24.0.94 on Mac OS X.
+;; This version has been tested with EMACS 24.0.94 on Mac OS X.
+;;
+;;
+;; Warning!
+;; ========
+;;
+;; This software makes EMACS react AUTOMATICALLY to the text displayed
+;; in a buffer.  Since this text might be beyond your direct control,
+;; EMACS will be too.  I've taken steps to make sure that shx only
+;; triggers in a SAFE manner (see `shx-safe-to-trigger') but shx is
+;; inherently unsafe and comes without any warranty.
+;;
 ;;
 ;; Installation
 ;; ============
 ;;
-;; Put shx.el somewhere in your `load-path' and add this line to your ~/.emacs:
+;; Either:
+;; 
+;; 1. Move shx.el to a directory in your `load-path' or alternatively
+;; add the directory shx.el is in to your `load-path' by adding this
+;; line to your ~/.emacs:
+;;
+;;; (add-to-list 'load-path "~/Downloads/elisp/")
+;;
+;; 2.Add this line to your ~/.emacs:
 ;;
 ;;; (require 'shx)
 ;;
-;; If you want shx to run in ANY comint-mode buffer, add this line too:
-;;
+;; If you want shx to run in any comint-mode buffer, add this line too:
 ;;; (add-hook 'comint-mode-hook 'shx-activate)
 ;;
-;; Full graphical functionality requires the following:
-;; - convert (i.e., ImageMagick, for scaling images)
+;; Graphical functions (like plotting) use these programs:
+;;
+;; - convert (i.e., ImageMagick, used to scale images to size)
 ;; - gnuplot (for all plotting functions)
 ;; - wget    (for pulling image files from google maps)
 ;;
-;; The variables `shx-convert-cmd' `shx-gnuplot-cmd' and `shx-wget-cmd'
-;; can be customized as necessary to point to these executables.
+;; The variables `shx-convert-cmd' `shx-gnuplot-cmd' and
+;; `shx-wget-cmd' can be customized as needed (or edited in shx.el) to
+;; point to these binaries.
 ;;
 ;;
 ;; Quick-Start
 ;; ===========
 ;;
 ;; 1. Finish the installation (as above).
-;; 2. Type M-x shx <enter> to begin a shell session using shx
+;; 2. Type M-x shx (enter) to begin a shell session using shx
 ;; 3. Type :man ls
-;; 4. Type echo -e "\n##done()"
+;; 4. Type echo -e "##done()"
 ;; 5. Type :help
 ;; 6. Type :test  (hopefully you see nothing but a success message)
-;; 7. Try to page up, run a command at the prompt, then page back down
+;; 7. Try to page up, enter a command, then page back down
 ;;
 ;; Detailed help can be found in the next few sections.
 ;;
@@ -61,10 +81,10 @@
 ;; Everything you need to know about shx's input commands can be found
 ;; in the help.  Just type :help on an empty line and press enter.
 ;;
-;; These special commands are executed asynchronously of the underlying
-;; process because emacs intercepts them as soon as you hit enter.  For
-;; example you can type ":man ssh" even while the underlying process is
-;; busy.
+;; These special commands are executed asynchronously of the
+;; underlying shell process because EMACS actually intercepts them.
+;; For example you can type ":man gcc" even while gcc is busy
+;; compiling and a window with the gcc man page will come up in EMACS.
 ;;
 ;; You can change `shx-prefix' from ":" to "# ",
 ;;
@@ -81,31 +101,31 @@
 ;; `shx-highlights' face, whereas commands which were not intercepted
 ;; will have the default `comint-highlight-input' face.
 ;; 
-;; Many existing commands are for displaying graphics such as plots in a
-;; shell buffer.  These require ImageMagick, wget, and gnuplot to be
-;; installed.  Others invoke built-in emacs functionality, like :man,
+;; Many existing commands are for displaying graphics such as plots in
+;; a shell buffer.  These require ImageMagick, wget, and gnuplot to be
+;; installed.  Others invoke built-in EMACS functionality, like :man,
 ;; :edit, :grep, :delay.
 ;;
 ;; Users can write new commands by defining a single-argument function
-;; of the form shx-COMMAND, where COMMAND (which must be capitalized) is
-;; what the user would type to invoke it.  For example if you put this
-;; in your .emacs:
+;; of the form shx-COMMAND, where COMMAND (which must be capitalized)
+;; is what the user would type to invoke it.  For example if you put
+;; this in your .emacs:
 ;;
 ;;; (defun shx-BREAK (arg) (insert "Break!") (shx-send-break))
 ;;
-;; ... a user can type :break to send <C-c> straight through.  See
+;; ... a user can type :break to send a break straight through.  See
 ;; `shx-DIFF', `shx-GREP' for examples.
 ;;
-;; If you write a new command that you think might be useful to others,
-;; send it along to me and hopefully I can include it.
+;; If you write a new command that you think might be useful to
+;; others, send it along to me and hopefully I can include it.
 ;;
 ;;
 ;; shx Command Triggers
 ;; ====================
 ;;
-;; Triggers can use many of the input commands (above) to enhance
-;; command-line applications.  This is done by having the application
-;; echo a shx command trigger on a new line by itself:
+;; Triggers can be used to enhance command-line applications.  This is
+;; done by having the application echo a shx command trigger on a new
+;; line by itself:
 ;;
 ;;; ##COMMAND(ARGUMENT)
 ;; 
@@ -124,31 +144,31 @@
 ;; shx Scrolling
 ;; =============
 ;;
-;; shx supports splitting of a shell window on paging up and down.  When
-;; you page up, the frame is split in two with a larger "scrolling
-;; frame" on top and a smaller "input frame" preserved on the bottom.
-;; This lets you enter text at the prompt (in the input frame) and
-;; monitor new input while consulting previous output (in the scrolling
-;; frame) uninterrupted.
+;; shx supports splitting of a shell window on paging up and down.
+;; When you page up, the frame is split in two with a larger
+;; "scrolling frame" on top and a smaller "input frame" preserved on
+;; the bottom.  This lets you enter text at the prompt (in the input
+;; frame) and monitor new input while consulting previous output (in
+;; the scrolling frame) uninterrupted.
 ;;
-;; You can change the default size of the input frame to something else:
+;; You can change the size of the input frame to something else:
 ;;
-;;; (setq shx-row-split 15)
+;;; (setq shx-split-rows 15)
 ;;
 ;;
 ;; shx Keybinding Modifications
 ;; ============================
 ;;
-;; - Recognizable URLs are turned into mouse/keyboard accessible (C-c b)
+;; - Recognized URLs are turned into mouse/keyboard accessible (C-c b)
 ;;   links and a history of previous links is maintained.
 ;;
-;; - C-c C-c sends <C-c> to the foreground process
+;; - C-c C-c sends C-c to the foreground process
 ;;
 ;; - C-c C-k sends SIGKILL to the shell (what C-c C-c did before).
 ;;
-;; - When the prompt is a ":" (such as when reading through a man page),
-;;   leading spaces are sent straight through to the process rather than
-;;   being inserted into the buffer, for simpler paging.
+;; - When the prompt is a ":" (such as when reading through a man
+;;   page), leading spaces and 'q's are sent straight to the process
+;;   rather than being inserted into the buffer.
 ;;
 ;;
 ;; Priorities
@@ -166,15 +186,15 @@
 ;;;              Global variables and customization options
 
 
-;; Programs used (try absolute paths if not working for you)
+;; Programs used (try absolute paths if it's not working for you)
 (defvar shx-convert-cmd "convert")
 (defvar shx-gnuplot-cmd "gnuplot")
 (defvar shx-wget-cmd    "wget")
 
 ;; Some other variables
 (defvar shx-prefix ":")
-(defvar shx-imgsize 350)
-(defvar shx-row-split 15)
+(defvar shx-imgsize 300)
+(defvar shx-split-rows 15)
 (defun shx-gmap-url ()
   (concat "http://maps.google.com/maps/api/staticmap"
           "?maptype=roadmap&zoom=13&sensor=false&size="
@@ -186,7 +206,10 @@
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map parent)
     ;; ease of use:
-    (define-key map (kbd "SPC") 'shx-space-maybe)
+    (define-key map (kbd "SPC") 'shx-context-sensitive-insert)
+    (define-key map (kbd "q") 'shx-context-sensitive-insert)
+    (define-key map (kbd "n") 'shx-context-sensitive-insert)
+    (define-key map (kbd "N") 'shx-context-sensitive-insert)
     ;; scrolling:
     (define-key map (kbd "<prior>") 'shx-scroll-up)
     (define-key map (kbd "<next>") 'shx-scroll-down)
@@ -206,7 +229,7 @@
 (defvar shx-mode-map (shx-get-mode-map))
 
 (defface shx-highlights
-  '((((class color)) (:foreground "#FF7030")))
+  '((((class color)) (:foreground "#00FF00")))
   "Face to highlight user input that went through shx."
   :group 'shx)
 
@@ -216,8 +239,8 @@
 
 
 (defun shx-get-current-input ()
-  "Return what's written after the prompt -- i.e., the string
-between the `process-mark' and the `line-end-position'."
+  "Return what's written after the prompt (i.e., the string
+between the `process-mark' and the `line-end-position')."
   (let ((pmark (process-mark (get-buffer-process (current-buffer)))))
     (buffer-substring-no-properties pmark (line-end-position))))
 
@@ -235,8 +258,8 @@ between the `process-mark' and the `line-end-position'."
 (defun shx-show-echo-hook (input)
   "When the user hits enter (sends input) we may have something
 cached in the variable `shx-echo' to insert into the output
-stream, such as some triggerable text -- see
-`shx-parse-output-hook'.  This function should be in
+stream, such as some triggerable text (see
+`shx-parse-output-hook').  This function should be in
 `comint-input-filter-functions'."
   (when (not (eq shx-echo nil))
     (save-excursion
@@ -273,7 +296,7 @@ stream, such as some triggerable text -- see
                             'field 'input
                             'font-lock-face 'shx-highlights
                             'help-echo
-                            (concat "Parsed by shx (shx-echo " parsed ")")))))))
+                            (concat "Parsed by shx.el (shx-echo " parsed ")")))))))
 
 
 (defun shx-parse-input-commands (str)
@@ -291,7 +314,6 @@ stream by `shx-show-echo-hook'."
         (when (fboundp cmd)
           ;; clear the prompt
           (delete-region (line-beginning-position) (line-end-position))
-          ;;(insert " ") ; <-- insert SOMETHING or comint forgets this line...?
           (set 'shx-echo (concat "##" (match-string 1 str) "(" (match-string 2 str) ")"))))
     ;; Otherwise if the input matches <shx-prefix><cmd>:
     (when (string-match (concat "^" shx-prefix "\\(\\w+\\)$") str)
@@ -347,63 +369,48 @@ is found, delete the text and call the corresponding function."
                                  'help-echo
                                  (concat "Trigger on match: " rexp)))
       (condition-case nil (funcall func)
-        (error "Sorry for the bug - can't run this trigger!!")))
+        (error "shx error :: can't run this trigger!!")))
     (forward-char))))
 
 
-;; cribbed from emud.el
-(defun shx-open-url-command (input-event)
+(defun shx-open-url (event)
   "Open the URL that was clicked on."
   (interactive "e")
-  (let (window pos url)
-    (save-excursion
-      (setq window (posn-window (event-end input-event))
-            pos    (posn-point  (event-end input-event)))
-      (if (null (windowp window))
-        (error "Unknown URL"))
-      ;; Go to the buffer where the click event happened
-      (set-buffer (window-buffer window))
-      ;;; ^ (set-window-buffer window...??
-      ;; Grab the URL, and go
-      (setq url (get-text-property (1- pos) 'url)))
-    (browse-url url)))
+  (browse-url (get-text-property
+               (posn-point (event-start event)) 'url)))
 
 
 (defun shx-parse-matched-url ()
   "Assuming a match to a URL has been made in the output stream,
 do some bookkeeping by adding it to the local list
-`shx-urls' (accessible with C-c C-o) and make it clickable."
+`shx-urls' (accessible with C-c b) and make it clickable."
   (let ((url (match-string-no-properties 0)))
     (if (null (string= url (car shx-urls)))
-      (setq shx-urls (cons url shx-urls)))
+        (setq shx-urls (cons url shx-urls)))
     (let ((map (make-sparse-keymap)))
-      (define-key map [mouse-1] 'shx-open-url-command)
+      (define-key map [mouse-1] 'shx-open-url)
       (add-text-properties (match-beginning 0) (match-end 0)
                            (list 'mouse-face 'link
                                  'font-lock-face 'shx-highlights
-                                 'keymap map
-                                 'url url
-                                 'help-echo (concat "Click or C-c C-o to open "
-                                                    url))))))
+                                 'keymap map 'url url
+                                 'help-echo (concat "Use `shx-browse-url' to open " url))))))
 
 
 ;;; =====================================================================
 ;;;                          Utility functions
 
 
-;;; TODO this might just be a macro
-;;; http://www.chemie.fu-berlin.de/chemnet/use/info/elisp/elisp_13.html#SEC157
-;;; macros appear to be the next thing to learn in any case...
 (defun shx-delay-cmd (delay cmd &optional buf)
   "Process CMD in the current buffer after DELAY seconds.  In the
 meantime the session will remain responsive.  See documentation
 for `run-at-time' for further documentation on the timing
 mechanism."
    (run-at-time delay nil
-    ;; We want ONLY literals inside the delayed function, since these won't lose
-    ;; scope or change context on us.  e.g., what `buffer-name' returns can
-    ;; change as the user moves around in emacs.  So we eval an sexp which
-    ;; produces an anonymous function in which the buffer's name is a literal.
+    ;; We want ONLY literals inside the delayed function, since these
+    ;; won't lose scope or change context on us (e.g., what
+    ;; `buffer-name' returns changes as the user moves around).  So
+    ;; eval an sexp which produces an anonymous function in which the
+    ;; buffer's name is a literal
     (eval (cons 'quote (list (list 'lambda 'nil
                                    (cons 'process-send-string
                                          (list (buffer-name buf) cmd))))))))
@@ -433,18 +440,13 @@ example 'w lp'); insert the resulting plot into the buffer."
       (shx-VIEW imgname))))
 
 
-(defun shx-browse-url (&optional arg)
-  ;; cribbed from rcirc.el
+(defun shx-browse-url ()
   "Prompt for URL to browse based on URLs in buffer.  If no URLs
-have been seen yet, prompt for any URL at all."
-  (interactive "P")
-  (let ((completions (mapcar (lambda (x) (cons x nil)) shx-urls))
-        (initial-input (or (car shx-urls) "http://"))
-        (history (cdr shx-urls)))
+have been seen yet (or there's no preset), prompt for any URL at all."
+  (interactive)
+  (let ((su shx-urls))                ; delocalized copy of `shx-urls'
     (browse-url
-     (completing-read "Open URL: "
-                      completions nil nil initial-input 'history)
-     arg)))
+     (completing-read "URL: " su nil nil (car su) '(su . 1)))))
 
 
 (defun shx-send-break ()
@@ -452,33 +454,32 @@ have been seen yet, prompt for any URL at all."
   (process-send-string nil ""))
 
 
-(defun shx-space-maybe ()
-  "When the prompt is just a colon, we can assume we're paging through `less',
- -- such as with a man page, for example.  In this case instead
-of inserting a space in the buffer, we send it straight through
-to the process so that paging happens with one key press."
+(defun shx-context-sensitive-insert ()
+  "When the prompt is just a colon (e.g., we're paging through
+`less') then instead of inserting the pressed key into the
+buffer, send it directly to the process."
   (interactive)
   (if (string= ":" (shx-get-current-prompt))
-      (process-send-string nil " ")
-    (insert " ")))
-
+      (process-send-string nil (this-command-keys))
+     (insert (this-command-keys))))
 
 
 ;;; =====================================================================
 ;;;                          Scrolling extras
 
+;; These are controls for creating a history/context split on the
+;; window so we can enter text while reading old output:
 
-;; These are controls for navigating a window that looks like this
-"+--------------+
- | -------      | 
- | -------      | 
- | -------      | 
- |    <head>    | 
- |(show history)| 
- +--------------+ 
- |    <tail>    | 
- |(show context)|
- +--------------+"
+;; +--------------+
+;; | -------      |
+;; | -------      |
+;; | -------      |
+;; |    <head>    |
+;; |(show history)|
+;; +--------------+
+;; |    <tail>    |
+;; |(show context)|
+;; +--------------+
 
 
 (defun shx-scroll-begin ()
@@ -487,24 +488,25 @@ to the process so that paging happens with one key press."
   (goto-char (point-max))
   (save-excursion
     ;; open up a small window beneath us
-    (split-window-vertically (- (window-height) shx-row-split))
+    (split-window-vertically (- (window-height) shx-split-rows))
     ;; remember previous comint settings
     (set (make-local-variable 'shx-default-scroll-on-output)
          comint-scroll-to-bottom-on-output)
     ;; only auto-scroll the window the user's cursor is in
-    (set (make-local-variable 'comint-scroll-to-bottom-on-output) "this")))
+    (set (make-local-variable 'comint-scroll-to-bottom-on-output)
+         "this")))
 
 
 (defun shx-scroll-find-split ()
-  "The user might be on the head or the tail.  Regardless, put
-cursor on the tail at the end of buffer, or return nil if the
-tail is not visible and/or the matching buffer is not above it."
+  "Whether the cursor is on the head or tail frame, put it on the
+tail at the end of buffer, or return nil if the tail is not
+visible and/or the matching buffer is not above it."
   (cond ((and (eq (current-buffer) (window-buffer (previous-window)))
-              (eq shx-row-split (window-height)))
+              (eq shx-split-rows (window-height)))
          ;; on the tail?  good
          t)
         ((and (eq (current-buffer) (window-buffer (next-window)))
-              (eq shx-row-split (window-height (next-window)))) ; on the head?
+              (eq shx-split-rows (window-height (next-window)))) ; on the head?
          ;; not on the tail?  move from head to tail or return nil
          (select-window (next-window)))))
 
@@ -583,6 +585,7 @@ and `shx-scroll-down'."
   (goto-char (point-max))
   (recenter -1))
 
+
 (defun shx-safe-to-trigger (arg)
   "Return t if the shx-COMMAND specified by ARG is safe to use as
 a trigger (e.g., you can't have your file system nuked by running
@@ -632,8 +635,8 @@ general help list."
        nn "[e]dit <filename>          (edit a file, this window)\n"
        nn "[sp]edit <filename>        (edit a file, split window)\n"
        nn "oedit <filename>           (edit a file, other window)\n"
-       nn "man <command>              (show a man page)\n"
-       nn "woman <command>            (show a man page)\n"
+       nn "man <command>              (show a man page, other window)\n"
+       nn "woman <command>            (show a man page, this window)\n"
        nn "diff <file1> <file2>       (launch a diff)\n"
        nn "ediff <file1> <file2>      (launch an ediff)\n"
        nn "grep '<pattern>' <file1>   (launch a grep)\n"
@@ -654,17 +657,15 @@ general help list."
        nn "view image.png\n"
        nn "e ~\n"
        nn "plot rewardVStime.dat"))))
-  
 
 
 (defun shx-ECHO (arg)
-  "(SAFE) Echo ARG. This function is only semiSAFE to trigger
-because of potential for recursive logic bomb."
+  "Echo ARG.  UNSAFE (can recurse)."
   (insert arg))
 
 
 (defun shx-ECHOARGS (arg)
-  "This function is for testing.  UNSAFE."
+  "This function is for testing.  UNSAFE (can recurse)."
   (let ((arglist (split-string arg)))
     (insert (car arglist))
     (mapcar '(lambda (x) (insert "\n" x))
@@ -685,7 +686,7 @@ delay a directory listing: \":delay 3 ls\".  Definitely UNSAFE."
 
 
 (defun shx-DIFF (arg)
-  "(SAFE) shx.el command to launch a diff window in emacs."
+  "(SAFE) shx.el command to launch a diff window in EMACS."
   (insert "Invoking diff `" arg
           "' in other window; use M-n/N-p to browse results.")
   (let ((arglist (mapcar 'expand-file-name (split-string arg))))
@@ -702,7 +703,7 @@ delay a directory listing: \":delay 3 ls\".  Definitely UNSAFE."
 
 
 (defun shx-GREP (arg)
-  "(SAFE) shx.el command to launch an emacs grep window.  Here's
+  "(SAFE) shx.el command to launch an EMACS grep window.  Here's
 an example to try: \":grep '^(defun shx-[A-Z]\+ (' shx.el\""
   (insert "Grepping " arg
           " in other window; use n/p to browse results.")
@@ -717,8 +718,8 @@ an example to try: \":grep '^(defun shx-[A-Z]\+ (' shx.el\""
 
 (defun shx-WOMAN (arg)
   "(SAFE) shx.el command to launch a WoMan window."
-  (insert "Invoking 'woman " arg "' in other window.")
-  (woman arg))
+  (insert "Invoking 'woman " arg)
+  (shx-delay-funcall "0.25 sec" 'woman (list arg)))
 
 
 (defun shx-OEDIT (arg)
@@ -740,16 +741,15 @@ can just open it using ':spedit my file'."
   (other-window 1)
   (find-file (expand-file-name arg))
   (other-window -1))
+
 (defalias 'shx-SP 'shx-SPEDIT)
 
 
 (defun shx-CAT (arg)
-  "(SAFE) shx.el command to cat a file into the buffer.
+  "shx.el command to cat a file into the buffer.
 You won't need to (and shouldn't!) escape spaces and special
 characters.  That is, if you have a file called 'my\ file', you
-can just view it using ':cat my file'.  This function is only
-semiSAFE to trigger because of potential for recursive logic
-bomb."
+can just view it using ':cat my file'."
   (condition-case nil 
       (insert-file-contents (expand-file-name arg))
     (error (insert arg ": No such file."))))
@@ -763,15 +763,10 @@ can just open it using ':edit my file'."
   (insert "Editing " arg "...")
   (shx-delay-funcall "0.25 sec"
                      'find-file (list (expand-file-name arg))))
+
 (defalias 'shx-E 'shx-EHERE)
+
 (defalias 'shx-OPEN 'shx-EHERE)
-
-
-(defun shx-WWW (arg)
-  "(SAFE) shx.el command to go to URL menu."
-  (insert "WWW...")
-  (shx-browse-url))
-(defalias 'shx-W 'shx-WWW)
 
 
 (defun shx-DONE (arg)
@@ -786,17 +781,14 @@ buffer isn't visible."
 buffer isn't visible."
   (insert "shx.el: ** done **")
   (message (format "** shx job finished in %S **" shx-buffer))
-  (display-buffer shx-buffer)
-  ;; IDEA Show window buffer using set-window-buffer...!
-  )
+  (display-buffer shx-buffer))
 
 
 (defun shx-MAP (arg)
-  "(SAFE) shx.el command (though not a very useful one) to
-produce a Google map mage from a location string ARG that Google
-Maps can parse... this can be a street, city, lat/long, whatever.
-e.g., \":map University of Alberta\".  Note this function
-requires wget to be installed in addition to ImageMagick."
+  "(SAFE) shx.el command to produce a Google map mage from a
+location string ARG that Google Maps can parse... this can be a
+street, city, lat/long, whatever.  e.g., \":map University of
+Alberta\".  Requires wget and ImageMagick to be installed."
   (let ((imgname (make-temp-file "tmp" nil ".png")))
     (call-process shx-wget-cmd nil nil nil
                   "-nv" "-O" imgname
@@ -808,13 +800,33 @@ requires wget to be installed in addition to ImageMagick."
 
 (defun shx-VIEW (arg)
   "(SAFE) Prepare (ie scale) the image indicated by ARG using
-convert; insert the resulting plot into the buffer.  Note this
+convert; insert the resulting plot into the buffer.  This
 function requires ImageMagick to be installed."
   (let ((imgname (make-temp-file "tmp" nil ".png")))
     (when (eq 0 (call-process shx-convert-cmd nil t nil
                               (expand-file-name arg)
                               "-resize" (concat
                                          "x" (number-to-string shx-imgsize) ">")
+                              imgname)))
+    (let ((oldpoint (point)))
+         (insert-image (create-image imgname))
+      (add-text-properties oldpoint (point)
+                           (list 'help-echo arg))))
+  (insert "\n" arg "\n"))
+
+(defun shx-BANNER (arg)
+  "(SAFE) Prepare a banner with the supplied text and display it.
+Requires ImageMagick to be installed."
+  (let ((imgname (make-temp-file "tmp" nil ".png")))
+    (when (eq 0 (call-process shx-convert-cmd nil t nil
+                              "-size" (concat
+                                       (number-to-string shx-imgsize) "x"
+                                       (number-to-string (/ shx-imgsize 4)))
+                              "xc:black"
+                              "-pointsize" (number-to-string 72)
+                              "-fill" "white" "-stroke" "black"
+                              "-strokewidth" (number-to-string 3)
+                              "-draw" (concat "text 25,65 '" arg "'")
                               imgname)))
          (insert-image (create-image imgname))
          (insert "\n^ " imgname "\n")))
@@ -825,9 +837,8 @@ function requires ImageMagick to be installed."
 \"Topic 1\" 1.8
 \"Topic 2\" 19.5
 \"Topic 3\" 4
-\"T\\374opic 4\", 20
-Note this function requires gnuplot and ImageMagick to be
-installed."
+\"Topic 4\" 20
+Requires gnuplot and ImageMagick to be installed."
   (shx-general-plot arg "set boxwidth 2.5 relative; set style data histograms;
                          set style fill solid 1.0 border -1;
                          plot" "u 2:xticlabels(1) notitle"))
@@ -835,8 +846,7 @@ installed."
 
 (defun shx-PLOT (arg)
   "(SAFE) Use gnuplot to show a line plot of the file named ARG.
-Note this function requires gnuplot and ImageMagick to be
-installed."
+Requires gnuplot and ImageMagick to be installed."
   (shx-general-plot arg "plot" "w lp lw 1 ps 2 pt 7"))
 
 
@@ -846,39 +856,26 @@ in file ARG such as:
 1.5   2    3
 4     5    6
 7     8    9.5
-Note this function requires gnuplot and ImageMagick to be
-installed."
+Requires gnuplot and ImageMagick to be installed."
   (shx-general-plot arg "set view map; unset xtics; unset title; unset ytics; set colorbox;
                          plot" "u 1:(-$2):3 matrix w image"))
 
 
 (defun shx-SCATTER (arg)
   "(SAFE) Use gnuplot to show a scatter plot of the file ARG.
-Note this function requires gnuplot and ImageMagick to be
-installed."
+Requires gnuplot and ImageMagick to be installed."
   (shx-general-plot arg "plot" "w p ps 2 pt 7"))
 
 
 (defun shx-PLOT3D (arg)
   "(SAFE) Use gnuplot to show a surface plot of the file ARG.
-Note this function requires gnuplot and ImageMagick to be
-installed."
+Requires gnuplot and ImageMagick to be installed."
   (shx-general-plot ARG "unset tics;
                          set palette defined
                          ( 0 \"black\",2 \"blue\",3 \"#ddccbb\",4 \"#00cc00\");
                          set view 0,0,1.5,1;
                          splot" "w pm3d"))
 
-
-(defun shx-UPDATE (arg)
-  "(SAFE) Update the most recently embedded image or plot..."
-  (insert "Not implemented."))
-
-
-(defun shx-TEST (arg)
-  "(SAFE)"
-  (insert "Testing...")
-  (shx-tests))
 
 ;;; =====================================================================
 ;;;                           Test cases ...
@@ -930,14 +927,14 @@ installed."
   (buffer-disable-undo)
   (use-local-map (shx-get-mode-map (current-local-map)))
   (set (make-local-variable 'shx-echo) nil)
-  (set (make-local-variable 'shx-urls) nil)
+  (set (make-local-variable 'shx-urls)
+       (list "https://github.com/riscy/shx-for-emacs/blob/master/README.md"))
   (set (make-local-variable 'shx-buffer) (current-buffer))
   (setq comint-input-ring-size 500)
   (add-hook 'comint-input-filter-functions 'shx-show-echo-hook
             nil t)
   (add-hook 'comint-output-filter-functions
             'shx-parse-output-hook nil t))
-
 
 ;; Tell less to suppress warnings about how dumb our terminal is, and to
 ;; use a consistently simple prompt (just a colon).
@@ -947,5 +944,4 @@ installed."
 (add-hook 'py-shell-hook 'shx-activate)
 
 (provide 'shx)
-;;; shx.el ends here
-
+;;; shx.el ends
