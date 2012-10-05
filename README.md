@@ -120,11 +120,11 @@ Triggers can be used to enhance command-line applications.  They
 are invoked by a simple markup language: just have the application
 output something like the following on a line by itself:
 
-##COMMAND(ARGUMENT)
+  ##COMMAND(ARGUMENT)
 
 For example if shx sees the following line:
 
-##view(mountains.png)
+  ##view(mountains.png)
 
 ... then mountains.png will be displayed in the shell, scaled to fit.
 
