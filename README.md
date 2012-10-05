@@ -21,10 +21,9 @@ Warning!
 ========
 
 This software makes Emacs react automatically to the text displayed
-in a buffer (I refer to this as a 'trigger').  Since this text
-might be beyond your direct control, Emacs will be too.  I've tried
-to ensure shx only triggers in a SAFE manner (see
-'shx-safe-to-trigger') but shx comes without any warranty.
+in a buffer.  Since this text might be beyond your direct control,
+Emacs will be too.  I've tried to ensure shx triggers safely (see
+`shx-safe-to-trigger') but shx comes without any warranty.
 
 
 Installation
