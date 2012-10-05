@@ -33,15 +33,15 @@ Installation
    add shx.el's directory to your 'load-path' by adding a line like
    the following to your .emacs:
 
-(add-to-list 'load-path "~/path/to/elisp/")
+  (add-to-list 'load-path "~/path/to/elisp/")
 
 2. Next add this line to your .emacs:
 
-(require 'shx)
+  (require 'shx)
 
 If you want shx to run in any comint-mode buffer, add this too:
 
-(add-hook 'comint-mode-hook 'shx-activate)
+  (add-hook 'comint-mode-hook 'shx-activate)
 
 That's it!
 
@@ -104,7 +104,7 @@ named shx-COMMAND, where COMMAND (which must be capitalized) is
 what the user would type to invoke it.  For example if you put this
 in your .emacs:
 
-(defun shx-BREAK (arg) (insert "Break!") (shx-send-break))
+  (defun shx-BREAK (arg) (insert "Break!") (shx-send-break))
 
 ... a user can type :break to send a break straight through.  See
 'shx-DIFF', 'shx-GREP' for examples.
@@ -131,7 +131,7 @@ For example if shx sees the following line:
 You can control how much vertical space any image occupies by
 customizing the variable 'shx-imgsize', or by executing:
 
-(setq shx-imgsize 300)
+  (setq shx-imgsize 300)
 
 
 shx Scrolling
@@ -146,11 +146,11 @@ the scrolling frame) uninterrupted.
 
 You can change the size of the input frame to something else:
 
-(setq shx-split-rows 15)
+  (setq shx-split-rows 15)
 
 Or to disable this feature:
 
-(setq shx-split-rows 0)
+  (setq shx-split-rows 0)
 
 n.b., function 'shx-tests' will fail if this feature is disabled.
 
@@ -173,14 +173,14 @@ shx Keys
 You can change the 'shx-prefix' (the prefix you type at the prompt
 before shx commands) from (say) ":" to "# " as follows:
 
-(setq shx-prefix "# ")
+  (setq shx-prefix "# ")
 
 in which case you would, for example, type "# help" to access the
 help.
 
 Or you can set the prefix to nothing all:
 
-(setq shx-prefix "")
+  (setq shx-prefix "")
 
 
 Priorities
