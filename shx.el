@@ -1,6 +1,6 @@
 ;;; shx.el --- shell-extras, extras for the (comint-mode) shell
 ;;
-;; Copyright (C) 2012,2013,2014 Chris Rayner
+;; Copyright (C) 2012,2013,2014,2015 Chris Rayner
 ;;
 ;; Author: rayner AT cs DOT ualberta DOT ca
 ;; Created: (Mon May 23 2011)
@@ -25,15 +25,16 @@
 ;; - It automatically splits the screen when you page up and down
 ;;   - This lets you keep context when referring to earlier output
 ;;
-;; This version tested with Emacs 24.0.94 on Mac OS X.
+;; This version tested with Emacs 24.4.1 ...
 ;;
-;; shx comes without any warranty.
+;; (shx comes without any warranty; use it however you like)
 ;;
 ;;
 ;; Installation
 ;; ============
 ;;
-;; 1. Move shx.el to a directory in your `load-path'.  Or, add
+;; 1. Move shx.el to a directory in your `load-path'.  If you don't
+;;    know what your load-path is type Or, add
 ;;    shx.el's directory to your `load-path' by adding a line like
 ;;    this to your .emacs:
 ;; (add-to-list 'load-path "~/path/to/elisp/")
@@ -116,15 +117,13 @@
 ;; shx Command Triggers
 ;; ====================
 ;;
-;; Triggers can be used to enhance command-line applications.  They
-;; are invoked by a simple markup language: just have the application
-;; output something like the following on a line by itself:
-;; ##COMMAND(ARGUMENT)
-;; where COMMAND is one of shx's input commands.
-;; 
-;; For example, if shx sees the following line:
+;; "Triggers" can enhance command-line applications -- just have your
+;; application output `##COMMAND(ARGUMENT)' on a line by itself (where
+;; COMMAND is one of shx's input commands) and the associated command
+;; will be invoked with the given argument.  For example, if shx sees:
 ;; ##view(mountains.png)
 ;; then mountains.png will be displayed in the shell, scaled to fit.
+;; Useful for showing progress indicators, graphs, etc.
 ;;
 ;; You can control how much vertical space any image occupies by
 ;; customizing the variable `shx-imgsize', or by executing:
@@ -142,7 +141,7 @@
 ;; uninterrupted.
 ;;
 ;; You can change the size of the input frame to something else:
-;; (setq shx-split-rows 15)
+;; (setq shx-split-rows 10)
 ;;
 ;; Or disable this feature entirely:
 ;; (setq shx-split-rows 0)
@@ -159,7 +158,7 @@
 ;;
 ;; - C-c C-k sends a SIGKIL to the subjob (what C-c C-c did before).
 ;;
-;; - Recognized URLs are turned into mouse/keyboard accessible links
+;; - Recognizable URLs are turned into mouse/keyboard accessible links
 ;;   (C-c b) and a history of previous links is maintained.
 ;;
 ;; - When the prompt is a ":" (such as when reading through a man
@@ -167,50 +166,50 @@
 ;;   rather than being inserted into the buffer.
 ;;
 ;;
-;; Priorities
-;; ==========
+;; TODO ...
+;; =========
+;; - :rm command that opens dired with the specified files flagged
+;; - Add ability to change the delay between repetitions in shx-REPEAT
+;; - New issue with certain faces (like highlighting) not being applied
+;;   properly -- this might just be a problem external to shx though
 ;;
-;; - REPEAT command?
-;; - Command to save an image (matrix, etc) rather than just display it.
-;; - When window is slightly smaller, don't overscroll with pgup
+;; Recent Changes
+;; ==============
 ;;
-;;
-;; Recent
-;; ======
-;;
-;; - Massive performance improvements in the triggering code
-;; - Better equipped for laggy buffers and multiple triggers on one line
-;; - Optional custom triggers in a list (export the URL one there first)
+;; - shx-REPEAT command
+;; - shx-DONE and shx-SHOWDONE now (ding) when called (Tue Mar 10 2015)
+;; - Now possible to :edit filenames with w*ldcards.
+;; - Now possible to :edit filenames with escape\ characters.
+;; - Fixed bug in shx-check-output-for-trigger (Sat Aug 30 2014)
+;; - Big performance improvements in the triggering code
+;;   - Better for laggy buffers and multiple triggers on one line
 
 ;;; Code:
 
-
+(require 'cl)
 (require 'comint)
-
 
 ;;; =====================================================================
 ;;;              Global variables and customization options
-
 
 ;; Programs used (try absolute paths if it's not working which can
 ;; be determined e.g. using 'which convert' or 'which gnuplot')
 (defvar shx-convert-cmd "convert")
 (defvar shx-gnuplot-cmd "gnuplot")
 
-
-;; List of triggers and commands (for example, URL matching)
+;; List of triggers and associated commands (for example, URL matching)
 (defvar shx-triggers
   (list
-   '("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\t\"'>)]+" . shx-parse-matched-url) ))
-
+   '("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\t\"'>)]+" . shx-parse-matched-url)))
 
 ;; Some other variables
 (defvar shx-prefix ":")
 (defvar shx-imgsize 200)
-(defvar shx-split-rows 15)
+(defvar shx-split-rows 12)
 
 
 (defun shx-gmap-url ()
+  "URL for google maps."
   (concat "http://maps.google.com/maps/api/staticmap"
           "?maptype=roadmap&zoom=13&sensor=false&size="
           (number-to-string shx-imgsize) "x"
@@ -281,16 +280,15 @@ between the `process-mark' and the `line-end-position')."
 (defun shx-show-trigger-hook (input)
   "When the user hits enter (sending the input), check the local
 variable `shx-user-trigger' for content to insert into the output
-stream, such as some triggerable text (see
-`shx-parse-output-hook').  This function should be in
-`comint-input-filter-functions'."
+stream, i.e. some trigger text (see `shx-parse-output-hook').
+This function should be in `comint-input-filter-functions'."
   (when (not (eq shx-user-trigger nil))
     (save-excursion
       (goto-char (point-max))
       (forward-line 0)
       (backward-char)
       (insert
-       ;; Anything the user inputs is deemed shx-safe:
+       ;; User wanted it, so it's propertized as shx-safe
        (propertize (concat "\n" shx-user-trigger) 'shx-safe t))
     (set 'shx-user-trigger nil))))
 
@@ -337,30 +335,28 @@ stream by `shx-show-trigger-hook'."
       (let* ((cmd (intern (format "shx-%s" (upcase (match-string 1 str))))))
         ;; If such a command exists
         (when (fboundp cmd)
-          ;; clear the text after the prompt; this is done so
-          ;; comint-mode will just send a blank line to the process
+          ;; clear the text after the prompt so comint-mode will just
+          ;; send a blank line to the process (in most cases this is ok)
+          ;; which will give us a new prompt
           (delete-region (line-beginning-position) (line-end-position))
-          ;; enqueue the trigger
-          (set 'shx-user-trigger
+          (set 'shx-user-trigger        ; enqueue the function
                (concat "##" (match-string 1 str) "(" (match-string 2 str) ")"))))
-    ;; Otherwise if the input matches <shx-prefix><cmd>:
+    ;; Otherwise, if the input matches <shx-prefix><cmd> (with no <arg>):
     (when (string-match (concat "^" shx-prefix "\\(\\w+\\)$") str)
       (let* ((cmd (intern (format "shx-%s" (upcase (match-string 1 str))))))
         (when (fboundp cmd)
-          ;; ...and such a command exists, insert triggerable text for it
           (delete-region (line-beginning-position) (line-end-position))
-          (insert " ")
           (set 'shx-user-trigger (concat "##" (match-string 1 str) "()")))))))
 
 
 (defun shx-parse-output-hook (output)
   "Parse the output for triggerable text, text we want to squelch,
 and other triggers like URL matching."
-  ;; Any output commands
+  ;; Parse any output commands
   (shx-parse-output-commands)
-  ;; Any triggers seen
-  (dolist (ii shx-triggers nil)
-    (shx-check-output-for-trigger (car ii) (cdr ii))))
+  ;; Parse any triggers seen
+    (dolist (ii shx-triggers nil)
+      (shx-check-output-for-trigger (car ii) (cdr ii))))
 
 
 (defun shx-parse-output-commands ()
@@ -374,18 +370,20 @@ is found, delete the text and call the corresponding function."
             (re-search-forward "^##\\(\\w+\\)(\\(.*\\))" nil t))
       (let ((cmd (intern (format "shx-%s" (upcase (match-string 1))))))
         (when (and (fboundp cmd)        ; text matches a command
-                   (shx-safe-to-trigger (match-string 1))) ; safe?
+                   (shx-safe-to-trigger (match-string 1)))
           (let ((str (match-string-no-properties 2))
                 (buf shx-buffer))
             (replace-match "")          ; hide the trigger text
             (funcall cmd str)
-            (set-buffer buf))))))) ; (funcall may have switched our buf)
+            (set-buffer buf)))))))      ; funcall might switch buf
 
 
 (defun shx-check-output-for-trigger (rexp func)
   "Scan the output for the supplied REXP; on a match call func."
   (save-excursion
-    (goto-char comint-last-output-start)
+    ;; sometimes comint-last-output-start is too far back when user is
+    ;; doing input, but this makes sure triggers hit the right spot:
+    (goto-char (max comint-last-output-start comint-last-input-end))
     (forward-line 0)
     (while (and (< (line-number-at-pos (point)) (line-number-at-pos (point-max)))
                 (re-search-forward rexp nil t))
@@ -420,7 +418,7 @@ do some bookkeeping by adding it to the local list
 
 
 (defun shx-open-url (event)
-  "Open the URL that was clicked on."
+  "Open the that URL was clicked on."
   (interactive "e")
   (browse-url (get-text-property
                (posn-point (event-start event)) 'url)))
@@ -542,10 +540,10 @@ buffer, send it directly to the process."
   (save-excursion
     ;; open up a small window beneath us
     (split-window-vertically (- (window-height) shx-split-rows))
-    ;; remember previous comint settings
+    ;; remember previous comint settings regarding autoscroll
     (set (make-local-variable 'shx-default-scroll-on-output)
          comint-scroll-to-bottom-on-output)
-    ;; only auto-scroll the window the user's cursor is in
+    ;; and for now only autoscroll the window the user's cursor is in
     (set (make-local-variable 'comint-scroll-to-bottom-on-output)
          "this")))
 
@@ -577,15 +575,18 @@ commands.  See `shx-scroll-down'."
       (if home (goto-char (point-min))
         (scroll-down))
     ;; go to the head, or create one if it doesn't exist
-    (if (shx-scroll-find-split)
-        (select-window (previous-window))
-      (shx-scroll-begin))
-    ;; scroll appropriately
-    (if home (goto-char (point-min))
-      (recenter -1)
-      (move-to-window-line 0)
-      (recenter -1))
-    ;; move down to the bottom window
+    (if (not (shx-scroll-find-split))
+        (and 
+         (shx-scroll-begin)
+         (recenter -1))
+      ;; If it exists, go to it and scroll appropriately
+      (select-window (previous-window))
+      (if home
+          (goto-char (point-min))
+        (recenter -1)
+        (move-to-window-line 0)
+        (recenter -1)))
+    ;; move back down to the bottom window
     (select-window (next-window))
     ;; align text to bottom
     (goto-char (point-max))
@@ -664,46 +665,55 @@ general help list."
                     (propertize (concat "##" arg "(ARG)")
                                 'font-lock-face 'shx-highlights)
                     " on a line by itself")
-          (insert "\nNOT safe to use as a trigger.") ))
+          (insert "\nNOT safe to use as a trigger.")))
     ;; It would be nice to automate this list (how?)
     (let ((nn (concat "   " shx-prefix)))
       (insert
-       nn "help <command>          specific help\n"
-       nn "[e]dit <filename>       edit a file, this window\n"
-       nn "[sp]edit <filename>     edit a file, split window\n"
-       nn "[o]edit <filename>      edit a file, other window\n"
-       nn "man <command>           show a man page, other window\n"
-       nn "diff <file1> <file2>    launch a diff\n"
-       nn "ediff <file1> <file2>   launch an ediff\n"
-       nn "grep '<pattern>' <file> launch a grep\n"
-       nn "delay <sec> <command>   send <command> after <seconds>\n"
-       nn "done                    display 'done' message\n"
-       nn "showdone                like done but display buffer\n"
-       nn "echo <text>             echo text in the buffer\n"
-       nn "mail <address>          start an email to <address>\n"
-       nn "hello                   start an email to the author\n"
-       nn "scatter data.dat        gnuplot scatterplot\n"
-       nn "plot data.dat           gnuplot lineplot\n"
-       nn "plot3d data3d.dat       gnuplot 3D surface\n"
-       nn "barplot databars.dat    gnuplot barplot\n"
-       nn "matrix mtx.dat          gnuplot heatmap\n"
-       nn "map <location>          google maps\n"
-       nn "view image.png          view any image\n"))
-    (insert (propertize "Type :help <topic> for more detail (e.g. 'help plot')"
+       "Basics:\n"
+       "  " nn "help <command>          specific help\n"
+       "  " nn "[e]dit <filename>       edit a file, this window\n"
+       "  " nn "[sp]edit <filename>     edit a file, split window\n"
+       "  " nn "[o]edit <filename>      edit a file, other window\n"
+       "  " nn "mail <address>          email to <address>\n"
+       "  " nn "hello                   email to shx's author\n"
+       "  " nn "date                    show the current date\n"
+       "Utilities:\n"
+       "  " nn "man <command>           show a man page, other window\n"
+       "  " nn "diff <file1> <file2>    launch a diff\n"
+       "  " nn "ediff <file1> <file2>   launch an ediff\n"
+       "  " nn "grep '<pattern>' <file> launch a grep\n"
+       "  " nn "done                    display 'done' message\n"
+       "  " nn "showdone                like done but reveal the buffer\n"
+       "  " nn "repeat <amt> <cmd>      send <command> <amt> times\n"
+       "  " nn "delay <sec> <cmd>       send <command> after <seconds>\n"
+       "Images:\n"
+       "  " nn "scatter data.dat        gnuplot scatterplot\n"
+       "  " nn "plot data.dat           gnuplot lineplot\n"
+       "  " nn "plot3d data3d.dat       gnuplot 3D surface\n"
+       "  " nn "barplot databars.dat    gnuplot barplot\n"
+       "  " nn "matrix mtx.dat          gnuplot heatmap\n"
+       "  " nn "map <location>          google maps\n"
+       "  " nn "view image.png          view any image\n"))
+    (insert (propertize "Type :help <command> for more detail (e.g. 'help plot')"
                         'font-lock-face 'shx-highlights))))
 
 
 (defun shx-ECHO (arg)
-  "Echo ARG.  UNSAFE (can recurse)."
-  (insert arg))
+  "For testing.  UNSAFE (can recurse)."
+  (insert (replace-regexp-in-string "\\\\" "" arg)))
 
 
 (defun shx-ECHOARGS (arg)
-  "This function is for testing.  UNSAFE (can recurse)."
+  "For testing.  UNSAFE (can recurse)."
   (let ((arglist (split-string arg)))
     (insert (car arglist))
     (mapcar '(lambda (x) (insert "\n" x))
             (cdr arglist))))
+
+
+(defun shx-DATE (arg)
+  "(SAFE).  Just show the date (for timers, etc.)."
+  (insert (current-time-string)))
 
 
 (defun shx-DELAY (arg)
@@ -711,16 +721,30 @@ general help list."
 specified number of seconds have elapsed.  Here's an example to
 delay a directory listing: \":delay 3 ls\".  Definitely UNSAFE."
   (if (string-match "^[\s\t]*\\([0-9]+\\)[\s\t]+\\([^\s\t].*\\)$" arg)
-      (progn
-        (insert "shx :: delaying execution of `"
-                (match-string 2 arg) "' "
-                (match-string 1 arg) " seconds.")
-        (shx-delay-cmd (concat (match-string 1 arg) " sec")
-                       (concat (match-string 2 arg) "\n")))))
+      (let ((sec (match-string 1 arg))
+            (cmd (match-string 2 arg)))
+        (insert "shx :: delaying execution of `" cmd "' " sec " seconds.")
+        (shx-delay-cmd (concat sec " sec")
+                       (concat cmd "\n")))))
+
+
+(defun shx-REPEAT (arg)
+  "shx.el command to repeat a shell command some specified number of
+times.  To do a directory listing three times with one second
+between each: \":repeat 3 ls\".  UNSAFE."
+  (if (string-match "^[\s\t]*\\([0-9]+\\)[\s\t]+\\([^\s\t].*\\)$" arg)
+      (let ((sec (match-string 1 arg))
+            (cmd (match-string 2 arg)))
+        (insert "shx :: repeating execution of `" cmd "' " sec " times")
+        (dotimes (ii (string-to-int sec)) ; 1 for each second (TODO)
+          (shx-delay-cmd (concat (int-to-string (+ ii 1)) " sec")
+                         (concat cmd "\n"))))))
 
 
 (defun shx-DIFF (arg)
-  "(SAFE) shx.el command to launch an Emacs diff window."
+  "(SAFE) shx.el command to launch diff in a separate window.
+FIXME: current technical limitation of this function is that the
+filenames can't included spaces."
   (insert "shx :: invoking diff `" arg
           "' in other window; use M-n/N-p to browse results.")
   (let ((arglist (mapcar 'expand-file-name (split-string arg))))
@@ -729,7 +753,9 @@ delay a directory listing: \":delay 3 ls\".  Definitely UNSAFE."
 
 
 (defun shx-EDIFF (arg)
-  "(SAFE) shx.el command to launch an Emacs ediff session."
+  "(SAFE) shx.el command to launch an Emacs ediff session.
+FIXME: a current technical limitation of this function is that
+the filenames can't include spaces."
   (insert "shx :: invoking ediff " arg "...")
   (shx-delay-funcall "0.5 sec" 'ediff
                      (mapcar 'expand-file-name
@@ -752,50 +778,50 @@ an example to try:
 
 
 (defun shx-OEDIT (arg)
-  "(SAFE) shx.el command to open the file ARG in another window.
-You won't need to (and shouldn't!) escape spaces and special
-characters.  That is, if you have a file called 'my\ file', you
-can just open it using ':edit my file'."
+  "(SAFE) shx.el command to open the file ARG in another window."
   (insert "shx :: opening " arg " in other window.")
-  (display-buffer (find-file-noselect (expand-file-name arg))))
+  (display-buffer (find-file-noselect
+                   (expand-file-name
+                    (replace-regexp-in-string "\\\\" "" arg)))))
 
 (defalias 'shx-O 'shx-OEDIT)
 
 
 (defun shx-SPEDIT (arg)
-  "(SAFE) shx.el command to open the file ARG in new split window.
-You won't need to (and shouldn't!) escape spaces and special
-characters.  That is, if you have a file called 'my\ file', you
-can just open it using ':spedit my file'."
+  "(SAFE) shx.el command to open the file ARG in new split window."
   (insert "shx :: opening " arg " in split window.")
   (split-window-below)
   (other-window 1)
-  (find-file (expand-file-name arg))
+  (find-file (expand-file-name
+              (replace-regexp-in-string "\\\\" "" arg)))
   (other-window -1))
 
 (defalias 'shx-SP 'shx-SPEDIT)
 
 
-(defun shx-CAT (arg)
-  "shx.el command to cat a file into the buffer.
-You won't need to (and shouldn't!) escape spaces and special
-characters.  That is, if you have a file called 'my\ file', you
-can just view it using ':cat my file'."
-  (condition-case nil 
-      (insert-file-contents (expand-file-name arg))
-    (error (insert arg ": No such file."))))
-
-
 (defun shx-EDIT (arg)
-  "(SAFE) shx.el command to open the file ARG in the current window.
-You won't need to (and shouldn't!) escape spaces and special
-characters.  That is, if you have a file called 'my\ file', you
-can just open it using ':edit my file'."
+  "(SAFE) shx.el command to open the file ARG in the current
+window.  Ignores escape (i.e. backslash \) characters, so the
+user is free to use them but doesn't have to."
   (insert "shx :: editing " arg "...")
-  (shx-delay-funcall "0.5 sec"
-                     'find-file (list (expand-file-name arg))))
+  ;; Delay this so emacs has time to update the cursor in the shell
+  (shx-delay-funcall
+   "0.5 sec" 'find-file
+   (list
+    ;;(file-expand-wildcards arg))))
+    (expand-file-name (replace-regexp-in-string "\\\\" "" arg)) 't)))
 
 (defalias 'shx-E 'shx-EDIT)
+
+
+(defun shx-CAT (arg)
+  "shx.el command to cat a file into the buffer.  This can be
+much faster than running the cat process through the shell."
+  (condition-case nil 
+      (insert-file-contents
+       (expand-file-name
+        (replace-regexp-in-string "\\\\" "" arg)))
+    (error (insert arg ": No such file."))))
 
 
 (defun shx-MAIL (arg)
@@ -813,10 +839,11 @@ can just open it using ':edit my file'."
 
 (defun shx-DONE (arg)
   "(SAFE) shx.el command to message the user even when the shell
-buffer isn't visible (e.g., so a process can tell emacs it has finished).  ARG is an
-accompanying string."
-  (insert "shx.el :: ** done ** " arg)
-  (message (format "** Done in %S ** %s" shx-buffer arg)))
+buffer isn't visible (e.g., so a process can tell emacs it has
+finished).  ARG is an accompanying string."
+  (insert "shx.el :: ** done! " (current-time-string) " ** " arg)
+  (message (format "** Done in %S, %s ** %s" shx-buffer (current-time-string) arg))
+  (ding))
 
 
 (defun shx-SHOWDONE (arg)
@@ -825,6 +852,7 @@ window to the user (e.g., so a process can tell emacs it has
 finished).  ARG is an accompanying string."
   (insert "shx.el :: ** done ** " arg)
   (message (format "** Done in %S ** %s" shx-buffer arg))
+  (ding)
   (display-buffer shx-buffer))
 
 
@@ -947,7 +975,7 @@ This requires gnuplot and ImageMagick to be installed."
 
 (defun shx-TEST (arg)
   "(SAFE) Run tests."
-  (insert "shx :: running tests - I'll let you know if something breaks.")
+  (insert "shx :: running tests - I'll let you know if any fail.")
   (shx-tests))
 
 
@@ -992,6 +1020,7 @@ This requires gnuplot and ImageMagick to be installed."
   (buffer-disable-undo)
   (use-local-map (shx-get-mode-map (current-local-map)))
   (set (make-local-variable 'shx-user-trigger) nil)
+  (set (make-local-variable 'shx-triggerp) t) ; whether or not to trigger
   (set (make-local-variable 'shx-urls)
        (list "https://github.com/riscy/shx-for-emacs/blob/master/README.md"))
   (set (make-local-variable 'shx-buffer) (current-buffer))
@@ -1002,7 +1031,7 @@ This requires gnuplot and ImageMagick to be installed."
             'shx-parse-output-hook nil t))
 
 ;; Tell less to suppress warnings about how dumb our terminal is, and to
-;; use a consistently simple prompt (just a colon).
+;; use a consistently simple prompt that we can identify (just a colon).
 (setenv "LESS" "--dumb --prompt=s")
 
 
