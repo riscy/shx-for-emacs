@@ -31,8 +31,9 @@
 (require 'comint)
 (require 'shx)
 
+(defcustom shx-split-rows 12 "How large the tail will be.")
+
 (defvar-local shx-split-active nil)   ; is the split active?
-(defvar-local shx-split-rows 12)      ; how large the tail will be
 (defvar-local shx-split-min 30)       ; mininum window height before we'll split
 
 (defvar-local shx-old-header-line-format nil)
