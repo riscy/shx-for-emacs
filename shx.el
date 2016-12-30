@@ -60,7 +60,7 @@
                     keymap) "Keymap for capturing mouse clicks.")
 
 ;; Add hooks and advise some existing comint functions
-(when shx-always-run (add-hook 'comint-mode-hook 'shx-activate))
+(when shx-auto-run (add-hook 'comint-mode-hook 'shx-activate))
 (advice-add 'comint-send-eof
             :before (lambda () (goto-char (point-max))))
 (advice-add 'comint-history-isearch-backward-regexp
