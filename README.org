@@ -1,0 +1,213 @@
+#+TITLE: shx for Emacs
+#+OPTIONS: toc:3 author:t creator:nil num:nil
+#+AUTHOR: Chris Rayner
+#+EMAIL: dchrisrayner@gmail.com
+
+#+attr_html: :height 500px
+[[file:img/screenshot.png]]
+
+* Table of Contents :TOC_3_gh:noexport:
+ - [[#description][Description]]
+ - [[#install][Install]]
+ - [[#key-bindings][Key bindings]]
+ - [[#markup-in-the-shell][Markup in the shell]]
+ - [[#extra-shell-commands][Extra shell commands]]
+     - [[#general-commands][General commands]]
+     - [[#graphical-commands][Graphical commands]]
+     - [[#asynchronous-commands][Asynchronous commands]]
+     - [[#adding-new-commands][Adding new commands]]
+ - [[#split-screen-scrolling][Split-screen scrolling]]
+
+* Description
+  /shx/ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
+
+  It parses the output stream in a few useful ways:
+  - Graphics and plots can be displayed in the shell using a simple markup
+    language (e.g., ~<view image.png>~)
+  - Event-driven and timed behaviors are easy to add to any shell session.
+  - Mousing over a prompt shows a timestamp so you know when a command ran.
+
+  It lets you write new shell commands in elisp. Some existing ~shx~ commands:
+  - ~:e filename.txt~ to open a file in a new buffer for editing.
+  - ~:view image_file.png~ to inline an image in the shell.
+  - ~:plot data_file.txt~ to render a line plot of a data file.
+
+  /This version is tested with Emacs 25.1.1/
+* Install
+  Add the following to your ~.emacs~:
+  #+begin_src elisp
+  (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path:
+  (require 'shx)                            ; load shell-extras
+  #+end_src
+
+  Now shx will run automatically in any ~comint-mode~ buffer.  But if you don't
+  want shx to run in /every/ comint-mode buffer, customize the variable
+  ~shx-auto-run~ to ~nil~.
+
+  Type ~M-x shx [enter]~ to begin a new shell session with shx.  The following
+  commands will get you started:
+  1. Type ~:man ls~ and the man page for ~ls~ will be brought up within Emacs.
+  2. Type ~:help~ and you'll see a list of commands you can run besides ~:man~
+     and ~:help~.
+* Key bindings
+  | Key binding  | Description                                                              |
+  |--------------+--------------------------------------------------------------------------|
+  | ~C-c C-c~    | Send a ~SIGTERM~ (break) to the foreground process                       |
+  | ~C-c C-z~    | Send a ~SIGSTOP~ to to the foreground process                            |
+  | ~C-c C-k~    | Send a ~SIGKILL~ to the subjob (what ~C-c C-c~ did before)               |
+  | ~C-c C-b~    | Open a list of URLs that have been in the output                         |
+  | ~C-c C-d~    | Clear the input OR kill the process OR delete the buffer (in that order) |
+  | ~C-[return]~ | Paste the current line to the input                                      |
+  | ~[return]~   | If the cursor is on a filename or a URL, try to open it                  |
+  | ~[space]~    | If the prompt is ~:~, send ~[space]~ straight through to the process     |
+  | ~q~          | If the prompt is ~:~, send ~q~ straight through to the process           |
+
+  Note the prompt will be ~:~ when reading through the output of ~less~ or a ~man~ page
+  if you run the following:
+  #+begin_src elisp
+  (setenv "LESS" "--dumb --prompt=s")
+  #+end_src
+* Markup in the shell
+  shx's markup can enhance basic command-line applications and drive other
+  events.
+
+  If the output ever contains ~<view mountains.png>~ on a line by itself, then a
+  scaled rendering of ~mountains.png~ will be inlined within the text in the
+  shell.  This works because ~view~ is a shx command.  shx will execute any
+  (safe) shx command that appears with the following syntax:
+  #+begin_src xml
+  <command arg1 arg2 ...>
+  #+end_src
+  where ~command~ is a shx command and ~arg1 ... argn~ are a space-separated
+  list of arguments.  Arguments don't need to be surrounded by quotes -- the
+  command will figure out how to parse them.
+
+  You can use this markup to ~:plot~ a file after collecting some stats, or
+  generate an ~:alert~ when a task is finished, and so forth.
+* Extra shell commands
+  shx's 'extra' commands are invoked by typing a ~:~ followed by the command's
+  name.  These are written in elisp and know how to use Emacs.  Type ~:help~ to
+  see a complete listing of shx commands.
+
+  The command I use most frequently is the ~:edit~ (shorthand ~:e~) command:
+  #+begin_src bash
+  # edit the .emacs file:
+  :edit ~/.emacs
+
+  # use tramp to edit the .emacs file on a remote host:
+  :e remote-host.com:~/.emacs
+  #+end_src
+
+  Because these commands are written in elisp, shx gives the ~shell~ a lot of
+  the same advantages as ~eshell~.  You can even evaluate elisp code directly in
+  the buffer (see ~:help eval~).
+
+  Change the ~:~ prefix by customizing the ~shx-leader~ variable.
+*** General commands
+    | Command              | Description                                      |
+    |----------------------+--------------------------------------------------|
+    | ~:clear~             | Clear the buffer                                 |
+    | ~:diff file1 file2~  | Launch an Emacs diff between two files           |
+    | ~:edit file~         | Edit a file.  Shortcut: ~:e [file]~              |
+    | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~eval (pwd)~ |
+    | ~:man topic~         | Invoke the Emacs man page browser on a topic     |
+    | ~:ssh host~          | Open another shell on the specified host         |
+
+    There are many more than this -- type ~:help~ for a listing of all user commands.
+*** Graphical commands
+    | Command                  | Description            |
+    |--------------------------+------------------------|
+    | ~:view image_file.jpg~   | Display an image       |
+    | ~:barplot data_file.txt~ | Display a bar plot     |
+    | ~:matrix data_file.txt~ | Display a heatmap      |
+    | ~:plot data_file.txt~    | Display a line plot    |
+    | ~:plot3d data_file.txt~  | Display a 3D plot      |
+    | ~:scatter data_file.txt~ | Display a scatter plot |
+
+    These are for displaying inline graphics and plots in the shell buffer.  You
+    can control how much vertical space an inline image occupies by customizing
+    the ~shx-imgsize~ variable.  Note ~convert~ (i.e., ImageMagick) and
+    ~gnuplot~ need to be installed.  If the binaries are installed but these
+    commands aren't working, customize the ~shx-path-to-convert~ and
+    ~shx-path-to-gnuplot~ variables to point to the binaries.
+*** Asynchronous commands
+    | Command                           | Description                                       |
+    |-----------------------------------+---------------------------------------------------|
+    | ~:delay [sec] [command]~          | Run a shell command after a specific delay        |
+    | ~:pulse [sec] [command]~          | Repeat a shell command forever with a given delay |
+    | ~:repeat [count] [sec] [command]~ | Repeat a shell command ~[count]~ times            |
+    | ~:stop [num]~                     | Cancel a repeating or delayed command             |
+
+    Use these to delay, pulse, or repeat a command a specific number of times.
+    Unfortunately these only support your typical shell commands, and not shx's
+    extra (colon-prefixed) commands.  So this possible:
+    #+begin_src bash
+    # Run the 'pwd' command 10 seconds from now:
+    :delay 10 pwd
+    #+end_src
+    But this is not possible:
+    #+begin_src bash
+    # Run the 'pwd' shx command 10 seconds from now:
+    :delay 10 :pwd
+    #+end_src
+*** Adding new commands
+    New commands are written by defining single-argument elisp functions named
+    ~shx-cmd/command-name~, where ~command-name~ is what the user would type to
+    invoke it.  For instance, here is a command that enables the user to rename
+    the current buffer:
+    #+begin_src elisp
+    (defun shx-cmd/name (name)
+      "(SAFE) Rename the current buffer to NAME."
+      (if (ignore-errors (rename-buffer (concat "*" name "*")))
+          (shx-insert "Renaming buffer to *" name "*\n")
+        (shx-insert 'error "Can't rename buffer to *" name "* (is this name taken?)\n")))
+    #+end_src
+    Now each shx buffer will immediately have access to the ~:name~ command.
+
+    Note the importance of defining a comment string.  This documents the
+    command so that typing ~:help name~ will give the user information on what
+    the command does.  Further, if the comment string begins with ~(SAFE)~ then
+    it becomes part of shx's markup language.  So in this case if:
+    #+begin_src xml
+    <name A new name for the buffer>
+    #+end_src
+    appears on a line by itself in the output, the buffer will try to
+    automatically rename itself.
+* Split-screen scrolling
+  To enable split-screen scrolling, add the following to your ~.emacs~:
+  #+begin_src elisp
+  (require 'shx-split)
+  #+end_src
+
+  Now paging up causes a comint-mode window to be split in two, with a larger
+  window on top and a smaller input window preserved on the bottom:
+  #+begin_src
+  +--------------+
+  | -------      |
+  | -------      |
+  | -------      |
+  |    [head]    |
+  |(show history)|
+  +--------------+
+  |    [tail]    |
+  |(show context)|
+  +--------------+
+  #+end_src
+  Paging down to the bottom causes the split to disappear.
+
+  This lets you enter text at the prompt (in the input window) and monitor new
+  input, while consulting previous output (in the scrolling window)
+  uninterrupted.
+
+  Change the height of the tail to something else by customizing the
+  ~shx-split-rows~ variable.
+# * Future
+#   Double-check that everything here is being met
+#   https://www.gnu.org/software/emacs/manual/html_node/elisp/Filter-Functions.html
+#   ...by shx-filter-input, and shx-parse-output-for-markup
+#   Make shx into a minor mode
+#   http://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Minor-Modes.html
+#   http://nullprogram.com/blog/2013/02/06/
+# There is a shx-split bug where if you change the window while a split is
+# active the tail will change its size.
+# (add-hook 'window-configuration-change-hook some-fix)
