@@ -153,8 +153,9 @@
 *** Adding new commands
     New commands are written by defining single-argument elisp functions named
     ~shx-cmd/command-name~, where ~command-name~ is what the user would type to
-    invoke it.  For instance, here is a command that enables the user to rename
-    the current buffer:
+    invoke it.
+***** Example: a command to rename the buffer
+    If you execute the following (or add it to your ~.emacs~),
     #+begin_src elisp
     (defun shx-cmd/name (name)
       "(SAFE) Rename the current buffer to NAME."
@@ -162,7 +163,7 @@
           (shx-insert "Renaming buffer to *" name "*\n")
         (shx-insert 'error "Can't rename buffer to *" name "* (is this name taken?)\n")))
     #+end_src
-    Now each shx buffer will immediately have access to the ~:name~ command.
+    then each shx buffer will immediately have access to the ~:name~ command.
 
     Note the importance of defining a comment string.  This documents the
     command so that typing ~:help name~ will give the user information on what
@@ -173,6 +174,21 @@
     #+end_src
     appears on a line by itself in the output, the buffer will try to
     automatically rename itself.
+
+***** Example: a command to browse URLs
+      If you execute the following,
+      #+begin_src elisp
+      (defun shx-cmd/browse (url)
+        "Browse the supplied URL."
+        (shx-insert "Browsing " 'font-lock-keyword-face url)
+        (browse-url url))
+      #+end_src
+      then each shx buffer will have access to the ~:browse~ command.
+
+      Note the comment string does not specify that this command is ~SAFE~.
+      This means ~<browse url>~ will not become part of shx's markup.  That
+      makes sense in this case, since you wouldn't want to give a process the
+      power to open arbitrary URLs without prompting.
 * Split-screen scrolling
   To enable split-screen scrolling, add the following to your ~.emacs~:
   #+begin_src elisp
@@ -205,9 +221,10 @@
 #   Double-check that everything here is being met
 #   https://www.gnu.org/software/emacs/manual/html_node/elisp/Filter-Functions.html
 #   ...by shx-filter-input, and shx-parse-output-for-markup
-#   Make shx into a minor mode
+#   Make shx into a minor mode?
 #   http://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Minor-Modes.html
 #   http://nullprogram.com/blog/2013/02/06/
 # There is a shx-split bug where if you change the window while a split is
 # active the tail will change its size.
 # (add-hook 'window-configuration-change-hook some-fix)
+# Add to MELPA, i.e. as https://github.com/melpa/melpa/blob/master/recipes/s
