@@ -5,10 +5,10 @@
 ;; Keywords: comint-mode, shell-mode, shell-extras
 ;; Git: github.com/riscy/shx-for-emacs
 
+;; This file is NOT part of GNU Emacs.
+
 ;;; Commentary:
 
-;; See README.org for more details.
-;;
 ;; Automatically split the buffer into a head and a tail when you page up and
 ;; down in a scrolling buffer (such as shell-mode, comint-mode, ...) to help you
 ;; keep context when referring to earlier output.
@@ -25,6 +25,18 @@
 ;; +--------------+
 ;;
 ;; This version tested with Emacs 25.1.1
+;;
+;; See README.org for more details.
+
+;;; Installation:
+
+;; 1. Move this file to a directory in your load-path or add
+;;    this to your .emacs:
+;;    (add-to-list 'load-path "~/path/to/this-file/")
+;; 2. Next add this line to your .emacs:
+;;    (require 'shx-split)
+;;
+;; By default, shx-split will run automatically in any comint-mode buffer.
 
 ;;; Code:
 

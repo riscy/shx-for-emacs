@@ -4,12 +4,12 @@
 ;; Created: May 23 2011
 ;; Updated: December 2016
 ;; Keywords: comint-mode, shell-mode, shell-extras
-;; Git: github.com/riscy/shx-for-emacs
+;; Git: https://github.com/riscy/shx-for-emacs
+
+;; This file is NOT part of GNU Emacs.
 
 ;;; Commentary:
 
-;; See README.org for more details.
-;;
 ;; shx or "shell-extras" extends comint-mode:
 ;; - It parses simple markup in the output stream
 ;;   - Plots/graphics can be automatically embedded in the shell
@@ -21,14 +21,17 @@
 ;;   - ...and adding new functions is easy.
 ;;
 ;; This version tested with Emacs 25.1.1
+;;
+;; See README.org for more details.
 
 ;;; Installation:
 
 ;; 1. Move shx.el to a directory in your load-path or add
 ;;    this to your .emacs:
-;;    `(add-to-list 'load-path "~/path/to/shx/")`
+;;    (add-to-list 'load-path "~/path/to/this-file/")
 ;; 2. Next add this line to your .emacs:
-;;    `(require 'shx)`
+;;    (require 'shx)
+;;
 ;; By default, shx will run automatically in any comint-mode buffer.
 
 (require 'comint)
@@ -37,7 +40,8 @@
 
 (defvar evil-state) ; compiler pacifier
 
-;;; customization options and other variables
+
+;;; customization options and other variables
 
 (defcustom shx-path-to-convert "convert" "To call ImageMagick.")
 (defcustom shx-path-to-gnuplot "gnuplot" "To call gnuplot.")
@@ -48,7 +52,7 @@
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx-parse-url))
   "Triggers of the form: (regexp . function).")
 
-(defvar shx-cmd-prefix "shx-cmd/"   "Function-name prefix for user commands.")
+(defvar shx-cmd-prefix "shx-cmd/" "Function-name prefix for user commands.")
 (defvar shx-cmd-syntax "\\(\\w+\\)[\s\t]*\\(.*[^\s\t]?\\)"
   "Regular expression for recognizing shx commands in input or markup.")
 (defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">$")
@@ -70,7 +74,8 @@
 (advice-add 'comint-next-input
             :before (lambda (arg) (goto-char (point-max))))
 
-;;; input
+
+;;; input
 
 (defun shx-get-keymap (&optional parent)
   "Keymap used for `shx'; inherits PARENT."
@@ -141,7 +146,8 @@ This function overrides `comint-input-sender'."
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
 
-;;; output
+
+;;; output
 
 (defun shx-textwrap (&optional cols)
   "Enable textwrap at COLS columns.
@@ -217,7 +223,8 @@ Ignore the value of OUTPUT."
           (line-number-at-pos (point-max)))
        (re-search-forward pattern nil t)))
 
-;;; util
+
+;;; util
 
 (defun shx-safe-as-markup? (command)
   "Return t if COMMAND is safe to call to generate markup.
@@ -392,7 +399,8 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                                        line-style)))
       (shx-insert-image img-name))))
 
-;;; asynch functions
+
+;;; asynch functions
 
 (defun shx-asynch-funcall (function &optional args)
   "Run FUNCTION with ARGS in the buffer after a short delay."
@@ -414,7 +422,8 @@ This cosmetic function only exists to make the listing generated
 by `shx-insert-timer-list' cleaner."
   (process-send-string process (concat command "\n")))
 
-;;; asynch user commands
+
+;;; asynch user commands
 
 (defun shx-cmd/delay (syntax)
   "Run a command after a specific delay.
@@ -468,7 +477,8 @@ If TIMER-ID is nil, enumerate all resident timers."
       (shx-insert 'error "Stopped timer " timer-id "\n")))
   (shx-insert-timer-list))
 
-;;; general user commands
+
+;;; general user commands
 
 (defun shx-cmd/alert (string)
   "(SAFE) Show the shx-buffer in the other window with STRING."
@@ -578,7 +588,8 @@ Syntax: :ssh hostname"
     (let ((default-directory (concat "/" host ":~")))
       (shx))))
 
-;;; graphical user commands
+
+;;; graphical user commands
 
 (defun shx-cmd/barplot (filename)
   "(SAFE) Show barplot of FILENAME.
@@ -633,7 +644,8 @@ Example file contents:
   "(SAFE) View image with FILENAME directly in the buffer."
   (shx-insert-image filename))
 
-;;; loading
+
+;;; loading
 
 (defvar shx-keymap (shx-get-keymap) "To self-document the shx/shx-active functions.")
 
