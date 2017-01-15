@@ -86,8 +86,8 @@
   generate an ~:alert~ when a task is finished, and so forth.
 * Extra shell commands
   shx's 'extra' commands are invoked by typing a ~:~ followed by the command's
-  name.  These are written in elisp and know how to use Emacs.  Type ~:help~ to
-  see a complete listing of shx commands.
+  name.  These are written in elisp and so can access all of Emacs' facilities.
+  Type ~:help~ to see a complete listing of shx commands.
 
   The command I use most frequently is the ~:edit~ (shorthand ~:e~) command:
   #+begin_src bash
@@ -147,7 +147,7 @@
     #+end_src
     But this is not possible:
     #+begin_src bash
-    # Run the 'pwd' shx command 10 seconds from now:
+    # Run the 'pwd' shx command 10 seconds from now (DOES NOT WORK)
     :delay 10 :pwd
     #+end_src
 *** Adding new commands
