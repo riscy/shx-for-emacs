@@ -78,11 +78,8 @@
   (let* ((left-amt (/ (* (window-width) (point)) (point-max)))
          (right-amt (- (window-width) left-amt)))
     (setq header-line-format
-          (concat
-           (propertize (make-string left-amt ? )
-                       'font-lock-face
-                       '(:background "purple" :foreground "white"))
-           (make-string right-amt ? )))))
+          (concat (make-string left-amt ?>)
+                  (make-string right-amt ? )))))
 
 (defun shx-scroll-begin ()
   "Create the head/tail window pair."
