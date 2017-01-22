@@ -43,22 +43,48 @@
 
 ;;; customization options and other variables
 
-(defcustom shx-path-to-convert "convert" "To call ImageMagick.")
-(defcustom shx-path-to-gnuplot "gnuplot" "To call gnuplot.")
-(defcustom shx-img-height 300            "Height to display images at.")
-(defcustom shx-leader ":"                "Prefix for calling user commands.")
-(defcustom shx-auto-run t                "Auto-run shx everywhere if true.")
+(defgroup shx nil
+  "Extras for the (comint-mode) shell."
+  :prefix "shx-"
+  :group 'convenience
+  :link '(url-link
+          :tag "Github"
+          "https://github.com/riscy/shx-for-emacs"))
+
+(defcustom shx-path-to-convert "convert"
+  "Path to ImageMagick's convert.")
+
+(defcustom shx-path-to-gnuplot "gnuplot"
+  "Path to gnuplot.")
+
+(defcustom shx-img-height 300
+  "Height to display images at.")
+
+(defcustom shx-leader ":"
+  "Prefix for calling user commands.")
+
+(defcustom shx-auto-run t
+  "Auto-run shx everywhere if true.")
+
 (defcustom shx-triggers
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx-parse-url))
   "Triggers of the form: (regexp . function).")
 
-(defvar shx-cmd-prefix "shx-cmd/" "Function-name prefix for user commands.")
+(defvar shx-cmd-prefix "shx-cmd/"
+  "Prefix for user-command functions.")
+
 (defvar shx-cmd-syntax "\\(\\w+\\)[\s\t]*\\(.*[^\s\t]?\\)"
-  "Regular expression for recognizing shx commands in input or markup.")
+  "Regex for recognizing shx commands in input or markup.")
+
 (defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">$")
-  "Regular expression for recognizing shx commands in markup.")
-(defvar-local shx-buffer nil "Local reference to the shx buffer.")
-(defvar-local shx-urls nil "Local record of URLs seen.")
+  "Regex for recognizing shx commands in markup.")
+
+(defvar-local shx-buffer nil
+  "Local reference to the shx buffer.")
+
+(defvar-local shx-urls nil
+  "Local record of URLs seen.")
+
 (defvar shx-click (let ((keymap (make-sparse-keymap)))
                     (define-key keymap [mouse-1] 'ffap-at-mouse)
                     keymap) "Keymap for capturing mouse clicks.")

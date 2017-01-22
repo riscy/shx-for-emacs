@@ -43,15 +43,29 @@
 (require 'comint)
 (require 'shx)
 
-(defcustom shx-split-rows 12 "How large the tail will be.")
+(defgroup shx-split nil
+  "Extras for the (comint-mode) shell."
+  :prefix "shx-split-"
+  :group 'convenience
+  :link '(url-link
+          :tag "Github"
+          "https://github.com/riscy/shx-for-emacs"))
 
-(defvar-local shx-split-active nil)   ; is the split active?
-(defvar-local shx-split-min 30)       ; mininum window height before we'll split
+(defcustom shx-split-rows 12
+  "How large the tail will be.")
 
-(defvar-local shx-old-header-line-format nil)
+(defvar-local shx-split-active nil
+  "Whether or not the split is active.")
+
+(defvar-local shx-split-min 30
+  "The minimum window height before splitting is allowed.")
+
+(defvar-local shx-split-old-header-line-format nil
+  "For storing header-line format in order to restore it.")
 
 (defvar-local shx-default-scroll-on-output
   "Internal variable for remembering user scroll options.")
+
 (defvar-local shx-default-scroll-on-input
   "Internal variable for remembering user scroll options.")
 
