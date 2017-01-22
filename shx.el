@@ -67,7 +67,7 @@
   "Auto-run shx everywhere if true.")
 
 (defcustom shx-triggers
-  '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx-parse-url))
+  '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function).")
 
 (defvar shx-cmd-prefix "shx-cmd/"
@@ -147,7 +147,7 @@ filtered by `shx-filter-input' via `comint-mode'."
        (equal evil-state 'normal)
        (featurep 'evil-commands)
        (evil-insert 1))
-  (if (> (length (shx-current-input)) 1000)
+  (if (> (length (shx--current-input)) 1000)
       (message "Input too long (shorten to < 1000 chars)")
     ;; timestamp the previous prompt
     (unless comint-prompt-read-only
@@ -162,7 +162,7 @@ filtered by `shx-filter-input' via `comint-mode'."
 That means, if INPUT is a shx-command, do that command instead.
 This function overrides `comint-input-sender'."
   (let* ((match (string-match (concat "^" shx-leader shx-cmd-syntax) input))
-         (shx-cmd (and match (shx-get-user-cmd (match-string 1 input)))))
+         (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
         (comint-simple-send process input)
       (funcall shx-cmd (match-string 2 input))
@@ -197,22 +197,22 @@ Ignore STR.  This fills each line between
           (forward-line)
           (fill-region region-start (point) nil t))))))
 
-(defun shx-parse-output (&optional output)
-  "Output hook to parse the text stream.
+(defun shx-parse-output-hook (&optional output)
+  "Hook to parse the output stream.
 Ignore the value of OUTPUT."
   ;; FIXME: these can get expensive on buffers w/ more than 9000 lines
-  (shx-parse-output-for-markup)
-  (when shx-triggers (shx-parse-output-for-triggers)))
+  (shx--parse-output-for-markup)
+  (when shx-triggers (shx--parse-output-for-triggers)))
 
-(defun shx-parse-output-for-markup ()
+(defun shx--parse-output-for-markup ()
   "Look for markup since `comint-last-output'."
   (save-excursion
-    (shx-goto-last-input-or-output)
+    (shx--goto-last-input-or-output)
     (let ((originating-buffer shx-buffer))
-      (while (shx-search-forward shx-markup-syntax)
-        (let ((command (shx-get-user-cmd (match-string 1)))
+      (while (shx--search-forward shx-markup-syntax)
+        (let ((command (shx--get-user-cmd (match-string 1)))
               (args    (match-string 2)))
-          (if (not (and command (shx-safe-as-markup? command)))
+          (if (not (and command (shx--safe-as-markup? command)))
               (add-text-properties
                (point-at-bol) (point-at-eol)
                `(help-echo "shx: this markup was unsafe/undefined"))
@@ -222,13 +222,13 @@ Ignore the value of OUTPUT."
             ;; some shx commands might add extra newline:
             (when (zerop (current-column)) (delete-char 1))))))))
 
-(defun shx-parse-output-for-triggers ()
+(defun shx--parse-output-for-triggers ()
   "Look for triggers since `comint-last-output' (e.g., URLs)."
   (dolist (trigger shx-triggers nil)
     (save-excursion
-      (shx-goto-last-input-or-output)
+      (shx--goto-last-input-or-output)
       (let ((originating-buffer shx-buffer))
-        (while (shx-search-forward (car trigger))
+        (while (shx--search-forward (car trigger))
           ;; FIXME: emacs 25 had/has a bug where save-window-excursion moves the
           ;; point backward in the calling buffer (some funcalls might use
           ;; save-window-excursion) which can cause infinite triggering.  For
@@ -236,14 +236,14 @@ Ignore the value of OUTPUT."
           (save-excursion (funcall (cdr trigger)))
           (set-buffer originating-buffer))))))
 
-(defun shx-goto-last-input-or-output ()
+(defun shx--goto-last-input-or-output ()
   "Go to the beginning of the next event from the process."
   ;; sometimes `comint-last-output-start' is too far back, so
   ;; go to `comint-last-input-end' when that's the case.
   (goto-char (max comint-last-output-start comint-last-input-end))
   (forward-line 0))
 
-(defun shx-search-forward (pattern)
+(defun shx--search-forward (pattern)
   "Search forward in the past for PATTERN."
   (and (< (line-number-at-pos (point))
           (line-number-at-pos (point-max)))
@@ -252,7 +252,20 @@ Ignore the value of OUTPUT."
 
 ;;; util
 
-(defun shx-safe-as-markup? (command)
+(defun shx-browse-urls ()
+  "Prompt user for a URL to browse from the list `shx-urls'."
+  (interactive)
+  (let ((urls shx-urls)) ; clone url list so user edits don't modify the entries
+    (browse-url (completing-read "URL: " urls nil nil (car urls) '(urls . 1)))))
+
+(defun shx-describe-command (shx-command)
+  "Try to describe the named SHX-COMMAND."
+  (let ((completions (all-completions shx-cmd-prefix obarray 'functionp)))
+    (describe-function
+     (intern (completing-read "Describe command: " completions
+                              nil t (concat shx-cmd-prefix shx-command))))))
+
+(defun shx--safe-as-markup? (command)
   "Return t if COMMAND is safe to call to generate markup.
 If the supplied string has the `shx-safe' property or FUNCTION
 has '(SAFE)' prepending its docstring, then it's safe."
@@ -264,7 +277,7 @@ has '(SAFE)' prepending its docstring, then it's safe."
   (>= (point-marker)
       (process-mark (get-buffer-process (current-buffer)))))
 
-(defun shx-current-prompt ()
+(defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
   (cond ((get-buffer-process (current-buffer))
          (save-excursion
@@ -275,66 +288,19 @@ has '(SAFE)' prepending its docstring, then it's safe."
               (process-mark (get-buffer-process (current-buffer)))))))
         (t (message "There is no process.") "")))
 
-(defun shx-current-input ()
+(defun shx--current-input ()
   "Return what's written after the prompt."
   (buffer-substring (process-mark (get-buffer-process (current-buffer)))
                     (point-at-eol)))
 
-(defun shx-browse-urls ()
-  "Prompt user for a URL to browse from the list `shx-urls'."
-  (interactive)
-  (let ((urls shx-urls)) ; clone url list so user edits don't modify the entries
-    (browse-url (completing-read "URL: " urls nil nil (car urls) '(urls . 1)))))
-
-(defun shx-get-user-cmd (shx-command)
+(defun shx--get-user-cmd (shx-command)
   "Return user command prefixed by SHX-COMMAND, or nil."
   (let* ((prefix (format "%s%s" shx-cmd-prefix (downcase shx-command)))
          (completion (try-completion prefix obarray 'functionp)))
     (when completion
       (intern (if (eq completion t) prefix completion)))))
 
-(defun shx-describe-command (shx-command)
-  "Try to describe the named SHX-COMMAND."
-  (let ((completions (all-completions shx-cmd-prefix obarray 'functionp)))
-    (describe-function
-     (intern (completing-read "Describe command: " completions
-                              nil t (concat shx-cmd-prefix shx-command))))))
-
-(defun shx-send-or-insert ()
-  "When the prompt is a colon, send the key pressed, else insert it.
-Useful for paging through less."
-  (interactive)
-  (let ((on-last-line (shx-point-on-input?)))
-    (if (and on-last-line
-             (string-match ".*:$" (shx-current-prompt))
-             (string-match "^\\s-*$" (shx-current-input)))
-        (progn
-          (message "shx: sending %s" (this-command-keys))
-          (process-send-string nil (this-command-keys)))
-      (unless on-last-line (goto-char (point-max)))
-      (self-insert-command 1))))
-
-(defun shx-send-break ()
-  "Send a BREAK signal to the current process."
-  (interactive)
-  (process-send-string nil ""))
-
-(defun shx-send-eof ()
-  "Send an EOF signal to the current process."
-  (interactive)
-  (if (not (get-buffer-process (current-buffer)))
-      (kill-buffer) ; if there's no process, kill the buffer
-    (if (string= (shx-current-input) "")
-        (process-send-string nil "")
-      (goto-char (point-max))
-      (comint-kill-input))))
-
-(defun shx-send-stop ()
-  "Send a STOP signal to the current process."
-  (interactive)
-  (process-send-string nil ""))
-
-(defun shx-parse-url ()
+(defun shx--parse-url ()
   "Add a matched URL to `shx-urls' and make it clickable."
   (let ((url (match-string-no-properties 0)))
     (unless (string= url (car shx-urls)) (push url shx-urls)))
@@ -352,15 +318,15 @@ FILES can have various styles of quoting and escaping."
               (replace-regexp-in-string tmp-space " " filename))
             (split-string-and-unquote escaped))))
 
-(defun shx-get-timer-list ()
+(defun shx--get-timer-list ()
   "Get the list of resident timers."
   (let ((timer-list-1 (copy-sequence timer-list)))
-    ;; select only timers with `shx-auto' prefix, "(lambda nil (shx-auto..."
+    ;; select only timers with `shx--auto' prefix, "(lambda nil (shx--auto..."
     (setq timer-list-1
           (remove nil
                   (mapcar (lambda (timer)
                             (when (string-prefix-p
-                                   "(lambda nil (shx-auto"
+                                   "(lambda nil (shx--auto"
                                    (format "%s" (aref timer 5)))
                               timer))
                           timer-list-1)))
@@ -369,6 +335,43 @@ FILES can have various styles of quoting and escaping."
           (lambda (first-timer second-timer)
             (string< (format "%s" (aref first-timer 5))
                      (format "%s" (aref second-timer 5)))))))
+
+
+;;; sending/inserting
+
+(defun shx-send-or-insert ()
+  "When the prompt is a colon, send the key pressed, else insert it.
+Useful for paging through less."
+  (interactive)
+  (let ((on-last-line (shx-point-on-input?)))
+    (if (and on-last-line
+             (string-match ".*:$" (shx--current-prompt))
+             (string-match "^\\s-*$" (shx--current-input)))
+        (progn
+          (message "shx: sending %s" (this-command-keys))
+          (process-send-string nil (this-command-keys)))
+      (unless on-last-line (goto-char (point-max)))
+      (self-insert-command 1))))
+
+(defun shx-send-break ()
+  "Send a BREAK signal to the current process."
+  (interactive)
+  (process-send-string nil ""))
+
+(defun shx-send-eof ()
+  "Send an EOF signal to the current process."
+  (interactive)
+  (if (not (get-buffer-process (current-buffer)))
+      (kill-buffer) ; if there's no process, kill the buffer
+    (if (string= (shx--current-input) "")
+        (process-send-string nil "")
+      (goto-char (point-max))
+      (comint-kill-input))))
+
+(defun shx-send-stop ()
+  "Send a STOP signal to the current process."
+  (interactive)
+  (process-send-string nil ""))
 
 (defun shx-insert (&rest args)
   "Insert each of ARGS, propertized as appropriate.
@@ -390,7 +393,7 @@ Strings can be interwoven with face names."
 
 (defun shx-insert-timer-list ()
   "Insert a list of the Emacs timers currently in effect."
-  (let ((sorted-timer-list (shx-get-timer-list)))
+  (let ((sorted-timer-list (shx--get-timer-list)))
     (dotimes (timer-id (length sorted-timer-list))
       (shx-insert
        (format "%d.\s" timer-id)
@@ -428,21 +431,21 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 ;;; asynch functions
 
-(defun shx-asynch-funcall (function &optional args)
+(defun shx--asynch-funcall (function &optional args)
   "Run FUNCTION with ARGS in the buffer after a short delay."
   (run-at-time "0.2 sec" nil
                `(lambda ()
                   (with-current-buffer ,shx-buffer ,(cons function args)))))
 
-(defun shx-delay-input (delay input &optional buffer repeat-interval)
+(defun shx--delay-input (delay input &optional buffer repeat-interval)
   "After DELAY, process INPUT in the BUFFER.
 If BUFFER is nil, process in the current buffer.  Optional
 REPEAT-INTERVAL specifies delays between repetitions."
   (let* ((process (get-buffer-process (buffer-name buffer)))
-         (funcall `(lambda () ,(cons 'shx-auto (list process input)))))
+         (funcall `(lambda () ,(cons 'shx--auto (list process input)))))
     (run-at-time delay repeat-interval funcall)))
 
-(defun shx-auto (process command)
+(defun shx--auto (process command)
   "Send PROCESS a COMMAND.
 This cosmetic function only exists to make the listing generated
 by `shx-insert-timer-list' cleaner."
@@ -461,7 +464,7 @@ Cancel with :stop."
           (command (match-string 2 syntax)))
       (shx-insert "Delaying " 'comint-highlight-input command
                   'default (format " %s seconds\n" delay))
-      (shx-delay-input (concat delay " sec") command)))
+      (shx--delay-input (concat delay " sec") command)))
    (t (shx-insert 'error "delay <delay> <command>\n"))))
 
 (defun shx-cmd/pulse (syntax)
@@ -474,7 +477,7 @@ Cancel with :stop."
           (command (match-string 2 syntax)))
       (shx-insert "Pulsing " 'comint-highlight-input command
                   'default (format " every %d seconds\n" delay))
-      (shx-delay-input 0 command nil delay)))
+      (shx--delay-input 0 command nil delay)))
    (t (shx-insert 'error "pulse <delay> <command>\n"))))
 
 (defun shx-cmd/repeat (syntax)
@@ -489,7 +492,7 @@ Use :stop to cancel."
       (insert (format "Repeating '%s' " command)
               (format "%d times every %d seconds\n" reps delay))
       (dotimes (ii reps)
-        (shx-delay-input (* (1+ ii) delay) command))))
+        (shx--delay-input (* (1+ ii) delay) command))))
    (t (shx-insert 'error "repeat <count> <delay> <command>\n"))))
 
 (defun shx-cmd/stop (timer-id)
@@ -499,7 +502,7 @@ If TIMER-ID is nil, enumerate all resident timers."
     (if (or (> timer-id-int (length timer-list))
             (not (equal (int-to-string timer-id-int) timer-id))) ; validation
         (shx-insert 'error "stop <num>\n")
-      (cancel-timer (nth timer-id-int (shx-get-timer-list)))
+      (cancel-timer (nth timer-id-int (shx--get-timer-list)))
       (shx-insert 'error "Stopped timer " timer-id "\n")))
   (shx-insert-timer-list))
 
@@ -528,7 +531,7 @@ therefore ensure `comint-prompt-read-only' is nil."
   "(SAFE) Launch an ediff between FILES.
 Syntax: :diff <file1> <file2>"
   (shx-insert "Invoking ediff " files "\n")
-  (shx-asynch-funcall
+  (shx--asynch-funcall
    'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
 
 (defun shx-cmd/edit (file)
@@ -536,9 +539,9 @@ Syntax: :diff <file1> <file2>"
 Syntax: :e directory/to/file
 Syntax: :e /username@server:directory/to/file # to use tramp"
   (if (equal file "")
-      (shx-asynch-funcall #'find-file (list "" t))
+      (shx--asynch-funcall #'find-file (list "" t))
     (let ((name (expand-file-name (car (shx--parse-filenames file)))))
-      (shx-asynch-funcall #'find-file (list name t)))))
+      (shx--asynch-funcall #'find-file (list name t)))))
 (defalias 'shx-cmd/e #'shx-cmd/edit)
 
 (defun shx-cmd/find (file)
@@ -567,7 +570,7 @@ Syntax: :grep -r 'PATTERN' * | grep -v 'log'"
 (defun shx-cmd/help (shx-command)
   "(SAFE) Display help on the SHX-COMMAND.
 If function doesn't exist (or none is supplied), read from user."
-  (shx-asynch-funcall #'shx-describe-command (list shx-command)))
+  (shx--asynch-funcall #'shx-describe-command (list shx-command)))
 
 (defun shx-cmd/eval (sexp)
   "Evaluate the elisp SEXP."
@@ -685,9 +688,9 @@ shx provides the following key bindings:
   (setq-local shx-urls (list "https://github.com/riscy/shx-for-emacs"))
   (setq-local shx-buffer (current-buffer))
   (setq comint-prompt-read-only nil)
-  (add-hook 'comint-output-filter-functions #'shx-parse-output nil 'local-only)
+  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil 'localy)
   ;; do this asynch with a delay; spacemacs tries to set this variable too
-  (shx-asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input))))
+  (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input))))
 
 (defun shx (&optional name)
   "Create a new shell session using shx.
