@@ -1,8 +1,8 @@
-;;; shx-split.el -- split a coming-mode buffer while scrolling
+;;; shx-split.el -- split a comint-mode buffer while scrolling
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Created: May 23 2011
-;; Keywords: comint-mode, shell-mode, shell-extras
+;; Keywords: comint-mode, shell-mode
 ;; Git: github.com/riscy/shx-for-emacs
 
 ;; This file is NOT part of GNU Emacs.
@@ -36,7 +36,7 @@
 ;; 2. Next add this line to your .emacs:
 ;;    (require 'shx-split)
 ;;
-;; By default, shx-split will run automatically in any comint-mode buffer.
+;; By default, shx-split runs automatically in comint-mode buffers.
 
 ;;; Code:
 

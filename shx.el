@@ -1,9 +1,8 @@
-;;; shx.el --- shell-extras, extras for the (comint-mode) shell
+;;; shx.el -- convenience functions for the (comint-mode) shell
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Created: May 23 2011
-;; Updated: December 2016
-;; Keywords: comint-mode, shell-mode, shell-extras
+;; Keywords: comint-mode, shell-mode
 ;; Git: https://github.com/riscy/shx-for-emacs
 
 ;; This file is NOT part of GNU Emacs.
@@ -32,7 +31,7 @@
 ;; 2. Next add this line to your .emacs:
 ;;    (require 'shx)
 ;;
-;; By default, shx will run automatically in any comint-mode buffer.
+;; By default, shx runs automatically in comint-mode buffers.
 
 (require 'comint)
 
@@ -87,18 +86,8 @@
 
 (defvar shx-click (let ((keymap (make-sparse-keymap)))
                     (define-key keymap [mouse-1] 'ffap-at-mouse)
-                    keymap) "Keymap for capturing mouse clicks.")
-
-;; Add hooks and advise some existing comint functions
-(when shx-auto-run (add-hook 'comint-mode-hook 'shx-activate))
-(advice-add 'comint-send-eof
-            :before (lambda () (goto-char (point-max))))
-(advice-add 'comint-history-isearch-backward-regexp
-            :before (lambda () (goto-char (point-max))))
-(advice-add 'comint-previous-input
-            :before (lambda (arg) (goto-char (point-max))))
-(advice-add 'comint-next-input
-            :before (lambda (arg) (goto-char (point-max))))
+                    keymap)
+  "Keymap for capturing mouse clicks on filenames.")
 
 
 ;;; input
@@ -139,8 +128,8 @@
 
 (defun shx-send-input ()
   "Send or parse the input currently written at the prompt.
-In normal circumstances this input will be additionally be
-filtered by `shx-filter-input' via `comint-mode'."
+In normal circumstances this input is additionally filtered by
+`shx-filter-input' via `comint-mode'."
   (interactive)
   ;; auto-switch to insert mode
   (and (featurep 'evil-vars)
@@ -384,7 +373,7 @@ Strings can be interwoven with face names."
              (setq current-face arg))))))
 
 (defun shx-insert-filenames (&rest files)
-  "Insert FILES propertized to be clickable."
+  "Insert FILES, propertized to be clickable."
   (shx-insert 'font-lock-doc-face
               (mapconcat
                (lambda (file)
@@ -613,7 +602,6 @@ Syntax: :o[edit] /username@server:~/directory/to/file"
 Syntax: :ssh hostname"
   (if (equal host "")
       (shx-insert 'error "ssh host\n")
-    ;; Will this change the current buffer's Cd? that would be bad
     (let ((default-directory (concat "/" host ":~")))
       (shx))))
 
@@ -676,7 +664,18 @@ Example file contents:
 
 ;;; loading
 
-(defvar shx-keymap (shx-get-keymap) "To self-document the shx/shx-active functions.")
+(defvar shx-keymap (shx-get-keymap)
+  "To self-document the shx/shx-active functions.")
+;; Add hooks and advise some existing comint functions:
+(when shx-auto-run (add-hook 'comint-mode-hook 'shx-activate))
+(advice-add 'comint-send-eof
+            :before (lambda () (goto-char (point-max))))
+(advice-add 'comint-history-isearch-backward-regexp
+            :before (lambda () (goto-char (point-max))))
+(advice-add 'comint-previous-input
+            :before (lambda (arg) (goto-char (point-max))))
+(advice-add 'comint-next-input
+            :before (lambda (arg) (goto-char (point-max))))
 
 (defun shx-activate ()
   "Activate shx on the current buffer.

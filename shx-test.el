@@ -1,5 +1,12 @@
 ;;; shx-test -- for testing shx and shx-split.
 
+;; Authors: Chris Rayner (dchrisrayner @ gmail)
+;; Created: May 23 2011
+;; Keywords: comint-mode, shell-mode
+;; Git: https://github.com/riscy/shx-for-emacs
+
+;; This file is NOT part of GNU Emacs.
+
 ;;; Commentary:
 
 ;; A handful of tests for shx.  Coverage isn't great yet.
@@ -85,11 +92,10 @@
   "(SAFE) Test shx - args are ignored.
 Run tests by typing :test at the console."
   (insert "Running test suite \n")
-  (ignore-errors
-    (shx-asynch-funcall
-     (lambda ()
-       (shx-test-shx)
-       (shx-test-split)))))
+  (shx--asynch-funcall
+   (lambda ()
+     (shx-test-shx)
+     (shx-test-split))))
 
 (provide 'shx-test)
 ;;; shx-test ends here
