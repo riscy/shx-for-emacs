@@ -254,17 +254,17 @@ Ignore the value of OUTPUT."
      (intern (completing-read "Describe command: " completions
                               nil t (concat shx-cmd-prefix shx-command))))))
 
+(defun shx-point-on-input? ()
+  "Check if point is on the input region."
+  (>= (point-marker)
+      (process-mark (get-buffer-process (current-buffer)))))
+
 (defun shx--safe-as-markup? (command)
   "Return t if COMMAND is safe to call to generate markup.
 If the supplied string has the `shx-safe' property or FUNCTION
 has '(SAFE)' prepending its docstring, then it's safe."
   (let ((doc (documentation command)))
     (ignore-errors (string= "(SAFE)" (substring doc 0 6)))))
-
-(defun shx-point-on-input? ()
-  "Check if point is on the input region."
-  (>= (point-marker)
-      (process-mark (get-buffer-process (current-buffer)))))
 
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
@@ -386,8 +386,9 @@ Strings can be interwoven with face names."
     (dotimes (timer-id (length sorted-timer-list))
       (shx-insert
        (format "%d.\s" timer-id)
-       (format "%s\s" (aref (nth timer-id sorted-timer-list) 5))
        'font-lock-keyword-face
+       (format "%s\s" (shx--format-timer-string (nth timer-id sorted-timer-list)))
+       'font-lock-constant-face
        (format "(pulse: %s)\n" (aref (nth timer-id sorted-timer-list) 4))))
     (shx-insert 'font-lock-doc-face
                 (format "Active timers: %d\n" (length sorted-timer-list)))))
@@ -416,6 +417,11 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                                        (expand-file-name filename) "\" "
                                        line-style)))
       (shx-insert-image img-name))))
+
+(defun shx--format-timer-string (timer)
+  "Create a human-readable string out of TIMER."
+  (let ((timer-string (format "%s" (aref timer 5))))
+    (substring timer-string 23 (- (length timer-string) 2))))
 
 
 ;;; asynch functions
@@ -488,11 +494,13 @@ Use :stop to cancel."
   "(SAFE) When TIMER-ID is given, cancel the specified timer.
 If TIMER-ID is nil, enumerate all resident timers."
   (let ((timer-id-int (string-to-number timer-id)))
-    (if (or (> timer-id-int (length timer-list))
+    (if (or (> timer-id-int (1- (length timer-list)))
             (not (equal (int-to-string timer-id-int) timer-id))) ; validation
         (shx-insert 'error "stop <num>\n")
-      (cancel-timer (nth timer-id-int (shx--get-timer-list)))
-      (shx-insert 'error "Stopped timer " timer-id "\n")))
+      (let ((timer (nth timer-id-int (shx--get-timer-list))))
+        (shx-insert "Stopping " 'font-lock-keyword-face
+                    (shx--format-timer-string timer) "\n")
+        (cancel-timer timer))))
   (shx-insert-timer-list))
 
 
