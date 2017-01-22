@@ -697,20 +697,12 @@ NAME is the optional name of the buffer.
 shx provides the following key bindings:
 \n\\{shx-keymap}"
   (interactive)
-  (let ((name (or name (shx-generate-buffer-name))))
+  (let ((name (or name (generate-new-buffer-name "*shx*"))))
     ;; switch-to-buffer first -- shell uses pop-to-buffer
     ;; which is unpredictable! :(
     (switch-to-buffer name)
-    (when (featurep 'persp-mode) (persp-add-buffer))
     (shell name)
     (shx-activate)))
-
-(defun shx-generate-buffer-name ()
-  "Generate a buffer name for shx named after the current project if possible."
-  (if (and (featurep 'projectile)
-           (not (string= (projectile-project-name) "-")))
-      (generate-new-buffer-name (format "*shx/%s*" (projectile-project-name)))
-    (generate-new-buffer-name "*shx*")))
 
 (provide 'shx)
 ;;; shx ends here
