@@ -60,9 +60,6 @@
 (defvar-local shx-split-min 30
   "The minimum window height before splitting is allowed.")
 
-(defvar-local shx-split-old-header-line-format nil
-  "For storing header-line format in order to restore it.")
-
 (defvar-local shx-default-scroll-on-output
   "Internal variable for remembering user scroll options.")
 
@@ -87,19 +84,9 @@
       (and (not (shx-scroll-find-tail))
            (< (window-height) shx-split-min))))
 
-(defun shx-set-header ()
-  "Add a visual indicator that the buffer is in split mode."
-  (let* ((left-amt (/ (* (window-width) (point)) (point-max)))
-         (right-amt (- (window-width) left-amt)))
-    (setq header-line-format
-          (concat (make-string left-amt ?>)
-                  (make-string right-amt ? )))))
-
 (defun shx-scroll-begin ()
   "Create the head/tail window pair."
   (interactive)
-  (setq shx-old-header-line-format header-line-format)
-  (shx-set-header)
   (goto-char (point-max))
   (save-excursion
     ;; open a small window below
@@ -116,7 +103,6 @@
   "If the window is split, remove the split.
 See `shx-scroll-up' and `shx-scroll-down'."
   (interactive)
-  (setq header-line-format shx-old-header-line-format)
   (when (not (shx-scroll-find-tail))
     (goto-char (point-max))
     (recenter -1))
@@ -159,7 +145,6 @@ window up.  If HOME is non-nil, scroll all the way to the top."
         (goto-char (point-min))
       (let ((line-move-visual t))
         (ignore-errors (line-move (- shx-split-rows))))
-      (shx-set-header)
       (recenter -1)
       (move-to-window-line -1))
     (select-window (next-window))
@@ -182,7 +167,6 @@ down scrolls all the way down to the prompt, remove the split."
     ;; go to end of line so that on-last-line works:
     (if (save-excursion (end-of-line) (shx-point-on-input?))
         (shx-scroll-end)
-      (shx-set-header)
       (select-window (next-window)))
     (goto-char (point-max)))
   (recenter -1))
