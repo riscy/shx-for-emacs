@@ -249,10 +249,13 @@ Ignore the value of OUTPUT."
 
 (defun shx-describe-command (shx-command)
   "Try to describe the named SHX-COMMAND."
-  (let ((completions (all-completions shx-cmd-prefix obarray 'functionp)))
+  (let* ((prefix (concat shx-cmd-prefix shx-command))
+         (completions (all-completions prefix obarray 'functionp)))
     (describe-function
-     (intern (completing-read "Describe command: " completions
-                              nil t (concat shx-cmd-prefix shx-command))))))
+     (intern
+      (if (= (length completions) 1)
+          (car completions)
+        (completing-read "Describe shx command: " completions nil t prefix))))))
 
 (defun shx-point-on-input? ()
   "Check if point is on the input region."
