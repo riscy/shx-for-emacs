@@ -32,6 +32,8 @@
   - ~:view image_file.png~ to inline an image in the shell.
   - ~:plot data_file.txt~ to render a line plot of a data file.
 
+  Use `M-x customize-group RET shx RET` to see shx's customization options.
+
   /This version is tested with Emacs 25.1.1/
 * Install
   Add the following to your ~.emacs~:
@@ -50,17 +52,17 @@
   2. Type ~:help~ and you'll see a list of commands you can run besides ~:man~
      and ~:help~.
 * Key bindings
-  | Key binding  | Description                                                              |
-  |--------------+--------------------------------------------------------------------------|
-  | ~C-c C-c~    | Send a ~SIGTERM~ (break) to the foreground process                       |
-  | ~C-c C-z~    | Send a ~SIGSTOP~ to to the foreground process                            |
-  | ~C-c C-k~    | Send a ~SIGKILL~ to the subjob (what ~C-c C-c~ did before)               |
-  | ~C-c C-b~    | Open a list of URLs that have been in the output                         |
-  | ~C-c C-d~    | Clear the input OR kill the process OR delete the buffer (in that order) |
-  | ~C-[return]~ | Paste the current line to the input                                      |
-  | ~[return]~   | If the cursor is on a filename or a URL, try to open it                  |
-  | ~[space]~    | If the prompt is ~:~, send ~[space]~ straight through to the process     |
-  | ~q~          | If the prompt is ~:~, send ~q~ straight through to the process           |
+  | Key binding | Description                                                              |
+  |-------------+--------------------------------------------------------------------------|
+  | ~C-c C-c~   | Send a ~SIGTERM~ (break) to the foreground process                       |
+  | ~C-c C-z~   | Send a ~SIGSTOP~ to to the foreground process                            |
+  | ~C-c C-k~   | Send a ~SIGKILL~ to the subjob (what ~C-c C-c~ did before)               |
+  | ~C-c C-b~   | Open a list of URLs that have been in the output                         |
+  | ~C-c C-d~   | Clear the input OR kill the process OR delete the buffer (in that order) |
+  | ~C-RET~     | Paste the current line to the input                                      |
+  | ~RET~       | If the cursor is on a filename or a URL, try to open it                  |
+  | ~SPC~       | If the prompt is ~:~, send ~SPC~ straight through to the process         |
+  | ~q~         | If the prompt is ~:~, send ~q~ straight through to the process           |
 
   Note the prompt will be ~:~ when reading through the output of ~less~ or a ~man~ page
   if you run the following:
@@ -119,7 +121,7 @@
     |--------------------------+------------------------|
     | ~:view image_file.jpg~   | Display an image       |
     | ~:barplot data_file.txt~ | Display a bar plot     |
-    | ~:matrix data_file.txt~ | Display a heatmap      |
+    | ~:matrix data_file.txt~  | Display a heatmap      |
     | ~:plot data_file.txt~    | Display a line plot    |
     | ~:plot3d data_file.txt~  | Display a 3D plot      |
     | ~:scatter data_file.txt~ | Display a scatter plot |

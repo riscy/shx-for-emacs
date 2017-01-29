@@ -46,7 +46,7 @@
 (defgroup shx-split nil
   "Extras for the (comint-mode) shell."
   :prefix "shx-split-"
-  :group 'convenience
+  :group 'shx
   :link '(url-link
           :tag "Github"
           "https://github.com/riscy/shx-for-emacs"))
@@ -55,7 +55,7 @@
   "How large the tail will be.")
 
 (defvar-local shx-split-active nil
-  "Whether or not the split is active.")
+  "Whether the split is active.")
 
 (defvar-local shx-split-min 30
   "The minimum window height before splitting is allowed.")
