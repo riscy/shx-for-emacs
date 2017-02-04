@@ -387,13 +387,9 @@ Strings can be interwoven with face names."
 (defun shx-insert-timer-list ()
   "Insert a list of the Emacs timers currently in effect."
   (let ((sorted-timer-list (shx--get-timer-list)))
-    (dotimes (timer-id (length sorted-timer-list))
-      (shx-insert
-       (format "%d.\s" timer-id)
-       'font-lock-keyword-face
-       (format "%s\s" (shx--format-timer-string (nth timer-id sorted-timer-list)))
-       'font-lock-constant-face
-       (format "(pulse: %s)\n" (aref (nth timer-id sorted-timer-list) 4))))
+    (dotimes (timer-number (length sorted-timer-list))
+      (shx--insert-timer timer-number (nth timer-number sorted-timer-list))
+      (shx-insert "\n"))
     (shx-insert 'font-lock-doc-face
                 (format "Active timers: %d\n" (length sorted-timer-list)))))
 
@@ -421,6 +417,11 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                                        (expand-file-name filename) "\" "
                                        line-style)))
       (shx-insert-image img-name))))
+
+(defun shx--insert-timer (timer-number timer)
+  "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
+  (shx-insert (format "%d.\s%s" timer-number (shx--format-timer-string timer))
+              (when (aref timer 4) (format "\s(pulse: %d)" (aref timer 4)))))
 
 (defun shx--format-timer-string (timer)
   "Create a human-readable string out of TIMER."
@@ -453,55 +454,63 @@ by `shx-insert-timer-list' cleaner."
 
 ;;; asynch user commands
 
-(defun shx-cmd/delay (syntax)
+(defun shx-cmd/delay (args)
   "Run a command after a specific delay.
-SYNTAX: '<delay in seconds> <command>'
-Cancel with :stop."
+ARGS are <delay in seconds> <command>.
+Cancel with :stop.
+Example:
+  :delay 10 echo Ten seconds are up!"
   (cond
-   ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" syntax)
-    (let ((delay (match-string 1 syntax))
-          (command (match-string 2 syntax)))
+   ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
+    (let ((delay (match-string 1 args))
+          (command (match-string 2 args)))
       (shx-insert "Delaying " 'comint-highlight-input command
                   'default (format " %s seconds\n" delay))
       (shx--delay-input (concat delay " sec") command)))
    (t (shx-insert 'error "delay <delay> <command>\n"))))
 
-(defun shx-cmd/pulse (syntax)
+(defun shx-cmd/pulse (args)
   "Repeat a shell command indefinitely with a given delay.
-SYNTAX '<deley in seconds> <command>'
-Cancel with :stop."
+ARGS are <deley in seconds> <command>.
+Cancel with :stop.
+Example:
+  :pulse 10 date"
   (cond
-   ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" syntax)
-    (let ((delay (string-to-number (match-string 1 syntax)))
-          (command (match-string 2 syntax)))
+   ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
+    (let ((delay (string-to-number (match-string 1 args)))
+          (command (match-string 2 args)))
       (shx-insert "Pulsing " 'comint-highlight-input command
                   'default (format " every %d seconds\n" delay))
       (shx--delay-input 0 command nil delay)))
    (t (shx-insert 'error "pulse <delay> <command>\n"))))
 
-(defun shx-cmd/repeat (syntax)
+(defun shx-cmd/repeat (args)
   "Repeat a shell command a number of times with a given delay.
-SYNTAX: '<count> <delay in seconds> <command>'
-Use :stop to cancel."
+ARGS are <count> <delay in seconds> <command>.
+Use :stop to cancel.
+Example:
+  :repeat 3 1 echo Echo... echo... echo..."
   (cond
-   ((string-match "^\\([0-9]+\\)\\s-+\\([0-9.]+\\)\\s-+\\(.+\\)$" syntax)
-    (let ((reps (string-to-number (match-string 1 syntax)))
-          (delay (string-to-number (match-string 2 syntax)))
-          (command (match-string 3 syntax)))
-      (insert (format "Repeating '%s' " command)
-              (format "%d times every %d seconds\n" reps delay))
+   ((string-match "^\\([0-9]+\\)\\s-+\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
+    (let ((reps (string-to-number (match-string 1 args)))
+          (delay (string-to-number (match-string 2 args)))
+          (command (match-string 3 args)))
+      (shx-insert "Repeating " 'comint-highlight-input command 'default
+                  (format " %d times every %d seconds\n" reps delay))
       (dotimes (ii reps)
         (shx--delay-input (* (1+ ii) delay) command))))
    (t (shx-insert 'error "repeat <count> <delay> <command>\n"))))
 
-(defun shx-cmd/stop (timer-id)
-  "(SAFE) When TIMER-ID is given, cancel the specified timer.
-If TIMER-ID is nil, enumerate all resident timers."
-  (let ((timer-id-int (string-to-number timer-id)))
-    (if (or (> timer-id-int (1- (length timer-list)))
-            (not (equal (int-to-string timer-id-int) timer-id))) ; validation
-        (shx-insert 'error "stop <num>\n")
-      (let ((timer (nth timer-id-int (shx--get-timer-list))))
+(defun shx-cmd/stop (timer-number)
+  "(SAFE) Enumerate all resident timers.
+If a TIMER-NUMBER is supplied, cancel the specified timer.
+Examples:
+  :stop
+  :stop 3"
+  (let ((timer-number-int (string-to-number timer-number)))
+    (unless (or (> timer-number-int (1- (length timer-list)))
+                (not (equal (int-to-string timer-number-int) timer-number)))
+      (let ((timer (nth timer-number-int (shx--get-timer-list))))
         (shx-insert "Stopping " 'font-lock-keyword-face
                     (shx--format-timer-string timer) "\n")
         (cancel-timer timer))))
