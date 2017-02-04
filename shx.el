@@ -32,12 +32,13 @@
 ;;    (require 'shx)
 ;;
 ;; By default, shx runs automatically in comint-mode buffers.
+;;
+;; Use M-x customize-group RET shx RET to see customization options.
 
 (require 'comint)
+(require 'evil)
 
 ;;; Code:
-
-(defvar evil-state) ; compiler pacifier
 
 
 ;;; customization options and other variables
@@ -45,25 +46,25 @@
 (defgroup shx nil
   "Extras for the (comint-mode) shell."
   :prefix "shx-"
-  :group 'convenience
+  :group 'comint
   :link '(url-link
           :tag "Github"
           "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-path-to-convert "convert"
-  "Path to ImageMagick's convert.")
+  "Path to ImageMagick's convert binary.")
 
 (defcustom shx-path-to-gnuplot "gnuplot"
-  "Path to gnuplot.")
+  "Path to gnuplot binary.")
 
 (defcustom shx-img-height 300
-  "Height to display images at.")
+  "Height to display inline images at.")
 
 (defcustom shx-leader ":"
   "Prefix for calling user commands.")
 
 (defcustom shx-auto-run t
-  "Auto-run shx everywhere if true.")
+  "Whether to automatically run shx in all comint sessions.")
 
 (defcustom shx-triggers
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
@@ -564,7 +565,9 @@ Syntax: :e /username@server:directory/to/file # to use tramp"
 
 (defun shx-cmd/grep (pattern)
   "(SAFE) Launch a grep for PATTERN.
-Syntax: :grep -r 'PATTERN' * | grep -v 'log'"
+Examples:
+  :grep -r 'pattern' *
+  :grep 'pattern' * | grep -v 'exclusion'"
   (grep (format "grep -nH %s" pattern)))
 
 (defun shx-cmd/help (shx-command)
@@ -573,7 +576,9 @@ If function doesn't exist (or none is supplied), read from user."
   (shx--asynch-funcall #'shx-describe-command (list shx-command)))
 
 (defun shx-cmd/eval (sexp)
-  "Evaluate the elisp SEXP."
+  "Evaluate the elisp SEXP.
+Example:
+  :eval (format \"%d\" (+ 1 2))"
   (condition-case nil
       (let ((originating-buffer (current-buffer))
             (output (format "%s\n" (eval (car (read-from-string sexp))))))

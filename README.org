@@ -32,7 +32,7 @@
   - ~:view image_file.png~ to inline an image in the shell.
   - ~:plotline data_file.txt~ to render a line plot of a data file.
 
-  Use `M-x customize-group RET shx RET` to see shx's customization options.
+  Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
   /This version is tested with Emacs 25.1.1/
 * Install

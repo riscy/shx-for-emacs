@@ -40,11 +40,10 @@
 
 ;;; Code:
 
-(require 'comint)
 (require 'shx)
 
 (defgroup shx-split nil
-  "Extras for the (comint-mode) shell."
+  "For split-scrolling inside a comint-mode buffer."
   :prefix "shx-split-"
   :group 'shx
   :link '(url-link
