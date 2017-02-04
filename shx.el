@@ -619,7 +619,7 @@ Syntax: :ssh hostname"
 
 ;;; graphical user commands
 
-(defun shx-cmd/barplot (filename)
+(defun shx-cmd/plotbar (filename)
   "(SAFE) Show barplot of FILENAME.
 Example file contents:
 \"Topic 1\" YHEIGHT1
@@ -631,8 +631,9 @@ Example file contents:
                              set yrange [0:];
                              set style fill solid 1.0 border -1;
                              plot" "u 2:xticlabels(1) notitle"))
+(defalias 'shx-cmd/barplot #'shx-cmd/plotbar) ; TODO: deprecated
 
-(defun shx-cmd/matrix (filename)
+(defun shx-cmd/plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
 Example file contents:
 1.5   2    3
@@ -643,14 +644,16 @@ Example file contents:
                                (0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\",
                                 3 \"#55a550\", 4 \"#1e5500\");
                              plot" "u 1:(-$2):3 matrix w image notitle"))
+(defalias 'shx-cmd/matrix #'shx-cmd/plotmatrix) ; TODO: deprecated
 
-(defun shx-cmd/plot (filename)
+(defun shx-cmd/plotline (filename)
   "(SAFE) Show line plot of FILENAME.
 Example file contents:
 1 2
 2 4
 4 8"
   (shx-insert-plot filename "plot" "w lp lw 1 ps 2 pt 7 notitle"))
+(defalias 'shx-cmd/plot #'shx-cmd/plotline) ; TODO: deprecated
 
 (defun shx-cmd/plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
@@ -660,13 +663,14 @@ http://www.gnuplotting.org/tag/pm3d/"
                              set view 4, 20, 1.4, 1;
                              splot" "w pm3d notitle"))
 
-(defun shx-cmd/scatter (filename)
+(defun shx-cmd/plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
 Example file contents:
 1 2
 2 4
 4 8"
   (shx-insert-plot filename "plot" "w p ps 2 pt 7 notitle"))
+(defalias 'shx-cmd/scatter #'shx-cmd/plotscatter) ; TODO: deprecated
 
 (defun shx-cmd/view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."

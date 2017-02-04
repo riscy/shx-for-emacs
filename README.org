@@ -30,7 +30,7 @@
   It lets you write new shell commands in elisp. Some existing ~shx~ commands:
   - ~:e filename.txt~ to open a file in a new buffer for editing.
   - ~:view image_file.png~ to inline an image in the shell.
-  - ~:plot data_file.txt~ to render a line plot of a data file.
+  - ~:plotline data_file.txt~ to render a line plot of a data file.
 
   Use `M-x customize-group RET shx RET` to see shx's customization options.
 
@@ -84,8 +84,8 @@
   list of arguments.  Arguments don't need to be surrounded by quotes -- the
   command will figure out how to parse them.
 
-  You can use this markup to ~:plot~ a file after collecting some stats, or
-  generate an ~:alert~ when a task is finished, and so forth.
+  You can use this markup to create a barplot (~:plotbar~) after collecting some
+  stats, or generate an ~:alert~ when a task is finished, and so forth.
 * Extra shell commands
   shx's 'extra' commands are invoked by typing a ~:~ followed by the command's
   name.  These are written in elisp and so can access all of Emacs' facilities.
@@ -117,14 +117,14 @@
 
     There are many more than this -- type ~:help~ for a listing of all user commands.
 *** Graphical commands
-    | Command                  | Description            |
-    |--------------------------+------------------------|
-    | ~:view image_file.jpg~   | Display an image       |
-    | ~:barplot data_file.txt~ | Display a bar plot     |
-    | ~:matrix data_file.txt~  | Display a heatmap      |
-    | ~:plot data_file.txt~    | Display a line plot    |
-    | ~:plot3d data_file.txt~  | Display a 3D plot      |
-    | ~:scatter data_file.txt~ | Display a scatter plot |
+    | Command                      | Description            |
+    |------------------------------+------------------------|
+    | ~:view image_file.jpg~       | Display an image       |
+    | ~:plotbar data_file.txt~     | Display a bar plot     |
+    | ~:plotmatrix data_file.txt~  | Display a heatmap      |
+    | ~:plotline data_file.txt~    | Display a line plot    |
+    | ~:plot3d data_file.txt~      | Display a 3D plot      |
+    | ~:plotscatter data_file.txt~ | Display a scatter plot |
 
     These are for displaying inline graphics and plots in the shell buffer.  You
     can control how much vertical space an inline image occupies by customizing
