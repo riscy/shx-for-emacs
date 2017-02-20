@@ -36,6 +36,7 @@
 ;; Use M-x customize-group RET shx RET to see customization options.
 
 (require 'comint)
+(require 'shell)
 (require 'evil)
 
 ;;; Code:
@@ -69,6 +70,19 @@
 (defcustom shx-triggers
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function).")
+
+(defvar shx-shell-mode-font-locks
+  '(("#.*\\'"                0 'font-lock-comment-face)
+    ("\"[^\"]*\"?"           0 'font-lock-string-face)
+    ("'[^']*'?"              0 'font-lock-string-face)
+    (">>"                    0 'font-lock-keyword-face)
+    ("<<"                    0 'font-lock-keyword-face)
+    ("&&"                    0 'font-lock-keyword-face)
+    ("|"                     0 'font-lock-keyword-face)
+    ("\\(:[^ \t]+\\).*\\'"   1 'font-lock-constant-face)
+    ("\\(\\<git\\>\\) .*\\'" 1 'font-lock-constant-face)
+    ("\\(\\<rm\\>\\) .*\\'"  1 'font-lock-warning-face))
+  "Some additional syntax highlighting for shell-mode.")
 
 (defvar shx-cmd-prefix "shx-cmd/"
   "Prefix for user-command functions.")
@@ -717,6 +731,7 @@ Example file contents 2:
 
 ;; Add hooks and advise some existing comint functions:
 (when shx-auto-run (add-hook 'comint-mode-hook 'shx-activate))
+(add-hook 'shell-mode-hook 'shx-for-shell-mode) ; always run in shell-mode
 (advice-add 'comint-send-eof
             :before (lambda () (goto-char (point-max))))
 (advice-add 'comint-history-isearch-backward-regexp
@@ -725,6 +740,10 @@ Example file contents 2:
             :before (lambda (arg) (goto-char (point-max))))
 (advice-add 'comint-next-input
             :before (lambda (arg) (goto-char (point-max))))
+(advice-add 'comint-previous-prompt
+            :after (lambda (arg) (recenter-top-bottom 0)))
+(advice-add 'comint-next-prompt
+            :after (lambda (arg) (recenter-top-bottom 0)))
 
 (defun shx-activate ()
   "Activate shx on the current buffer.
@@ -740,6 +759,14 @@ shx provides the following key bindings:
   ;; do this asynch with a delay; spacemacs tries to set this variable too
   (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input))))
 
+(defun shx-for-shell-mode ()
+  "Active shx in the context of \\[shell-mode].
+For this function to work properly, it should be in `shell-mode-hook'."
+  (setq-local shell-font-lock-keywords
+              (append shell-font-lock-keywords shx-shell-mode-font-locks))
+  (setq-local font-lock-defaults '(shell-font-lock-keywords t))
+  (shx-activate))
+
 (defun shx (&optional name)
   "Create a new shell session using shx.
 NAME is the optional name of the buffer.
@@ -750,8 +777,7 @@ shx provides the following key bindings:
     ;; switch-to-buffer first -- shell uses pop-to-buffer
     ;; which is unpredictable! :(
     (switch-to-buffer name)
-    (shell name)
-    (shx-activate)))
+    (shell name)))
 
 (provide 'shx)
 ;;; shx ends here
