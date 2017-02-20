@@ -209,7 +209,9 @@ buffer's `process-mark'."
             (funcall command args)
             (set-buffer originating-buffer)
             ;; some shx commands might add extra newline:
-            (when (zerop (current-column)) (delete-char 1))))))))
+            (and (zerop (current-column))
+                 (not (eq 1 (point)))
+                 (delete-char 1))))))))
 
 (defun shx--parse-output-for-triggers ()
   "Look for triggers since `comint-last-output' (e.g., URLs)."
@@ -245,7 +247,7 @@ buffer's `process-mark'."
   "Prompt user for a URL to browse from the list `shx-urls'."
   (interactive)
   (let ((urls shx-urls)) ; clone url list so user edits don't modify the entries
-    (browse-url (completing-read "URL: " urls nil nil (car urls) '(urls . 1)))))
+    (browse-url (completing-read (format "URLs in %s: " (buffer-name)) urls))))
 
 (defun shx-describe-command (shx-command)
   "Try to describe the named SHX-COMMAND."
