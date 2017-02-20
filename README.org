@@ -121,6 +121,7 @@
     | ~:edit file~         | Edit a file.  Shortcut: ~:e [file]~              |
     | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~eval (pwd)~ |
     | ~:man topic~         | Invoke the Emacs man page browser on a topic     |
+    | ~:header New header~ | Change the current ~header-line-format~          |
     | ~:ssh host~          | Open another shell on the specified host         |
 
     There are many more than this -- type ~:help~ for a listing of all user commands.

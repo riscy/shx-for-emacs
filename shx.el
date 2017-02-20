@@ -601,6 +601,17 @@ Examples:
   :grep 'pattern' * | grep -v 'exclusion'"
   (grep (format "grep -nH %s" pattern)))
 
+(defun shx-cmd/header (header)
+ "(SAFE) Set the header-line to to HEADER.
+See `header-line-format' for formatting options.
+Examples:
+:header remote:%@  status:%s  size:%i
+:header
+PS1=\"<header \\$(git status 2>/dev/null |head -1)>\\\\n$PS1\"
+PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
+  (setq header-line-format
+        (and (not (string= header "")) header)))
+
 (defun shx-cmd/help (shx-command)
   "(SAFE) Display help on the SHX-COMMAND.
 If function doesn't exist (or none is supplied), read from user."
