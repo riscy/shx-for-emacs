@@ -144,8 +144,7 @@ window up.  If HOME is non-nil, scroll all the way to the top."
         (goto-char (point-min))
       (let ((line-move-visual t))
         (ignore-errors (line-move (- shx-split-rows))))
-      (recenter -1)
-      (move-to-window-line -1))
+      (recenter -1))
     (select-window (next-window))
     (goto-char (point-max))
     (recenter -1))))                    ; realign tail
