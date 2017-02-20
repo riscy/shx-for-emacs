@@ -64,7 +64,7 @@
 (defcustom shx-leader ":"
   "Prefix for calling user commands.")
 
-(defcustom shx-auto-run t
+(defcustom shx-auto-run nil
   "Whether to automatically run shx in all comint sessions.")
 
 (defcustom shx-triggers

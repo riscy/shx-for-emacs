@@ -50,9 +50,9 @@
   (require 'shx)                            ; load shell-extras
   #+end_src
 
-  Now shx will run automatically in any ~comint-mode~ buffer.  But if you don't
-  want shx to run in /every/ comint-mode buffer, customize the variable
-  ~shx-auto-run~ to ~nil~.
+  Now shx will run automatically in any ~shell-mode~ buffer.  If you
+  additionally want shx to run in /every/ comint-mode buffer, customize the
+  variable ~shx-auto-run~ to ~t~.
 
   Type ~M-x shx [enter]~ to begin a new shell session with shx.  The following
   commands will get you started:
