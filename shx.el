@@ -430,7 +430,9 @@ Use a gnuplot specific PLOT-COMMAND (for example 'plot') and
 LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
   (let ((img-name (make-temp-file "tmp" nil ".png")))
     (when (zerop (call-process shx-path-to-gnuplot nil t nil "-e"
-                               (concat "set term png; "
+                               (concat "set term png transparent truecolor;"
+                                       "set border lw 3 lc rgb \""
+                                       (face-attribute 'default :foreground) "\";"
                                        "set out \"" img-name "\"; "
                                        plot-command " \""
                                        (expand-file-name filename) "\" "
