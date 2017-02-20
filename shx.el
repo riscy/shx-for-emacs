@@ -94,7 +94,7 @@
 ;;; input
 
 (defun shx-get-keymap (&optional parent)
-  "Keymap used for `shx'; inherits PARENT."
+  "Keymap used for shx; inherits PARENT."
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap (or parent (current-local-map)))
     ;; send these characters straight through in some circumstances
@@ -130,7 +130,7 @@
 (defun shx-send-input ()
   "Send or parse the input currently written at the prompt.
 In normal circumstances this input is additionally filtered by
-`shx-filter-input' via `comint-mode'."
+\\[shx-filter-input] via \\[comint-mode]."
   (interactive)
   ;; auto-switch to insert mode
   (and (featurep 'evil-vars)
@@ -150,14 +150,14 @@ In normal circumstances this input is additionally filtered by
 (defun shx-filter-input (process input)
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
-This function overrides `comint-input-sender'."
+This function overrides \\[comint-input-sender]."
   (let* ((match (string-match (concat "^" shx-leader shx-cmd-syntax) input))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
         (comint-simple-send process input)
       (funcall shx-cmd (match-string 2 input))
       (with-current-buffer (process-buffer process)
-        ;; advance the process mark to trick `comint-mode'
+        ;; advance the process mark to trick comint-mode
         (set-marker (process-mark process) (point)))
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
@@ -175,10 +175,10 @@ enabling this can provide a significant performance boost."
   (setq-local adaptive-fill-first-line-regexp nil) ; faster
   (add-hook 'comint-output-filter-functions #'shx-fill-paragraph nil 'local))
 
-(defun shx-fill-paragraph (str)
+(defun shx-fill-paragraph (_str)
   "Fill (justify) text from the host.
-Ignore STR.  This fills each line between
-`comint-last-output-start' and the buffer's `process-mark'."
+Apply this justification from `comint-last-output-start' to the
+buffer's `process-mark'."
   (save-excursion
     (let ((start-of-prompt (point-marker)))
       (goto-char comint-last-output-start)
@@ -187,9 +187,8 @@ Ignore STR.  This fills each line between
           (forward-line)
           (fill-region region-start (point) nil t))))))
 
-(defun shx-parse-output-hook (&optional output)
-  "Hook to parse the output stream.
-Ignore the value of OUTPUT."
+(defun shx-parse-output-hook (&optional _output)
+  "Hook to parse the output stream."
   ;; FIXME: these can get expensive on buffers w/ more than 9000 lines
   (shx--parse-output-for-markup)
   (when shx-triggers (shx--parse-output-for-triggers)))
@@ -265,8 +264,7 @@ Ignore the value of OUTPUT."
 
 (defun shx--safe-as-markup? (command)
   "Return t if COMMAND is safe to call to generate markup.
-If the supplied string has the `shx-safe' property or FUNCTION
-has '(SAFE)' prepending its docstring, then it's safe."
+In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (let ((doc (documentation command)))
     (ignore-errors (string= "(SAFE)" (substring doc 0 6)))))
 
@@ -314,7 +312,7 @@ FILES can have various styles of quoting and escaping."
 (defun shx--get-timer-list ()
   "Get the list of resident timers."
   (let ((timer-list-1 (copy-sequence timer-list)))
-    ;; select only timers with `shx--auto' prefix, "(lambda nil (shx--auto..."
+    ;; select only timers with shx--auto prefix, "(lambda nil (shx--auto..."
     (setq timer-list-1
           (remove nil
                   (mapcar (lambda (timer)
@@ -366,15 +364,20 @@ Useful for paging through less."
   (interactive)
   (process-send-string nil ""))
 
-(defun shx-insert (&rest args)
-  "Insert each of ARGS, propertized as appropriate.
-Strings can be interwoven with face names."
-  (let ((current-face 'default))
+(defun shx-cat (&rest args)
+  "Like \\[concat] but ARGS can be strings or face names."
+  (let ((string "")
+        (face nil))
     (dolist (arg args nil)
       (cond ((stringp arg)
-             (insert (propertize arg 'font-lock-face current-face)))
+             (setq string (concat string (propertize arg 'font-lock-face face))))
             ((facep arg)
-             (setq current-face arg))))))
+             (setq face arg))))
+    string))
+
+(defun shx-insert (&rest args)
+  "Insert ARGS, combined using \\[shx-cat]."
+  (insert (apply 'shx-cat args)))
 
 (defun shx-insert-filenames (&rest files)
   "Insert FILES, propertized to be clickable."
@@ -448,7 +451,7 @@ REPEAT-INTERVAL specifies delays between repetitions."
 (defun shx--auto (process command)
   "Send PROCESS a COMMAND.
 This cosmetic function only exists to make the listing generated
-by `shx-insert-timer-list' cleaner."
+by \\[shx-insert-timer-list] easier to parse."
   (process-send-string process (concat command "\n")))
 
 
@@ -527,27 +530,30 @@ Examples:
                    string))
   (display-buffer shx-buffer))
 
-(defun shx-cmd/clear (-)
+(defun shx-cmd/clear (_args)
   "(SAFE) Clear the buffer.
 Fails if there are read-only elements such as a prompt -
 therefore ensure `comint-prompt-read-only' is nil."
   (erase-buffer))
 
-(defun shx-cmd/date (-)
-  "(SAFE) Show the date - ignore arguments."
+(defun shx-cmd/date (_args)
+  "(SAFE) Show the date."
   (shx-insert (current-time-string) "\n"))
 
 (defun shx-cmd/diff (files)
-  "(SAFE) Launch an ediff between FILES.
-Syntax: :diff <file1> <file2>"
+  "(SAFE) Launch an Emacs \\[ediff] between FILES.
+Example:
+:diff file1.txt file2.csv"
   (shx-insert "Invoking ediff " files "\n")
   (shx--asynch-funcall
    'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
 
 (defun shx-cmd/edit (file)
   "(SAFE) open FILE in the current window.
-Syntax: :e directory/to/file
-Syntax: :e /username@server:directory/to/file # to use tramp"
+Example:
+:e directory/to/file
+Or, to edit a remote file using tramp:
+:e /username@server:directory/to/file"
   (if (equal file "")
       (shx--asynch-funcall #'find-file (list "" t))
     (let ((name (expand-file-name (car (shx--parse-filenames file)))))
@@ -586,8 +592,9 @@ If function doesn't exist (or none is supplied), read from user."
 
 (defun shx-cmd/eval (sexp)
   "Evaluate the elisp SEXP.
-Example:
-  :eval (format \"%d\" (+ 1 2))"
+Examples:
+:eval (format \"%d\" (+ 1 2))
+:eval (* 2 (+ 3 5))"
   (condition-case nil
       (let ((originating-buffer (current-buffer))
             (output (format "%s\n" (eval (car (read-from-string sexp))))))
@@ -596,7 +603,7 @@ Example:
     (error (shx-insert 'error "invalid sexp\n"))))
 
 (defun shx-cmd/man (topic)
-  "(SAFE) Launch a man window for TOPIC.
+  "(SAFE) Launch an Emacs \\[man] window for TOPIC.
 See `Man-notify-method' for what happens when the page is ready."
   (if (equal topic "")
       (shx-insert 'error "man <topic>\n")
@@ -618,12 +625,12 @@ Syntax: :o[edit] /username@server:~/directory/to/file"
     (find-file-other-window
      (expand-file-name (replace-regexp-in-string "\\\\" "" file)))))
 
-(defun shx-cmd/pwd (args)
-  "(SAFE) Show what Emacs thinks the pwd is - ignore ARGS."
+(defun shx-cmd/pwd (_args)
+  "(SAFE) Show what Emacs thinks the pwd is."
   (shx-insert default-directory "\n"))
 
 (defun shx-cmd/ssh (host)
-  "(SAFE) open a shell on HOST.
+  "(SAFE) open a shell on (remote) HOST using tramp.
 Syntax: :ssh hostname"
   (if (equal host "")
       (shx-insert 'error "ssh host\n")
@@ -662,10 +669,15 @@ Example file contents:
 
 (defun shx-cmd/plotline (filename)
   "(SAFE) Show line plot of FILENAME.
-Example file contents:
+Example file contents 1:
 1 2
 2 4
-4 8"
+4 8
+Example file contents 2:
+1
+2
+3
+5"
   (shx-insert-plot filename "plot" "w lp lw 1 ps 2 pt 7 notitle"))
 (defalias 'shx-cmd/plot #'shx-cmd/plotline) ; TODO: deprecated
 
@@ -679,10 +691,15 @@ http://www.gnuplotting.org/tag/pm3d/"
 
 (defun shx-cmd/plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
-Example file contents:
+Example file contents 1:
 1 2
 2 4
-4 8"
+4 8
+Example file contents 2:
+1
+2
+3
+5"
   (shx-insert-plot filename "plot" "w p ps 2 pt 7 notitle"))
 (defalias 'shx-cmd/scatter #'shx-cmd/plotscatter) ; TODO: deprecated
 
@@ -695,6 +712,7 @@ Example file contents:
 
 (defvar shx-keymap (shx-get-keymap)
   "To self-document the shx/shx-active functions.")
+
 ;; Add hooks and advise some existing comint functions:
 (when shx-auto-run (add-hook 'comint-mode-hook 'shx-activate))
 (advice-add 'comint-send-eof

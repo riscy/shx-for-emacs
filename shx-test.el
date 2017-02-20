@@ -17,6 +17,17 @@
 (require 'shx)
 (require 'shx-split)
 
+(defun shx-cmd/test (_args)
+  "(SAFE) Test shx.
+In particular run every function with the prefix shx-test.
+Example:
+:test"
+  (insert "Running test suite \n")
+  (shx--asynch-funcall
+   (lambda ()
+     (dolist (test-function (all-completions "shx-test" obarray 'functionp))
+       (funcall (intern test-function))))))
+
 (defun shx-assert (comment val)
   "Describe test with COMMENT; test truth of VAL."
   (save-excursion
@@ -27,13 +38,19 @@
         (shx-insert 'font-lock-string-face "✓")
       (shx-insert 'error (format "\n  Test failed: %s\n" comment)))))
 
+
+;; tests!
+
 (defun shx-test-shx ()
   "Test core shx functions."
   (shx-assert "Image height is a positive integer."
               (and (integerp shx-img-height) (> shx-img-height 0)))
   (shx-assert "Filename splitting works with apostrophes."
               (equal '("first file" "second file" "third")
-                     (shx--parse-filenames "'first file' 'second file' 'third'")))
+                     (shx--parse-filenames "'first file' 'second file' 'third'"))))
+
+(defun shx-test-filename-parsing ()
+  "Test filename parsing."
   (shx-assert "Filename splitting works with mixed apostrophes."
               (equal '("first file" "secondfile")
                      (shx--parse-filenames "'first file' secondfile")))
@@ -42,7 +59,10 @@
                      (shx--parse-filenames "first\\ file secondfile")))
   (shx-assert "Filename splitting works with current directory specified."
               (equal '("~/././~/.spacemacs")
-                     (shx--parse-filenames "~/././~/.spacemacs")))
+                     (shx--parse-filenames "~/././~/.spacemacs"))))
+
+(defun shx-test-point-predicates ()
+  "Test some predicate functions on the point."
   (shx-assert "Point on last line works at point-max."
               (save-excursion (goto-char (point-max))
                               (shx-point-on-input?)))
@@ -88,14 +108,14 @@
   (shx-assert "Try to find nonexistent split."
               (null (shx-scroll-find-tail))))
 
-(defun shx-cmd/test (-)
-  "(SAFE) Test shx - args are ignored.
-Run tests by typing :test at the console."
-  (insert "Running test suite \n")
-  (shx--asynch-funcall
-   (lambda ()
-     (shx-test-shx)
-     (shx-test-split))))
+(defun shx-test-shx-cat ()
+  "Test the `shx-cat' command."
+  (let ((concatenation (shx-cat "Test" 'font-lock-string-face "test")))
+    (shx-assert "Concatenates the strings."
+                (string= concatenation "Testtest"))
+    (shx-assert "Propertizes the text."
+                (equal (get-text-property 4 'font-lock-face concatenation)
+                       'font-lock-string-face))))
 
 (provide 'shx-test)
 ;;; shx-test ends here

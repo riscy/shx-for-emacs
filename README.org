@@ -8,6 +8,7 @@
 
 * Table of Contents :TOC_3_gh:noexport:
  - [[#description][Description]]
+ - [[#related-software][Related software]]
  - [[#install][Install]]
  - [[#key-bindings][Key bindings]]
  - [[#markup-in-the-shell][Markup in the shell]]
@@ -35,6 +36,13 @@
   Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
   /This version is tested with Emacs 25.1.1/
+* Related software
+  If running a ~dumb~ terminal in Emacs isn't for you, here are some
+  alternatives:
+  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configation
+  - iTerm2 on macOS has [[https://www.iterm2.com/documentation-shell-integration.html][shell integration]]
+  - [[https://getbitbar.com/][BitBar]] on macOS
+  - Vitaly Belman describes his [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][shell configuration]]
 * Install
   Add the following to your ~.emacs~:
   #+begin_src elisp
