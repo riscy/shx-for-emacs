@@ -532,7 +532,7 @@ Examples:
     (unless (or (> timer-number-int (1- (length timer-list)))
                 (not (equal (int-to-string timer-number-int) timer-number)))
       (let ((timer (nth timer-number-int (shx--get-timer-list))))
-        (shx-insert "Stopping " 'font-lock-keyword-face
+        (shx-insert "Stopping " 'comint-highlight-input
                     (shx--format-timer-string timer) "\n")
         (cancel-timer timer))))
   (shx-insert-timer-list))

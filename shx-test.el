@@ -117,5 +117,15 @@ Example:
                 (equal (get-text-property 4 'font-lock-face concatenation)
                        'font-lock-string-face))))
 
+(defun shx-test-timers ()
+  "Test functions that use Emacs' built-in timer."
+  (if (shx--get-timer-list)
+      (shx-insert 'error "\nWarning: :stop all timers to run timing tests"))
+  (shx-assert "The timer list starts empty." (not (shx--get-timer-list)))
+  (shx--delay-input "10 sec" "stub command")
+  (shx-assert "The timer list is not empty." (eq 1 (length (shx--get-timer-list))))
+  (cancel-timer (car (shx--get-timer-list)))
+  (shx-assert "The timer list is empty again." (not (shx--get-timer-list))))
+
 (provide 'shx-test)
 ;;; shx-test ends here
