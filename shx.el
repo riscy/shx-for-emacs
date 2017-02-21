@@ -265,12 +265,13 @@ buffer's `process-mark'."
 
 (defun shx-describe-command (shx-command)
   "Try to describe the named SHX-COMMAND."
-  (let* ((prefix (concat shx-cmd-prefix shx-command))
-         (completions (all-completions prefix obarray 'functionp)))
-    (describe-function
-     (intern
-      (if (= (length completions) 1)
-          (car completions)
+  (let ((prefix (concat shx-cmd-prefix shx-command))
+        (completions (all-completions shx-cmd-prefix obarray 'functionp)))
+    (if (functionp (intern prefix))
+        (describe-function
+         (intern prefix))
+      (describe-function
+       (intern
         (completing-read "Describe shx command: " completions nil t prefix))))))
 
 (defun shx-point-on-input? ()
@@ -618,6 +619,7 @@ PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\
   "(SAFE) Display help on the SHX-COMMAND.
 If function doesn't exist (or none is supplied), read from user."
   (shx--asynch-funcall #'shx-describe-command (list shx-command)))
+(defalias 'shx-cmd/he #'shx-cmd/help)
 
 (defun shx-cmd/eval (sexp)
   "Evaluate the elisp SEXP.
