@@ -3,7 +3,6 @@
 #+AUTHOR: Chris Rayner
 #+EMAIL: dchrisrayner@gmail.com
 
-#+attr_html: :height 500px
 [[file:img/screenshot.png]]
 
 * Table of Contents :TOC_3_gh:noexport:
