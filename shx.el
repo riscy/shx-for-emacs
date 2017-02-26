@@ -413,7 +413,7 @@ Useful for paging through less."
   "Insert a list of the Emacs timers currently in effect."
   (let ((sorted-timer-list (shx--get-timer-list)))
     (dotimes (timer-number (length sorted-timer-list))
-      (shx--insert-timer timer-number (nth timer-number sorted-timer-list))
+      (shx--insert-timer (+ 1 timer-number) (nth timer-number sorted-timer-list))
       (shx-insert "\n"))
     (shx-insert "Active timers: " 'font-lock-constant-face
                 (format "%d\n" (length sorted-timer-list)))))
@@ -535,13 +535,14 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 Examples:
   :stop
   :stop 3"
-  (let ((timer-number-int (string-to-number timer-number)))
-    (unless (or (> timer-number-int (1- (length timer-list)))
-                (not (equal (int-to-string timer-number-int) timer-number)))
-      (let ((timer (nth timer-number-int (shx--get-timer-list))))
-        (shx-insert "Stopping " 'comint-highlight-input
-                    (shx--format-timer-string timer) "\n")
-        (cancel-timer timer))))
+  (setq timer-number (1- (string-to-number timer-number)))
+  (let ((shx-timer-list (shx--get-timer-list)))
+    (and (>= timer-number 0)
+         (< timer-number (length shx-timer-list))
+         (let ((timer (nth timer-number shx-timer-list)))
+           (shx-insert "Stopped " 'font-lock-string-face
+                       (shx--format-timer-string timer) "\n")
+           (cancel-timer timer))))
   (shx-insert-timer-list))
 
 
