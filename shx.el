@@ -71,19 +71,6 @@
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function).")
 
-(defvar shx-shell-mode-font-locks
-  '(("#.*\\'"                0 'font-lock-comment-face)
-    ("\"[^\"]*\"?"           0 'font-lock-string-face)
-    ("'[^']*'?"              0 'font-lock-string-face)
-    (">>"                    0 'font-lock-keyword-face)
-    ("<<"                    0 'font-lock-keyword-face)
-    ("&&"                    0 'font-lock-keyword-face)
-    ("|"                     0 'font-lock-keyword-face)
-    ("\\(:[^ \t]+\\).*\\'"   1 'font-lock-constant-face)
-    ("\\(\\<git\\>\\) .*\\'" 1 'font-lock-constant-face)
-    ("\\(\\<rm\\>\\) .*\\'"  1 'font-lock-warning-face))
-  "Some additional syntax highlighting for shell-mode.")
-
 (defvar shx-cmd-prefix "shx-cmd/"
   "Prefix for user-command functions.")
 
@@ -265,8 +252,7 @@ buffer's `process-mark'."
 
 (defun shx-describe-command (shx-command)
   "Try to describe the named SHX-COMMAND."
-  (let ((prefix (concat shx-cmd-prefix shx-command))
-        (completions (all-completions shx-cmd-prefix obarray 'functionp)))
+  (let ((prefix (concat shx-cmd-prefix shx-command)))
     (if (functionp (intern prefix))
         (describe-function
          (intern prefix))
@@ -278,6 +264,25 @@ buffer's `process-mark'."
   "Check if point is on the input region."
   (>= (point-marker)
       (process-mark (get-buffer-process (current-buffer)))))
+
+(defun shx--all-commands ()
+  "Return a list of all shx commands."
+  (all-completions shx-cmd-prefix obarray 'functionp))
+
+(defun shx--shell-mode-font-locks ()
+  "Some additional syntax highlighting for shell-mode."
+  `(("#.*\\'"                                     0 'font-lock-comment-face)
+    ("~"                                          0 'font-lock-preprocessor-face)
+    ("\"[^\"]*[^\\]\"?"                           0 'font-lock-string-face)
+    ("[^[:alpha:]]'[^']*[^\\]'?"                  0 'font-lock-string-face)
+    (,(regexp-opt '(">" "<" "&&" "|" "`"))        0 'font-lock-keyword-face)
+    (,(concat "[^[:alnum:]" shx-leader "]" "\\(" shx-leader
+              (regexp-opt (mapcar (lambda (cmd)
+                                    (substring cmd (length shx-cmd-prefix)))
+                                  (shx--all-commands)))
+              "\\).*\\'")                         1 'font-lock-constant-face)
+    ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
+    ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face)))
 
 (defun shx--safe-as-markup? (command)
   "Return t if COMMAND is safe to call to generate markup.
@@ -410,8 +415,8 @@ Useful for paging through less."
     (dotimes (timer-number (length sorted-timer-list))
       (shx--insert-timer timer-number (nth timer-number sorted-timer-list))
       (shx-insert "\n"))
-    (shx-insert 'font-lock-doc-face
-                (format "Active timers: %d\n" (length sorted-timer-list)))))
+    (shx-insert "Active timers: " 'font-lock-constant-face
+                (format "%d\n" (length sorted-timer-list)))))
 
 (defun shx-insert-image (filename)
   "Insert image FILENAME into the buffer."
@@ -442,13 +447,15 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 (defun shx--insert-timer (timer-number timer)
   "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
-  (shx-insert (format "%d.\s%s" timer-number (shx--format-timer-string timer))
-              (when (aref timer 4) (format "\s(pulse: %d)" (aref timer 4)))))
+  (shx-insert
+   'font-lock-constant-face (format "%d" timer-number)
+   'font-lock-string-face (format ". %s" (shx--format-timer-string timer))
+   (when (aref timer 4) (format "\s(pulse: %d)" (aref timer 4)))))
 
 (defun shx--format-timer-string (timer)
   "Create a human-readable string out of TIMER."
   (let ((timer-string (format "%s" (aref timer 5))))
-    (substring timer-string 23 (- (length timer-string) 2))))
+    (concat "[" (substring timer-string 23 (- (length timer-string) 2)) "]")))
 
 
 ;;; asynch functions
@@ -469,8 +476,7 @@ REPEAT-INTERVAL specifies delays between repetitions."
 
 (defun shx--auto (process command)
   "Send PROCESS a COMMAND.
-This cosmetic function only exists to make the listing generated
-by \\[shx-insert-timer-list] easier to parse."
+\(Makes the \\[shx-insert-timer-list] listing easier to parse.\)"
   (process-send-string process (concat command "\n")))
 
 
@@ -619,7 +625,7 @@ PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\
   "(SAFE) Display help on the SHX-COMMAND.
 If function doesn't exist (or none is supplied), read from user."
   (shx--asynch-funcall #'shx-describe-command (list shx-command)))
-(defalias 'shx-cmd/he #'shx-cmd/help)
+(defalias 'shx-cmd/h #'shx-cmd/help)
 
 (defun shx-cmd/eval (sexp)
   "Evaluate the elisp SEXP.
@@ -778,7 +784,7 @@ shx provides the following key bindings:
   "Active shx in the context of \\[shell-mode].
 For this function to work properly, it should be in `shell-mode-hook'."
   (setq-local shell-font-lock-keywords
-              (append shell-font-lock-keywords shx-shell-mode-font-locks))
+              (append shell-font-lock-keywords (shx--shell-mode-font-locks)))
   (setq-local font-lock-defaults '(shell-font-lock-keywords t))
   (shx-activate))
 
