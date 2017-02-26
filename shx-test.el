@@ -16,6 +16,7 @@
 
 (require 'shx)
 (require 'shx-split)
+(require 's)
 
 (defun shx-cmd/test (_args)
   "(SAFE) Test shx.
@@ -35,8 +36,8 @@ Example:
     (forward-line -1)
     (goto-char (point-at-eol))
     (if val
-        (shx-insert 'font-lock-string-face "✓")
-      (shx-insert 'error (format "\n  Test failed: %s\n" comment)))))
+        (shx-insert 'font-lock-string-face "✔")
+      (shx-insert 'error (format "\n✘ %s" comment)))))
 
 
 ;; tests!
@@ -73,6 +74,21 @@ Example:
               (not (save-excursion (goto-char (point-min))
                                    (shx-point-on-input?))))
   (goto-char (point-max)))
+
+(defun shx-test-input-handling ()
+  "Test shx's input handling."
+  (goto-char (point-max))
+  (insert "test")
+  (shx-assert "Recent input is recognized."
+              (string= "test" (shx--current-input)))
+  (comint-kill-input)
+  (forward-line -1)
+  (shx-send-input-or-copy-line)
+  (shx-assert "Test line is copied."
+              (s-prefix? "Running test suite" (shx--current-input)))
+  (comint-kill-input)
+  (shx-assert "Blank input is recognized."
+              (string= (shx--current-input) "")))
 
 (defun shx-test-split ()
   "Test window splitting functions."
