@@ -25,6 +25,8 @@
   - Graphics and plots can be displayed in the shell using a simple markup
     language (e.g., ~<view image.png>~)
   - Event-driven and timed behaviors are easy to add to any shell session.
+  - Arrow up to any filename or URL and press ~<enter>~ on it to open it
+  - Arrow up to any line and press ~C-<enter>~ to yank it to the prompt.
   - Mousing over a prompt shows a timestamp so you know when a command ran.
 
   It lets you write new shell commands in elisp. Some existing ~shx~ commands:
@@ -38,7 +40,7 @@
 * Related software
   If running a ~dumb~ terminal in Emacs isn't for you, here are some
   alternatives:
-  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configation
+  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configuration
   - iTerm2 on macOS has [[https://www.iterm2.com/documentation-shell-integration.html][shell integration]]
   - [[https://getbitbar.com/][BitBar]] on macOS
   - Vitaly Belman describes his [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][shell configuration]]
@@ -53,7 +55,7 @@
   additionally want shx to run in /every/ comint-mode buffer, customize the
   variable ~shx-auto-run~ to ~t~.
 
-  Type ~M-x shx [enter]~ to begin a new shell session with shx.  The following
+  Type ~M-x shx <return>~ to begin a new shell session with shx.  The following
   commands will get you started:
   1. Type ~:man ls~ and the man page for ~ls~ will be brought up within Emacs.
   2. Type ~:help~ and you'll see a list of commands you can run besides ~:man~
@@ -66,7 +68,7 @@
   | ~C-c C-k~   | Send a ~SIGKILL~ to the subjob (what ~C-c C-c~ did before)               |
   | ~C-c C-b~   | Open a list of URLs that have been in the output                         |
   | ~C-c C-d~   | Clear the input OR kill the process OR delete the buffer (in that order) |
-  | ~C-RET~     | Paste the current line to the input                                      |
+  | ~C-RET~     | If the cursor is not on the prompt, paste the current line to the input  |
   | ~RET~       | If the cursor is on a filename or a URL, try to open it                  |
   | ~SPC~       | If the prompt is ~:~, send ~SPC~ straight through to the process         |
   | ~q~         | If the prompt is ~:~, send ~q~ straight through to the process           |
@@ -117,7 +119,7 @@
     |----------------------+--------------------------------------------------|
     | ~:clear~             | Clear the buffer                                 |
     | ~:diff file1 file2~  | Launch an Emacs diff between two files           |
-    | ~:edit file~         | Edit a file.  Shortcut: ~:e [file]~              |
+    | ~:edit file~         | Edit a file.  Shortcut: ~:e <file>~              |
     | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~eval (pwd)~ |
     | ~:man topic~         | Invoke the Emacs man page browser on a topic     |
     | ~:header New header~ | Change the current ~header-line-format~          |
@@ -143,10 +145,10 @@
 *** Asynchronous commands
     | Command                           | Description                                       |
     |-----------------------------------+---------------------------------------------------|
-    | ~:delay [sec] [command]~          | Run a shell command after a specific delay        |
-    | ~:pulse [sec] [command]~          | Repeat a shell command forever with a given delay |
-    | ~:repeat [count] [sec] [command]~ | Repeat a shell command ~[count]~ times            |
-    | ~:stop [num]~                     | Cancel a repeating or delayed command             |
+    | ~:delay <sec> <command>~          | Run a shell command after a specific delay        |
+    | ~:pulse <sec> <command>~          | Repeat a shell command forever with a given delay |
+    | ~:repeat <count> <sec> <command>~ | Repeat a shell command ~<count>~ times            |
+    | ~:stop <num>~                     | Cancel a repeating or delayed command             |
 
     Use these to delay, pulse, or repeat a command a specific number of times.
     Unfortunately these only support your typical shell commands, and not shx's

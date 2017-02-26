@@ -131,7 +131,7 @@
 (defun shx-send-input ()
   "Send or parse the input currently written at the prompt.
 In normal circumstances this input is additionally filtered by
-\\[shx-filter-input] via \\[comint-mode]."
+`shx-filter-input' via `comint-mode'."
   (interactive)
   ;; auto-switch to insert mode
   (and (featurep 'evil-vars)
@@ -151,7 +151,7 @@ In normal circumstances this input is additionally filtered by
 (defun shx-filter-input (process input)
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
-This function overrides \\[comint-input-sender]."
+This function overrides `comint-input-sender'."
   (let* ((match (string-match (concat "^" shx-leader shx-cmd-syntax) input))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
@@ -221,8 +221,8 @@ buffer's `process-mark'."
       (shx--goto-last-input-or-output)
       (let ((originating-buffer shx-buffer))
         (while (shx--search-forward (car trigger))
-          ;; FIXME: emacs 25 had/has a bug where save-window-excursion moves the
-          ;; point backward in the calling buffer (some funcalls might use
+          ;; emacs 25 had/has a bug where save-window-excursion moves the point
+          ;; backward in the calling buffer (some funcalls might use
           ;; save-window-excursion) which can cause infinite triggering.  For
           ;; now, handle this by wrapping the funcall in save-excursion.
           (save-excursion (funcall (cdr trigger)))
@@ -258,7 +258,7 @@ buffer's `process-mark'."
          (intern prefix))
       (describe-function
        (intern
-        (completing-read "Describe shx command: " completions nil t prefix))))))
+        (completing-read "shx command: " (shx--all-commands) nil t prefix))))))
 
 (defun shx-point-on-input? ()
   "Check if point is on the input region."
@@ -387,7 +387,7 @@ Useful for paging through less."
   (process-send-string nil ""))
 
 (defun shx-cat (&rest args)
-  "Like \\[concat] but ARGS can be strings or face names."
+  "Like `concat' but ARGS can be strings or face names."
   (let ((string "")
         (face nil))
     (dolist (arg args nil)
@@ -398,7 +398,7 @@ Useful for paging through less."
     string))
 
 (defun shx-insert (&rest args)
-  "Insert ARGS, combined using \\[shx-cat]."
+  "Insert ARGS, combined using `shx-cat'."
   (insert (apply 'shx-cat args)))
 
 (defun shx-insert-filenames (&rest files)
@@ -460,9 +460,9 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 ;;; asynch functions
 
-(defun shx--asynch-funcall (function &optional args)
-  "Run FUNCTION with ARGS in the buffer after a short delay."
-  (run-at-time "0.2 sec" nil
+(defun shx--asynch-funcall (function &optional args delay)
+  "Run FUNCTION with ARGS in the buffer after a short DELAY."
+  (run-at-time (or delay 0.2) nil
                `(lambda ()
                   (with-current-buffer ,shx-buffer ,(cons function args)))))
 
@@ -476,7 +476,7 @@ REPEAT-INTERVAL specifies delays between repetitions."
 
 (defun shx--auto (process command)
   "Send PROCESS a COMMAND.
-\(Makes the \\[shx-insert-timer-list] listing easier to parse.\)"
+\(Makes the `shx-insert-timer-list' listing easier to parse.\)"
   (process-send-string process (concat command "\n")))
 
 
@@ -530,8 +530,8 @@ Example:
    (t (shx-insert 'error "repeat <count> <delay> <command>\n"))))
 
 (defun shx-cmd/stop (timer-number)
-  "(SAFE) Enumerate all resident timers.
-If a TIMER-NUMBER is supplied, cancel the specified timer.
+  "(SAFE) Stop the specified timer.
+If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 Examples:
   :stop
   :stop 3"
@@ -566,7 +566,7 @@ therefore ensure `comint-prompt-read-only' is nil."
   (shx-insert (current-time-string) "\n"))
 
 (defun shx-cmd/diff (files)
-  "(SAFE) Launch an Emacs \\[ediff] between FILES.
+  "(SAFE) Launch an Emacs `ediff' between FILES.
 Example:
 :diff file1.txt file2.csv"
   (shx-insert "Invoking ediff " files "\n")
@@ -616,7 +616,7 @@ See `header-line-format' for formatting options.
 Examples:
 :header remote:%@  status:%s  size:%i
 :header
-PS1=\"<header \\$(git status 2>/dev/null |head -1)>\\\\n$PS1\"
+PS1=\"<header \\$(git rev-parse --abbrev-ref HEAD)>\\\\n$PS1\"
 PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
   (setq header-line-format
         (and (not (string= header "")) header)))
@@ -640,7 +640,7 @@ Examples:
     (error (shx-insert 'error "invalid sexp\n"))))
 
 (defun shx-cmd/man (topic)
-  "(SAFE) Launch an Emacs \\[man] window for TOPIC.
+  "(SAFE) Launch an Emacs `man' window for TOPIC.
 See `Man-notify-method' for what happens when the page is ready."
   (if (equal topic "")
       (shx-insert 'error "man <topic>\n")
@@ -785,7 +785,7 @@ shx provides the following key bindings:
   (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input))))
 
 (defun shx-for-shell-mode ()
-  "Active shx in the context of \\[shell-mode].
+  "Activate shx in the context of `shell-mode'.
 For this function to work properly, it should be in `shell-mode-hook'."
   (setq-local shell-font-lock-keywords
               (append shell-font-lock-keywords (shx--shell-mode-font-locks)))
