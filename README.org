@@ -41,9 +41,10 @@
   If running a ~dumb~ terminal in Emacs isn't for you, here are some
   alternatives:
   - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configuration
-  - iTerm2 on macOS has [[https://www.iterm2.com/documentation-shell-integration.html][shell integration]]
-  - [[https://getbitbar.com/][BitBar]] on macOS
-  - Vitaly Belman describes his [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][shell configuration]]
+  - [[https://github.com/zsh-users/zsh-syntax-highlighting][zsh-syntax-highlighting]]
+  - [[https://www.iterm2.com/documentation-shell-integration.html][shell integration]] for iTerm2 on macOS
+  - [[https://getbitbar.com/][BitBar]] for macOS
+  - [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][shell configuration tips]] from Vitaly Belman
 * Install
   Add the following to your ~.emacs~:
   #+begin_src elisp
