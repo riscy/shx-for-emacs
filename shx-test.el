@@ -39,6 +39,13 @@ Example:
         (shx-insert 'font-lock-string-face "✔")
       (shx-insert 'error (format "\n✘ %s" comment)))))
 
+(defun shx-warn (text)
+  (save-excursion
+    (goto-char (point-max))
+    (forward-line -1)
+    (goto-char (point-at-eol))
+    (shx-insert 'error "\n" text "\n")))
+
 
 ;; tests!
 
@@ -90,39 +97,50 @@ Example:
   (shx-assert "Blank input is recognized."
               (string= (shx--current-input) "")))
 
+(defun shx-test-cmd-syntax-regexps ()
+  "Test shx-cmd-syntax regexps."
+  (string-match (concat "^" shx-leader shx-cmd-syntax) ":help ok")
+  (shx-assert "Recognizing a command with arguments."
+              (and (string= (match-string 1 ":help ok") "help")
+                   (string= (match-string 2 ":help ok") "ok")))
+  (string-match (concat "^" shx-leader shx-cmd-syntax) ":pwd")
+  (shx-assert "Recognizing alphabetical command names."
+              (string= (match-string 1 ":pwd") "pwd"))
+  (string-match (concat "^" shx-leader shx-cmd-syntax) ":plot-bar")
+  (shx-assert "Recognizing hyphenated command names."
+              (string= (match-string 1 ":plot-bar") "plot-bar")))
+
 (defun shx-test-split ()
   "Test window splitting functions."
   (goto-char (point-max))
-  (when (< (window-height) shx-split-min)
-    (forward-line -1)
-    (end-of-line)
-    (shx-insert 'error "\nWarning: window too short to test shx-split"))
-  (shx-assert "Create split."
-              (let ((currpt (point)))
-                (shx-scroll-up)
-                (and shx-split-active
-                     (eq currpt (point)))))
-  (shx-assert "Maintain split."
-              (let ((currpt (point)))
-                (shx-scroll-home)
-                (eq currpt (point))))
-  (shx-assert "Destroy split."
-              (let ((currpt (point)))
-                (shx-scroll-end)
-                (and (not shx-split-active)
-                     (eq currpt (point)))))
-  (shx-assert "Create and destroy with home/end."
-              (let ((currpt (point)))
-                (shx-scroll-home)
-                (shx-scroll-end)
-                (eq currpt (point))))
-  (shx-assert "Create destroy with pgup/pgdn."
-              (let ((currpt (point)))
-                (shx-scroll-up) (shx-scroll-up)
-                (shx-scroll-down) (shx-scroll-down) (shx-scroll-down)
-                (eq currpt (point))))
-  (shx-assert "Try to find nonexistent split."
-              (null (shx-scroll-find-tail))))
+  (if (< (window-height) shx-split-min)
+      (shx-warn "Warning: window too short to test shx-split")
+    (shx-assert "Create split."
+                (let ((currpt (point)))
+                  (shx-scroll-up)
+                  (and shx-split-active
+                       (eq currpt (point)))))
+    (shx-assert "Maintain split."
+                (let ((currpt (point)))
+                  (shx-scroll-home)
+                  (eq currpt (point))))
+    (shx-assert "Destroy split."
+                (let ((currpt (point)))
+                  (shx-scroll-end)
+                  (and (not shx-split-active)
+                       (eq currpt (point)))))
+    (shx-assert "Create and destroy with home/end."
+                (let ((currpt (point)))
+                  (shx-scroll-home)
+                  (shx-scroll-end)
+                  (eq currpt (point))))
+    (shx-assert "Create destroy with pgup/pgdn."
+                (let ((currpt (point)))
+                  (shx-scroll-up) (shx-scroll-up)
+                  (shx-scroll-down) (shx-scroll-down) (shx-scroll-down)
+                  (eq currpt (point))))
+    (shx-assert "Try to find nonexistent split."
+                (null (shx-scroll-find-tail)))))
 
 (defun shx-test-shx-cat ()
   "Test the `shx-cat' command."
@@ -136,12 +154,12 @@ Example:
 (defun shx-test-timers ()
   "Test functions that use Emacs' built-in timer."
   (if (shx--get-timer-list)
-      (shx-insert 'error "\nWarning: :stop all timers to run timing tests"))
-  (shx-assert "The timer list starts empty." (not (shx--get-timer-list)))
-  (shx--delay-input "10 sec" "stub command")
-  (shx-assert "The timer list is not empty." (eq 1 (length (shx--get-timer-list))))
-  (cancel-timer (car (shx--get-timer-list)))
-  (shx-assert "The timer list is empty again." (not (shx--get-timer-list))))
+      (shx-warn "Warning: :stop all timers to run timing tests")
+    (shx-assert "The timer list starts empty." (not (shx--get-timer-list)))
+    (shx--delay-input "10 sec" "stub command")
+    (shx-assert "The timer list is not empty." (eq 1 (length (shx--get-timer-list))))
+    (cancel-timer (car (shx--get-timer-list)))
+    (shx-assert "The timer list is empty again." (not (shx--get-timer-list)))))
 
 (provide 'shx-test)
 ;;; shx-test ends here
