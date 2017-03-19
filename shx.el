@@ -67,6 +67,9 @@
 (defcustom shx-auto-run nil
   "Whether to automatically run shx in all comint sessions.")
 
+(defcustom shx-add-more-syntax-highlighting t
+  "Whether to add more syntax highlighting to the shell-mode.")
+
 (defcustom shx-triggers
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function).")
@@ -74,7 +77,7 @@
 (defvar shx-cmd-prefix "shx-cmd/"
   "Prefix for user-command functions.")
 
-(defvar shx-cmd-syntax "\\(\\w+\\)[\s\t]*\\(.*[^\s\t]?\\)"
+(defvar shx-cmd-syntax "\\([^[:space:]]+\\)[[:space:]]*\\(.*[^[:space:]]?\\)"
   "Regex for recognizing shx commands in input or markup.")
 
 (defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">$")
@@ -269,20 +272,31 @@ buffer's `process-mark'."
   "Return a list of all shx commands."
   (all-completions shx-cmd-prefix obarray 'functionp))
 
+(defun shx--quote-regexp (delimiter &optional max-length)
+  "Regexp matching strings delimited by DELIMITER.
+MAX-LENGTH is the length of the longest match (default 80)."
+  (concat delimiter
+          "[^" delimiter "]" "\\{0," (format "%d" (or max-length 80)) "\\}"
+          delimiter))
+
 (defun shx--shell-mode-font-locks ()
-  "Some additional syntax highlighting for shell-mode."
-  `(("#.*\\'"                                     0 'font-lock-comment-face)
-    ("~"                                          0 'font-lock-preprocessor-face)
-    ("\"[^\"]*[^\\]\"?"                           0 'font-lock-string-face)
-    ("[^[:alpha:]]'[^']*[^\\]'?"                  0 'font-lock-string-face)
-    (,(regexp-opt '(">" "<" "&&" "|" "`"))        0 'font-lock-keyword-face)
-    (,(concat "[^[:alnum:]" shx-leader "]" "\\(" shx-leader
-              (regexp-opt (mapcar (lambda (cmd)
-                                    (substring cmd (length shx-cmd-prefix)))
-                                  (shx--all-commands)))
-              "\\).*\\'")                         1 'font-lock-constant-face)
-    ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
-    ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face)))
+  "Return a list of additional syntax highlights for shell-mode."
+  (when shx-add-more-syntax-highlighting
+    `(("#.*\\'"                                     0 'font-lock-comment-face)
+      ("~"                                          0 'font-lock-preprocessor-face)
+      (,(regexp-opt '(">" "<" "&&" "|"))            0 'font-lock-keyword-face)
+      (,(shx--quote-regexp "`")                     0 'font-lock-preprocessor-face)
+      (,(shx--quote-regexp "\"")                    0 'font-lock-string-face)
+      ;; disallow leading alphabet chars so we don't match on contractions
+      (,(concat "[^A-Za-z]\\(" (shx--quote-regexp "'") "\\)")
+       1 'font-lock-string-face)
+      (,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
+                (regexp-opt (mapcar (lambda (cmd)
+                                      (substring cmd (length shx-cmd-prefix)))
+                                    (shx--all-commands)))
+                "\\).*\\'")                         1 'font-lock-constant-face)
+      ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
+      ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))))
 
 (defun shx--safe-as-markup? (command)
   "Return t if COMMAND is safe to call to generate markup.
