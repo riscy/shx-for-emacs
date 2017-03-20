@@ -9,19 +9,12 @@
 
 ;;; Commentary:
 
-;; shx or "shell-extras" extends comint-mode:
-;; - It parses simple markup in the output stream
-;;   - Plots/graphics can be automatically embedded in the shell
-;;   - Links become clickable and keyboard accessible (either through
-;;     <return> or C-c C-b)
-;; - It adds several command-line functions which plug into Emacs
-;;   - :e to edit a file, or :f to fuzzy-find files.
-;;   - :plot <file> to display an image plotting some data
-;;   - ...and adding new functions is easy.
+;; shx or "shell-extras" extends comint-mode.  It parses simple markup in the
+;; output stream (enabling plots and graphics to be embedded in the shell) and
+;; adds several command-line functions which plug into Emacs (for example, use
+;; :e <filename> to edit a file).  See README.org for more details.
 ;;
 ;; This version tested with Emacs 25.1.1
-;;
-;; See README.org for more details.
 
 ;;; Installation:
 
