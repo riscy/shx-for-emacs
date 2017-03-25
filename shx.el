@@ -723,7 +723,7 @@ Example file contents 2:
 2
 3
 5"
-  (shx-insert-plot filename "plot" "w lp lw 1 ps 2 pt 7 notitle"))
+  (shx-insert-plot filename "plot" "w l lw 1 notitle"))
 (defalias 'shx-cmd/plot #'shx-cmd/plotline) ; TODO: deprecated
 
 (defun shx-cmd/plot3d (filename)
