@@ -129,19 +129,10 @@
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  ;; auto-switch to insert mode
-  (and (featurep 'evil-vars)
-       (equal evil-state 'normal)
-       (featurep 'evil-commands)
-       (evil-insert 1))
+  (shx--switch-to-insert-mode)
   (if (> (length (shx--current-input)) 1000)
       (message "Input too long (shorten to < 1000 chars)")
-    ;; timestamp the previous prompt
-    (unless comint-prompt-read-only
-      (add-text-properties
-       (let ((inhibit-field-text-motion t)) (point-at-bol))
-       (process-mark (get-buffer-process (current-buffer)))
-       `(help-echo ,(format-time-string "At %X"))))
+    (shx--timestamp-prompt)
     (comint-send-input nil t)))
 
 (defun shx-filter-input (process input)
@@ -158,6 +149,21 @@ This function overrides `comint-input-sender'."
         (set-marker (process-mark process) (point)))
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
+
+(defun shx--switch-to-insert-mode ()
+  "Switch to insert mode when using evil-mode."
+  (and (featurep 'evil-vars)
+       (equal evil-state 'normal)
+       (featurep 'evil-commands)
+       (evil-insert 1)))
+
+(defun shx--timestamp-prompt ()
+  "Add a mouseover timestamp to the last prompt."
+  (unless comint-prompt-read-only
+    (add-text-properties
+     (let ((inhibit-field-text-motion t)) (point-at-bol))
+     (process-mark (get-buffer-process (current-buffer)))
+     `(help-echo ,(format-time-string "At %X")))))
 
 
 ;;; output
@@ -384,7 +390,7 @@ Useful for paging through less."
   (if (not (get-buffer-process (current-buffer)))
       (kill-buffer) ; if there's no process, kill the buffer
     (if (string= (shx--current-input) "")
-        (process-send-string nil "")
+        (process-send-eof)
       (goto-char (point-max))
       (comint-kill-input))))
 
