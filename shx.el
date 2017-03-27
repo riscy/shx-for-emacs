@@ -783,7 +783,10 @@ Example file contents 2:
             :before (lambda (arg) (goto-char (point-max))))
 (advice-add 'comint-kill-input
             :before (lambda ()
-                      (when (featurep 'evil-commands) (evil-insert 1))
+                      (and (featurep 'evil-vars)
+                           (equal evil-state 'normal)
+                           (featurep 'evil-commands)
+                           (evil-insert 1))
                       (goto-char (point-max))))
 (advice-add 'comint-previous-prompt
             :after (lambda (arg) (recenter-top-bottom 0)))
