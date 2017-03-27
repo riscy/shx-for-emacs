@@ -57,6 +57,18 @@ Example:
               (equal '("first file" "second file" "third")
                      (shx--parse-filenames "'first file' 'second file' 'third'"))))
 
+(defun shx-test-magic-insert ()
+  "Test magic insert."
+  (insert "^:test^^")
+  (shx-magic-insert)
+  (shx-assert "Inline substitution."
+              (equal (shx--current-input) ""))
+  (insert ":test !!")
+  (shx-magic-insert)
+  (shx-assert "Previous command expansion."
+              (equal (shx--current-input) ":test :test"))
+  (comint-kill-input))
+
 (defun shx-test-filename-parsing ()
   "Test filename parsing."
   (shx-assert "Filename splitting works with mixed apostrophes."

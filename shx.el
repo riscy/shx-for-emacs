@@ -54,6 +54,9 @@
 (defcustom shx-img-height 300
   "Height to display inline images at.")
 
+(defcustom shx-use-magic-insert t
+  "Whether to use `shx-magic-insert' (q.v.).")
+
 (defcustom shx-leader ":"
   "Prefix for calling user commands.")
 
@@ -94,9 +97,9 @@
   "Keymap used for shx; inherits PARENT."
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap (or parent (current-local-map)))
-    ;; send these characters straight through in some circumstances
-    (define-key keymap " " #'shx-send-or-insert)
-    (define-key keymap "q" #'shx-send-or-insert)
+    (when shx-use-magic-insert
+      (define-key keymap " " #'shx-magic-insert)
+      (define-key keymap "q" #'shx-magic-insert))
     ;; redefine some of comint-mode's existing bindings
     (define-key keymap (kbd "C-c C-z") #'shx-send-stop)
     (define-key keymap (kbd "C-c C-d") #'shx-send-eof)
@@ -365,9 +368,10 @@ FILES can have various styles of quoting and escaping."
 
 ;;; sending/inserting
 
-(defun shx-send-or-insert ()
+(defun shx-magic-insert ()
   "When the prompt is a colon, send the key pressed, else insert it.
-Useful for paging through less."
+Useful for paging through less.  Also uses `comint-magic-space'
+to complete substitutions like !!, ^pattern^replacement, etc."
   (interactive)
   (let ((on-last-line (shx-point-on-input?)))
     (if (and on-last-line
@@ -377,7 +381,9 @@ Useful for paging through less."
           (message "shx: sending %s" (this-command-keys))
           (process-send-string nil (this-command-keys)))
       (unless on-last-line (goto-char (point-max)))
-      (self-insert-command 1))))
+      (if shx-use-magic-insert
+          (comint-magic-space 1)
+        (self-insert-command 1)))))
 
 (defun shx-send-break ()
   "Send a BREAK signal to the current process."
