@@ -24,7 +24,7 @@
 ;; 2. Next add this line to your .emacs:
 ;;    (require 'shx)
 ;;
-;; By default, shx runs automatically in comint-mode buffers.
+;; By default, shx runs automatically in all comint-mode buffers.
 ;;
 ;; Use M-x customize-group RET shx RET to see customization options.
 
@@ -60,8 +60,11 @@
 (defcustom shx-leader ":"
   "Prefix for calling user commands.")
 
-(defcustom shx-auto-run nil
-  "Whether to automatically run shx in all comint sessions.")
+(defcustom shx-comint-advise t
+  "Whether to modify (i.e., advise) a number of comint-mode functions.")
+
+(defcustom shx-comint-auto-run t
+  "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode].")
 
 (defcustom shx-add-more-syntax-highlighting t
   "Whether to add more syntax highlighting to the shell-mode.")
@@ -771,27 +774,28 @@ Example file contents 2:
   "To self-document the shx/shx-active functions.")
 
 ;; Add hooks and advise some existing comint functions:
-(when shx-auto-run (add-hook 'comint-mode-hook 'shx-activate))
 (add-hook 'shell-mode-hook 'shx-for-shell-mode) ; always run in shell-mode
-(advice-add 'comint-send-eof
-            :before (lambda () (goto-char (point-max))))
-(advice-add 'comint-history-isearch-backward-regexp
-            :before (lambda () (goto-char (point-max))))
-(advice-add 'comint-previous-input
-            :before (lambda (arg) (goto-char (point-max))))
-(advice-add 'comint-next-input
-            :before (lambda (arg) (goto-char (point-max))))
-(advice-add 'comint-kill-input
-            :before (lambda ()
-                      (and (featurep 'evil-vars)
-                           (equal evil-state 'normal)
-                           (featurep 'evil-commands)
-                           (evil-insert 1))
-                      (goto-char (point-max))))
-(advice-add 'comint-previous-prompt
-            :after (lambda (arg) (recenter-top-bottom 0)))
-(advice-add 'comint-next-prompt
-            :after (lambda (arg) (recenter-top-bottom 0)))
+(when shx-comint-auto-run (add-hook 'comint-mode-hook 'shx-activate))
+(when shx-comint-advise
+  (advice-add 'comint-send-eof
+              :before (lambda () (goto-char (point-max))))
+  (advice-add 'comint-history-isearch-backward-regexp
+              :before (lambda () (goto-char (point-max))))
+  (advice-add 'comint-previous-input
+              :before (lambda (arg) (goto-char (point-max))))
+  (advice-add 'comint-next-input
+              :before (lambda (arg) (goto-char (point-max))))
+  (advice-add 'comint-kill-input
+              :before (lambda ()
+                        (and (featurep 'evil-vars)
+                             (equal evil-state 'normal)
+                             (featurep 'evil-commands)
+                             (evil-insert 1))
+                        (goto-char (point-max))))
+  (advice-add 'comint-previous-prompt
+              :after (lambda (arg) (recenter-top-bottom 0)))
+  (advice-add 'comint-next-prompt
+              :after (lambda (arg) (recenter-top-bottom 0))))
 
 (defun shx-activate ()
   "Activate shx on the current buffer.

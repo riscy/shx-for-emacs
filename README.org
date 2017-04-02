@@ -57,12 +57,12 @@
   (require 'shx)                            ; load shell-extras
   #+end_src
 
-  Now shx will run automatically in any ~shell-mode~ buffer.  If you
-  additionally want shx to run in /every/ comint-mode buffer, customize the
-  variable ~shx-auto-run~ to ~t~.
+  Now shx will run automatically in any ~comint-mode~ buffer, including
+  ~shell-mode~.  If you don't want shx to run in every comint-mode buffer, use
+  ~M-x customize-group RET shx RET~ and set ~shx-comint-auto-run~ to ~nil~.
 
-  Type ~M-x shx <return>~ to begin a new shell session with shx.  The following
-  commands will get you started:
+  Typing ~M-x shx <return>~ begins a new ~shell~ session with shx enabled.  The
+  following commands will get you started:
   1. Type ~:man ls~ and the man page for ~ls~ will be brought up within Emacs.
   2. Type ~:help~ and you'll see a list of commands you can run besides ~:man~
      and ~:help~.
