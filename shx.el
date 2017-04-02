@@ -709,7 +709,7 @@ Example file contents:
                              set yrange [0:];
                              set style fill solid 1.0 border -1;
                              plot" "u 2:xticlabels(1) notitle"))
-(defalias 'shx-cmd/barplot #'shx-cmd/plotbar) ; TODO: deprecated
+(define-obsolete-function-alias 'shx-cmd/barplot #'shx-cmd/plotbar)
 
 (defun shx-cmd/plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
@@ -722,7 +722,7 @@ Example file contents:
                                (0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\",
                                 3 \"#55a550\", 4 \"#1e5500\");
                              plot" "u 1:(-$2):3 matrix w image notitle"))
-(defalias 'shx-cmd/matrix #'shx-cmd/plotmatrix) ; TODO: deprecated
+(define-obsolete-function-alias 'shx-cmd/matrix #'shx-cmd/plotmatrix)
 
 (defun shx-cmd/plotline (filename)
   "(SAFE) Show line plot of FILENAME.
@@ -736,7 +736,7 @@ Example file contents 2:
 3
 5"
   (shx-insert-plot filename "plot" "w l lw 1 notitle"))
-(defalias 'shx-cmd/plot #'shx-cmd/plotline) ; TODO: deprecated
+(define-obsolete-function-alias 'shx-cmd/plot #'shx-cmd/plotline)
 
 (defun shx-cmd/plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
@@ -758,7 +758,7 @@ Example file contents 2:
 3
 5"
   (shx-insert-plot filename "plot" "w p ps 2 pt 7 notitle"))
-(defalias 'shx-cmd/scatter #'shx-cmd/plotscatter) ; TODO: deprecated
+(define-obsolete-function-alias 'shx-cmd/scatter #'shx-cmd/plotscatter)
 
 (defun shx-cmd/view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
