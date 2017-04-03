@@ -61,7 +61,7 @@
   "Prefix for calling user commands.")
 
 (defcustom shx-comint-advise t
-  "Whether to modify (i.e., advise) a number of comint-mode functions.")
+  "Whether to modify (i.e., advise) a number of `comint-mode' functions.")
 
 (defcustom shx-comint-auto-run t
   "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode].")
@@ -285,7 +285,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
           delimiter))
 
 (defun shx--shell-mode-font-locks ()
-  "Return a list of additional syntax highlights for shell-mode."
+  "Return some additional syntax highlighting for shell-mode."
   (when shx-add-more-syntax-highlighting
     `(("#.*\\'"                                     0 'font-lock-comment-face)
       ("~"                                          0 'font-lock-preprocessor-face)
@@ -507,8 +507,8 @@ REPEAT-INTERVAL specifies delays between repetitions."
 (defun shx-cmd/delay (args)
   "Run a command after a specific delay.
 ARGS are <delay in seconds> <command>.
-Cancel with :stop.
-Example:
+Cancel a delayed command with :stop (`shx-cmd/stop').
+\nExample:\n
   :delay 10 echo Ten seconds are up!"
   (cond
    ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
@@ -522,8 +522,8 @@ Example:
 (defun shx-cmd/pulse (args)
   "Repeat a shell command indefinitely with a given delay.
 ARGS are <deley in seconds> <command>.
-Cancel with :stop.
-Example:
+Cancel a pulsing command with :stop (`shx-cmd/stop').
+\nExample:\n
   :pulse 10 date"
   (cond
    ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
@@ -537,8 +537,8 @@ Example:
 (defun shx-cmd/repeat (args)
   "Repeat a shell command a number of times with a given delay.
 ARGS are <count> <delay in seconds> <command>.
-Use :stop to cancel.
-Example:
+Cancel a repeating command with :stop (`shx-cmd/stop').
+\nExample:\n
   :repeat 3 1 echo Echo... echo... echo..."
   (cond
    ((string-match "^\\([0-9]+\\)\\s-+\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
@@ -552,9 +552,9 @@ Example:
    (t (shx-insert 'error "repeat <count> <delay> <command>\n"))))
 
 (defun shx-cmd/stop (timer-number)
-  "(SAFE) Stop the specified timer.
+  "(SAFE) Stop the specified shx timer.
 If a TIMER-NUMBER is not supplied, enumerate all shx timers.
-Examples:
+\nExamples:\n
   :stop
   :stop 3"
   (setq timer-number (1- (string-to-number timer-number)))
@@ -590,18 +590,18 @@ therefore ensure `comint-prompt-read-only' is nil."
 
 (defun shx-cmd/diff (files)
   "(SAFE) Launch an Emacs `ediff' between FILES.
-Example:
-:diff file1.txt file2.csv"
+\nExample:\n
+  :diff file1.txt file2.csv"
   (shx-insert "Invoking ediff " files "\n")
   (shx--asynch-funcall
    'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
 
 (defun shx-cmd/edit (file)
   "(SAFE) open FILE in the current window.
-Example:
-:e directory/to/file
-Or, to edit a remote file using tramp:
-:e /username@server:directory/to/file"
+\nExamples:\n
+  :e directory/to/file
+\nOr edit a remote file using `tramp':\n
+  :e /user@server#port:directory/to/file"
   (if (equal file "")
       (shx--asynch-funcall #'find-file (list "" t))
     (let ((name (expand-file-name (car (shx--parse-filenames file)))))
@@ -628,19 +628,20 @@ Or, to edit a remote file using tramp:
 
 (defun shx-cmd/grep (pattern)
   "(SAFE) Launch a grep for PATTERN.
-Examples:
+\nExamples:\n
   :grep -r 'pattern' *
   :grep 'pattern' * | grep -v 'exclusion'"
   (grep (format "grep -nH %s" pattern)))
 
 (defun shx-cmd/header (header)
- "(SAFE) Set the header-line to to HEADER.
+  "(SAFE) Set the header-line to to HEADER.
 See `header-line-format' for formatting options.
-Examples:
-:header remote:%@  status:%s  size:%i
-:header
-PS1=\"<header \\$(git rev-parse --abbrev-ref HEAD)>\\\\n$PS1\"
-PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
+\nExamples:\n
+  :header remote:%@  status:%s  size:%i
+  :header
+\nOr, adding <header ...> in markup form to your prompt:\n
+  export PS1=\"<header \\$(git rev-parse --abbrev-ref HEAD)>\\\\n$PS1\"
+  export PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
   (setq header-line-format
         (and (not (string= header "")) header)))
 
@@ -652,9 +653,9 @@ If function doesn't exist (or none is supplied), read from user."
 
 (defun shx-cmd/eval (sexp)
   "Evaluate the elisp SEXP.
-Examples:
-:eval (format \"%d\" (+ 1 2))
-:eval (* 2 (+ 3 5))"
+\nExamples:\n
+  :eval (format \"%d\" (+ 1 2))
+  :eval (* 2 (+ 3 5))"
   (condition-case nil
       (let ((originating-buffer (current-buffer))
             (output (format "%s\n" (eval (car (read-from-string sexp))))))
@@ -678,15 +679,18 @@ See `Man-notify-method' for what happens when the page is ready."
 
 (defun shx-cmd/oedit (file)
   "(SAFE) open FILE in other window.
-Syntax: :o[edit] directory/to/file
-Syntax: :o[edit] /username@server:~/directory/to/file"
+\nExamples:\n
+  :oedit directory/to/file
+  :oedit /username@server:~/directory/to/file"
   (if (equal file "")
       (find-file-other-window "")
     (find-file-other-window
      (expand-file-name (replace-regexp-in-string "\\\\" "" file)))))
 
 (defun shx-cmd/pwd (_args)
-  "(SAFE) Show what Emacs thinks the pwd is."
+  "(SAFE) Show what Emacs thinks the default directory is.
+If you're at a shell prompt, you can use \\[shell-resync-dirs] to
+Emacs' pwd to the shell's pwd."
   (shx-insert default-directory "\n"))
 
 (defun shx-cmd/ssh (host)
@@ -702,10 +706,10 @@ Syntax: :ssh hostname"
 
 (defun shx-cmd/plotbar (filename)
   "(SAFE) Show barplot of FILENAME.
-Example file contents:
-\"Topic 1\" YHEIGHT1
-\"Topic 2\" YHEIGHT2
-\"Topic 3\" YHEIGHT3"
+\nFor example, :plotbar file.dat where file.dat contains:\n
+  \"Topic 1\" YHEIGHT1
+  \"Topic 2\" YHEIGHT2
+  \"Topic 3\" YHEIGHT3"
   (shx-insert-plot filename "set boxwidth 1.5 relative;
                              set style data histograms;
                              set xtic rotate by -40 scale 0 font \",10\";
@@ -716,10 +720,10 @@ Example file contents:
 
 (defun shx-cmd/plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
-Example file contents:
-1.5   2    3
-4     5    6
-7     8    9.5"
+\nFor example, :plotmatrix file.dat where file.dat contains:\n
+  1.5   2    3
+  4     5    6
+  7     8    9.5"
   (shx-insert-plot filename "set view map; unset xtics; unset ytics;
                              unset title; set colorbox; set palette defined
                                (0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\",
@@ -729,15 +733,15 @@ Example file contents:
 
 (defun shx-cmd/plotline (filename)
   "(SAFE) Show line plot of FILENAME.
-Example file contents 1:
-1 2
-2 4
-4 8
-Example file contents 2:
-1
-2
-3
-5"
+\nFor example, :plotline file.dat where file.dat contains:\n
+  1 2
+  2 4
+  4 8
+\nOr just a single column:\n
+  1
+  2
+  3
+  5"
   (shx-insert-plot filename "plot" "w l lw 1 notitle"))
 (define-obsolete-function-alias 'shx-cmd/plot #'shx-cmd/plotline)
 
@@ -751,15 +755,15 @@ http://www.gnuplotting.org/tag/pm3d/"
 
 (defun shx-cmd/plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
-Example file contents 1:
-1 2
-2 4
-4 8
-Example file contents 2:
-1
-2
-3
-5"
+\nFor example, :plotscatter file.dat, where file.dat contains:
+  1 2
+  2 4
+  4 8
+\nOr just a single column:\n
+  1
+  2
+  3
+  5"
   (shx-insert-plot filename "plot" "w p ps 2 pt 7 notitle"))
 (define-obsolete-function-alias 'shx-cmd/scatter #'shx-cmd/plotscatter)
 
