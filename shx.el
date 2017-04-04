@@ -694,11 +694,13 @@ Emacs' pwd to the shell's pwd."
   (shx-insert default-directory "\n"))
 
 (defun shx-cmd/ssh (host)
-  "(SAFE) open a shell on (remote) HOST using tramp.
-Syntax: :ssh hostname"
+  "Open a shell on (remote) HOST using tramp.
+Benefit from the remote host's completions.
+Syntax: :ssh hostname:port"
   (if (equal host "")
       (shx-insert 'error "ssh host\n")
-    (let ((default-directory (concat "/" host ":~")))
+    (let* ((host (replace-regexp-in-string ":" "#" host))
+           (default-directory (concat "/" host ":~")))
       (shx))))
 
 
