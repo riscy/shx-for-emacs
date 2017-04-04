@@ -277,6 +277,15 @@ buffer's `process-mark'."
   "Return a list of all shx commands."
   (all-completions shx-cmd-prefix obarray 'functionp))
 
+(defun shx--expand-filename (filename)
+  "Expand FILENAME to include an absolute path.
+Warn the user if there are characters in the string that could be
+used in an injection attack."
+  (if (string-match "[\"';&<>]" filename)
+      (shx-insert 'error "shx can't securely accept special characters "
+                  "like '" (match-string 0 filename) "' in a filename")
+    (expand-file-name filename)))
+
 (defun shx--quote-regexp (delimiter &optional max-length)
   "Regexp matching strings delimited by DELIMITER.
 MAX-LENGTH is the length of the longest match (default 80)."
@@ -444,7 +453,7 @@ to complete substitutions like !!, ^pattern^replacement, etc."
   "Insert image FILENAME into the buffer."
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
          (status (call-process
-                  shx-path-to-convert nil t nil (expand-file-name filename)
+                  shx-path-to-convert nil t nil (shx--expand-filename filename)
                   "-resize" (format "x%d>" shx-img-height) img-name)))
     (when (zerop status)
       (let ((pos (point)))
@@ -463,7 +472,7 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                                        (face-attribute 'default :foreground) "\";"
                                        "set out \"" img-name "\"; "
                                        plot-command " \""
-                                       (expand-file-name filename) "\" "
+                                       (shx--expand-filename filename) "\" "
                                        line-style)))
       (shx-insert-image img-name))))
 
