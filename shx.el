@@ -46,32 +46,41 @@
           "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-path-to-convert "convert"
-  "Path to ImageMagick's convert binary.")
+  "Path to ImageMagick's convert binary."
+  :type 'string)
 
 (defcustom shx-path-to-gnuplot "gnuplot"
-  "Path to gnuplot binary.")
+  "Path to gnuplot binary."
+  :type 'string)
 
 (defcustom shx-img-height 300
-  "Height to display inline images at.")
+  "Height to display inline images at."
+  :type 'integer)
 
 (defcustom shx-use-magic-insert t
-  "Whether to use `shx-magic-insert' (q.v.).")
+  "Whether to use `shx-magic-insert' (q.v.)."
+  :type 'boolean)
 
 (defcustom shx-leader ":"
-  "Prefix for calling user commands.")
+  "Prefix for calling user commands."
+  :type 'regexp)
 
 (defcustom shx-comint-advise t
-  "Whether to modify (i.e., advise) a number of `comint-mode' functions.")
+  "Whether to modify (i.e., advise) a number of `comint-mode' functions."
+  :type 'boolean)
 
 (defcustom shx-comint-auto-run t
-  "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode].")
+  "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode]."
+  :type 'boolean)
 
 (defcustom shx-add-more-syntax-highlighting t
-  "Whether to add more syntax highlighting to the shell-mode.")
+  "Whether to add more syntax highlighting to the shell-mode."
+  :type 'boolean)
 
 (defcustom shx-triggers
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
-  "Triggers of the form: (regexp . function).")
+  "Triggers of the form: (regexp . function)."
+  :type '(alist :key-type regexp :value-type function))
 
 (defvar shx-cmd-prefix "shx-cmd/"
   "Prefix for user-command functions.")
