@@ -21,18 +21,19 @@
 * Description
   /shx/ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
 
-  It parses the output stream in a few useful ways:
-  - Graphics and plots can be displayed in the shell using a simple markup
+  Parse the output stream in a few useful ways:
+  - *Display graphics and plots* in the shell with a simple markup
     language (e.g., ~<view image.png>~)
-  - Event-driven and timed behaviors are easy to add to any shell session.
-  - Arrow up to any filename or URL and press ~<enter>~ on it to open it
-  - Arrow up to any line and press ~C-<enter>~ to yank it to the prompt.
-  - Mousing over a prompt shows a timestamp so you know when a command ran.
+  - *Add event-driven and timed behaviors* to any shell session
+  - *Open any filename or URL* by arrowing up to it and pressing ~<enter>~
+  - *Yank any line to the prompt* by arrowing up to it and pressing ~C-<enter>~
+  - *Check the time a command was run* by mousing over its prompt
 
-  It lets you write new shell commands in elisp. Some existing ~shx~ commands:
-  - ~:e filename.txt~ to open a file in a new buffer for editing.
-  - ~:view image_file.png~ to inline an image in the shell.
-  - ~:plotline data_file.txt~ to render a line plot of a data file.
+  Write new shell commands in elisp -- and lots already exist:
+  - ~:e filename.txt~ opens a file in a new buffer for editing
+  - ~:ssh user@host:port~ ssh's to the supplied host using tramp
+  - ~:view image_file.png~ displays an image in the shell
+  - ~:plotline data_file.txt~ renders a line plot of a data file
 
   Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
@@ -235,14 +236,3 @@
 
   Change the height of the tail to something else by customizing the
   ~shx-split-rows~ variable.
-# * Future
-#   Double-check that everything here is being met
-#   https://www.gnu.org/software/emacs/manual/html_node/elisp/Filter-Functions.html
-#   ...by shx-filter-input, and shx-parse-output-for-markup
-#   Make shx into a minor mode?
-#   http://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Minor-Modes.html
-#   http://nullprogram.com/blog/2013/02/06/
-# There is a shx-split bug where if you change the window while a split is
-# active the tail will change its size.
-# (add-hook 'window-configuration-change-hook some-fix)
-# Add to MELPA, i.e. as https://github.com/melpa/melpa/blob/master/recipes/s
