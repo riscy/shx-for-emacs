@@ -53,10 +53,7 @@ Example:
 (defun shx-test-shx ()
   "Test core shx functions."
   (shx-assert "Image height is a positive integer."
-              (and (integerp shx-img-height) (> shx-img-height 0)))
-  (shx-assert "Filename splitting works with apostrophes."
-              (equal '("first file" "second file" "third")
-                     (shx--parse-filenames "'first file' 'second file' 'third'"))))
+              (and (integerp shx-img-height) (> shx-img-height 0))))
 
 (defun shx-test-magic-insert ()
   "Test magic insert."
@@ -72,6 +69,9 @@ Example:
 
 (defun shx-test-filename-parsing ()
   "Test filename parsing."
+  (shx-assert "Filename splitting works with apostrophes."
+              (equal '("first file" "second file" "third")
+                     (shx--parse-filenames "'first file' 'second file' 'third'")))
   (shx-assert "Filename splitting works with mixed apostrophes."
               (equal '("first file" "secondfile")
                      (shx--parse-filenames "'first file' secondfile")))
