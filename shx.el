@@ -627,7 +627,7 @@ therefore ensure `comint-prompt-read-only' is nil."
 (defalias 'shx-cmd/e #'shx-cmd/edit)
 
 (defun shx-cmd/find (file)
-  "(SAFE) run fuzzy find for FILE."
+  "Run fuzzy find for FILE."
   (if (equal file "")
       (shx-insert 'error "find <prefix>\n")
     (let* ((fuzzy-file (mapconcat 'char-to-string (string-to-list file) "*"))
@@ -640,12 +640,11 @@ therefore ensure `comint-prompt-read-only' is nil."
         (insert "\n")))))
 
 (defun shx-cmd/g (pattern)
-  "(SAFE) Launch a recursive grep for PATTERN."
-  ;;(grep (format "grep -irnH '%s' *" pattern)))
-  (grep (format "ag --noheading -ir '%s'" pattern)))
+  "Launch a recursive grep for PATTERN."
+  (grep (format "grep -irnH '%s' *" pattern)))
 
 (defun shx-cmd/grep (pattern)
-  "(SAFE) Launch a grep for PATTERN.
+  "Launch a grep for PATTERN.
 \nExamples:\n
   :grep -r 'pattern' *
   :grep 'pattern' * | grep -v 'exclusion'"
@@ -682,7 +681,7 @@ If function doesn't exist (or none is supplied), read from user."
     (error (shx-insert 'error "invalid sexp\n"))))
 
 (defun shx-cmd/man (topic)
-  "(SAFE) Launch an Emacs `man' window for TOPIC.
+  "Launch an Emacs `man' window for TOPIC.
 See `Man-notify-method' for what happens when the page is ready."
   (if (equal topic "")
       (shx-insert 'error "man <topic>\n")
