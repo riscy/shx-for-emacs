@@ -35,9 +35,10 @@ Example:
     (goto-char (point-max))
     (forward-line -1)
     (goto-char (point-at-eol))
-    (if val
-        (shx-insert 'font-lock-string-face "✔")
-      (shx-insert 'error (format "\n✘ %s" comment)))))
+    (if (not val)
+      (shx-insert 'error (format "\n✘ %s" comment))
+      (shx-insert 'font-lock-string-face "✔")
+      t)))
 
 (defun shx-warn (text)
   (save-excursion
