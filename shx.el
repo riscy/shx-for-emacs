@@ -730,12 +730,14 @@ Syntax: :ssh hostname:port"
   \"Topic 1\" YHEIGHT1
   \"Topic 2\" YHEIGHT2
   \"Topic 3\" YHEIGHT3"
-  (shx-insert-plot filename "set boxwidth 1.5 relative;
-                             set style data histograms;
-                             set xtic rotate by -40 scale 0 font \",10\";
-                             set yrange [0:];
-                             set style fill solid 1.0 border -1;
-                             plot" "u 2:xticlabels(1) notitle"))
+  (shx-insert-plot filename
+                   (concat "set boxwidth 1.5 relative;"
+                           "set style data histograms;"
+                           "set xtic rotate by -40 scale 0 font \",10\";"
+                           "set yrange [0:];"
+                           "set style fill solid 1.0 border -1;"
+                           "plot")
+                   "u 2:xticlabels(1) notitle"))
 (define-obsolete-function-alias 'shx-cmd/barplot #'shx-cmd/plotbar)
 
 (defun shx-cmd/plotmatrix (filename)
@@ -744,11 +746,13 @@ Syntax: :ssh hostname:port"
   1.5   2    3
   4     5    6
   7     8    9.5"
-  (shx-insert-plot filename "set view map; unset xtics; unset ytics;
-                             unset title; set colorbox; set palette defined
-                               (0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\",
-                                3 \"#55a550\", 4 \"#1e5500\");
-                             plot" "u 1:(-$2):3 matrix w image notitle"))
+  (shx-insert-plot filename
+                   (concat "set view map; unset xtics; unset ytics;"
+                           "unset title; set colorbox; set palette defined"
+                           "(0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\","
+                           "3 \"#55a550\", 4 \"#1e5500\");"
+                           "plot")
+                   "u 1:(-$2):3 matrix w image notitle"))
 (define-obsolete-function-alias 'shx-cmd/matrix #'shx-cmd/plotmatrix)
 
 (defun shx-cmd/plotline (filename)
@@ -769,9 +773,9 @@ Syntax: :ssh hostname:port"
   "(SAFE) Show surface plot of FILENAME.
 Read about gnuplot's expectations of the data here:
 http://www.gnuplotting.org/tag/pm3d/"
-  (shx-insert-plot filename "unset tics;
-                             set view 4, 20, 1.4, 1;
-                             splot" "w pm3d notitle"))
+  (shx-insert-plot filename
+                   "unset tics;set view 4, 20, 1.4, 1;splot"
+                   "w pm3d notitle"))
 
 (defun shx-cmd/plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
