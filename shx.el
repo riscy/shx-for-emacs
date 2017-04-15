@@ -685,13 +685,11 @@ If function doesn't exist (or none is supplied), read from user."
 See `Man-notify-method' for what happens when the page is ready."
   (if (equal topic "")
       (shx-insert 'error "man <topic>\n")
-    (shx-insert "Invoking 'man " topic "' in other window\n")
     (man topic)))
 
 (defun shx-cmd/name (name)
   "(SAFE) Rename the current buffer to NAME."
-  (if (ignore-errors (rename-buffer (concat "*" name "*")))
-      (shx-insert "Renaming buffer to *" name "*\n")
+  (unless (ignore-errors (rename-buffer (concat "*" name "*")))
     (shx-insert 'error "Can't rename buffer to *" name "* (is this name taken?)\n")))
 
 (defun shx-cmd/oedit (file)
