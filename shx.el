@@ -712,7 +712,8 @@ See `Man-notify-method' for what happens when the page is ready."
   (if (equal file "")
       (find-file-other-window "")
     (find-file-other-window
-     (expand-file-name (replace-regexp-in-string "\\\\" "" file)))))
+     (let ((name (expand-file-name (car (shx--parse-filenames file)))))
+       (expand-file-name (replace-regexp-in-string "\\\\" "" file))))))
 
 (defun shx-cmd/pwd (_args)
   "(SAFE) Show what Emacs thinks the default directory is.
