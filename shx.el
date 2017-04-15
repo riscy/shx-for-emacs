@@ -42,7 +42,7 @@
   :prefix "shx-"
   :group 'comint
   :link '(url-link
-          :tag "Github"
+          :tag "shx on Github"
           "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-path-to-convert "convert"
@@ -54,11 +54,11 @@
   :type 'string)
 
 (defcustom shx-img-height 300
-  "Height to display inline images at."
+  "The height at which inlined images are displayed."
   :type 'integer)
 
 (defcustom shx-use-magic-insert t
-  "Whether to use `shx-magic-insert' (q.v.)."
+  "Whether to use the `shx-magic-insert' function."
   :type 'boolean)
 
 (defcustom shx-leader ":"
@@ -75,6 +75,10 @@
 
 (defcustom shx-add-more-syntax-highlighting t
   "Whether to add more syntax highlighting to the shell-mode."
+  :type 'boolean)
+
+(defcustom shx-show-hints t
+  "Whether to show hints in the form of messages."
   :type 'boolean)
 
 (defcustom shx-triggers
@@ -97,10 +101,10 @@
 (defvar-local shx-urls nil
   "Local record of URLs seen.")
 
-(defvar shx-click (let ((keymap (make-sparse-keymap)))
-                    (define-key keymap [mouse-1] 'ffap-at-mouse)
-                    keymap)
-  "Keymap for capturing mouse clicks on filenames.")
+(defvar shx-click-file (let ((keymap (make-sparse-keymap)))
+                         (define-key keymap [mouse-1] 'ffap-at-mouse)
+                         keymap)
+  "Keymap for capturing mouse clicks on files/URLs.")
 
 
 ;;; input
@@ -295,6 +299,10 @@ used in an injection attack."
                   "like '" (match-string 0 filename) "' in a filename")
     (expand-file-name filename)))
 
+(defun shx--hint (text)
+  "Show a hint containing TEXT."
+  (when shx-show-hints (message (concat "Hint: " text))))
+
 (defun shx--quote-regexp (delimiter &optional max-length)
   "Regexp matching strings delimited by DELIMITER.
 MAX-LENGTH is the length of the longest match (default 80)."
@@ -356,7 +364,7 @@ In particular whether \"(SAFE)\" prepends COMMAND's docstring."
     (unless (string= url (car shx-urls)) (push url shx-urls)))
   (add-text-properties
    (match-beginning 0) (match-end 0)
-   `(keymap ,shx-click mouse-face link font-lock-face font-lock-doc-face)))
+   `(keymap ,shx-click-file mouse-face link font-lock-face font-lock-doc-face)))
 
 (defun shx--parse-filenames (files)
   "Turn a string of FILES into a list of filename strings.
@@ -390,9 +398,10 @@ FILES can have various styles of quoting and escaping."
 ;;; sending/inserting
 
 (defun shx-magic-insert ()
-  "When the prompt is a colon, send the key pressed, else insert it.
-Useful for paging through less.  Also uses `comint-magic-space'
-to complete substitutions like !!, ^pattern^replacement, etc."
+  "Insert the key pressed, except in special circumstances.
+This makes use of `comint-magic-space' to complete substitutions
+like !!, ^pattern^replacement, etc.; if the prompt is a colon,
+send the key pressed to the process."
   (interactive)
   (let ((on-last-line (shx-point-on-input?)))
     (if (and on-last-line
@@ -446,7 +455,7 @@ to complete substitutions like !!, ^pattern^replacement, etc."
   (shx-insert 'font-lock-doc-face
               (mapconcat
                (lambda (file)
-                 (propertize file 'keymap shx-click 'mouse-face 'link))
+                 (propertize file 'keymap shx-click-file 'mouse-face 'link))
                files "\n")))
 
 (defun shx-insert-timer-list ()
@@ -534,7 +543,8 @@ Cancel a delayed command with :stop (`shx-cmd/stop').
           (command (match-string 2 args)))
       (shx-insert "Delaying " 'comint-highlight-input command
                   'default (format " %s seconds\n" delay))
-      (shx--delay-input (concat delay " sec") command)))
+      (shx--delay-input (concat delay " sec") command))
+    (shx--hint "cancel a delayed command with :stop"))
    (t (shx-insert 'error "delay <delay> <command>\n"))))
 
 (defun shx-cmd/pulse (args)
@@ -549,7 +559,8 @@ Cancel a pulsing command with :stop (`shx-cmd/stop').
           (command (match-string 2 args)))
       (shx-insert "Pulsing " 'comint-highlight-input command
                   'default (format " every %d seconds\n" delay))
-      (shx--delay-input 0 command nil delay)))
+      (shx--delay-input 0 command nil delay))
+    (shx--hint "cancel a pulsing command with :stop"))
    (t (shx-insert 'error "pulse <delay> <command>\n"))))
 
 (defun shx-cmd/repeat (args)
@@ -566,7 +577,8 @@ Cancel a repeating command with :stop (`shx-cmd/stop').
       (shx-insert "Repeating " 'comint-highlight-input command 'default
                   (format " %d times every %d seconds\n" reps delay))
       (dotimes (ii reps)
-        (shx--delay-input (* (1+ ii) delay) command))))
+        (shx--delay-input (* (1+ ii) delay) command)))
+    (shx--hint "cancel a repeating command with :stop"))
    (t (shx-insert 'error "repeat <count> <delay> <command>\n"))))
 
 (defun shx-cmd/stop (timer-number)
@@ -690,7 +702,7 @@ See `Man-notify-method' for what happens when the page is ready."
 (defun shx-cmd/name (name)
   "(SAFE) Rename the current buffer to NAME."
   (unless (ignore-errors (rename-buffer (concat "*" name "*")))
-    (shx-insert 'error "Can't rename buffer to *" name "* (is this name taken?)\n")))
+    (shx-insert 'error "Can't name buffer *" name "* (is this name taken?)\n")))
 
 (defun shx-cmd/oedit (file)
   "(SAFE) open FILE in other window.
