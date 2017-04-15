@@ -86,6 +86,11 @@
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
+(defcustom shx-kept-commands
+  '(("enable textwrap" . ":eval (shx-textwrap)"))
+  "Shell commands of the form (command . description)."
+  :type '(alist :key-type string :value-type string))
+
 (defvar shx-cmd-prefix "shx-cmd/"
   "Prefix for user-command functions.")
 
@@ -692,6 +697,29 @@ If function doesn't exist (or none is supplied), read from user."
           (shx-insert 'font-lock-constant-face "=> " output)))
     (error (shx-insert 'error "invalid sexp\n"))))
 
+(defun shx-cmd/keep (_arg)
+  "(SAFE) Put the previous command into `shx-kept-commands'."
+  (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
+         (desc (read-string (format "'%s'\nDescription: " command))))
+    (add-to-list 'shx-kept-commands `(,desc . ,command))
+    (customize-save-variable 'shx-kept-commands shx-kept-commands)
+    (shx-insert "Kept as " 'font-lock-doc-face desc "\n"))
+  (shx--hint "type ':kept' to see a list of all kept commands."))
+
+(defun shx-cmd/kept (regexp)
+  "(SAFE) Show the `shx-kept-commands' commands matching REGEXP.
+Each matching command is appended to the input history, enabling
+access via \\[comint-previous-input].
+\nMemorized commands are stored in `shx-kept-commands'."
+  (if (string= regexp "")
+      (shx-insert 'error "kept <regexp>\n")
+    (dolist (command shx-kept-commands nil)
+      (when (string-match regexp (concat (car command) (cdr command)))
+        (shx-insert 'font-lock-doc-face (car command) 'default ": "
+                    'comint-highlight-input command (cdr command) "\n")
+        (ring-insert comint-input-ring (cdr command))))
+    (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
+
 (defun shx-cmd/man (topic)
   "Launch an Emacs `man' window for TOPIC.
 See `Man-notify-method' for what happens when the page is ready."
@@ -855,6 +883,8 @@ For this function to work properly, it should be in `shell-mode-hook'."
   (setq-local shell-font-lock-keywords
               (append shell-font-lock-keywords (shx--shell-mode-font-locks)))
   (setq-local font-lock-defaults '(shell-font-lock-keywords t))
+  (dolist (command shx-kept-commands nil)
+    (ring-insert comint-input-ring (cdr command)))
   (shx-activate))
 
 (defun shx (&optional name)

@@ -42,6 +42,7 @@
   If you're here, these might be interesting:
   - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
   - [[https://www.booleanworld.com/customizing-coloring-bash-prompt/][Creating dynamic bash prompts]]
+  - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the ~kept~ and ~keep~ commands
 
   And if running a ~dumb~ terminal in Emacs isn't for you, here are some
   alternatives:
@@ -122,15 +123,17 @@
 
   Change the ~:~ prefix by customizing the ~shx-leader~ variable.
 *** General commands
-    | Command              | Description                                      |
-    |----------------------+--------------------------------------------------|
-    | ~:clear~             | Clear the buffer                                 |
-    | ~:diff file1 file2~  | Launch an Emacs diff between two files           |
-    | ~:edit file~         | Edit a file.  Shortcut: ~:e <file>~              |
-    | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~eval (pwd)~ |
-    | ~:man topic~         | Invoke the Emacs man page browser on a topic     |
-    | ~:header New header~ | Change the current ~header-line-format~          |
-    | ~:ssh host~          | Open another shell on the specified host         |
+    | Command              | Description                                           |
+    |----------------------+-------------------------------------------------------|
+    | ~:clear~             | Clear the buffer                                      |
+    | ~:diff file1 file2~  | Launch an Emacs diff between two files                |
+    | ~:edit file~         | Edit a file.  Shortcut: ~:e <file>~                   |
+    | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~eval (pwd)~      |
+    | ~:man topic~         | Invoke the Emacs man page browser on a topic          |
+    | ~:header New header~ | Change the current ~header-line-format~               |
+    | ~:ssh host~          | Open another shell on the specified host              |
+    | ~:kept regexp~       | Show a list of your 'kept' commands matching regexp   |
+    | ~:keep~              | Add the previous command to the list of kept commands |
 
     There are many more than this -- type ~:help~ for a listing of all user commands.
 *** Graphical commands
