@@ -299,7 +299,7 @@ buffer's `process-mark'."
   "Expand FILENAME to include an absolute path.
 Warn the user if there are characters in the string that could be
 used in an injection attack."
-  (if (string-match "[\"';&<>]" filename)
+  (if (string-match "[\"';&<>`]" filename)
       (shx-insert 'error "shx can't securely accept special characters "
                   "like '" (match-string 0 filename) "' in a filename")
     (expand-file-name filename)))
