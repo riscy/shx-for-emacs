@@ -643,6 +643,18 @@ therefore ensure `comint-prompt-read-only' is nil."
       (shx--asynch-funcall #'find-file (list name t)))))
 (defalias 'shx-cmd/e #'shx-cmd/edit)
 
+(defun shx-cmd/eval (sexp)
+  "Evaluate the elisp SEXP.
+\nExamples:\n
+  :eval (format \"%d\" (+ 1 2))
+  :eval (* 2 (+ 3 5))"
+  (condition-case nil
+      (let ((originating-buffer (current-buffer))
+            (output (format "%s\n" (eval (car (read-from-string sexp))))))
+        (with-current-buffer originating-buffer
+          (shx-insert 'font-lock-constant-face "=> " output)))
+    (error (shx-insert 'error "invalid sexp\n"))))
+
 (defun shx-cmd/find (file)
   "Run fuzzy find for FILE."
   (if (equal file "")
@@ -684,18 +696,6 @@ See `header-line-format' for formatting options.
 If function doesn't exist (or none is supplied), read from user."
   (shx--asynch-funcall #'shx-describe-command (list shx-command)))
 (defalias 'shx-cmd/h #'shx-cmd/help)
-
-(defun shx-cmd/eval (sexp)
-  "Evaluate the elisp SEXP.
-\nExamples:\n
-  :eval (format \"%d\" (+ 1 2))
-  :eval (* 2 (+ 3 5))"
-  (condition-case nil
-      (let ((originating-buffer (current-buffer))
-            (output (format "%s\n" (eval (car (read-from-string sexp))))))
-        (with-current-buffer originating-buffer
-          (shx-insert 'font-lock-constant-face "=> " output)))
-    (error (shx-insert 'error "invalid sexp\n"))))
 
 (defun shx-cmd/keep (_arg)
   "(SAFE) Put the previous command into `shx-kept-commands'."
