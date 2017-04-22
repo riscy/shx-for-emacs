@@ -16,7 +16,6 @@
 
 (require 'shx)
 (require 'shx-split)
-(require 's)
 
 (defun shx-cmd/test (_args)
   "(SAFE) Test shx.
@@ -104,8 +103,8 @@ Example:
   (comint-kill-input)
   (forward-line -1)
   (shx-send-input-or-copy-line)
-  (shx-assert "Test line is copied."
-              (s-prefix? "Running test suite" (shx--current-input)))
+  (shx-assert "Test line is copied"
+              (string= (substring (shx--current-input) 0 7) "Running"))
   (comint-kill-input)
   (shx-assert "Blank input is recognized."
               (string= (shx--current-input) "")))

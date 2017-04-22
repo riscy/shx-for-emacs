@@ -30,7 +30,6 @@
 
 (require 'comint)
 (require 'shell)
-(require 'evil)
 
 ;;; Code:
 
