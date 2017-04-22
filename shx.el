@@ -54,11 +54,12 @@
   :type 'string)
 
 (defcustom shx-img-height 300
-  "The height at which inlined images are displayed."
+  "The height at which inlined images and plots are displayed."
   :type 'integer)
 
 (defcustom shx-use-magic-insert t
-  "Whether to use the `shx-magic-insert' function."
+  "Whether to dynamically modify input using `shx-magic-insert'."
+  :link '(function-link shx-magic-insert)
   :type 'boolean)
 
 (defcustom shx-leader ":"
@@ -66,11 +67,11 @@
   :type 'regexp)
 
 (defcustom shx-comint-advise t
-  "Whether to modify (i.e., advise) a number of `comint-mode' functions."
+  "Whether to advise the behavior of a number of `comint-mode' functions."
   :type 'boolean)
 
 (defcustom shx-comint-auto-run t
-  "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode]."
+  "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode])."
   :type 'boolean)
 
 (defcustom shx-add-more-syntax-highlighting t
@@ -78,7 +79,7 @@
   :type 'boolean)
 
 (defcustom shx-show-hints t
-  "Whether to show hints in the form of messages."
+  "Whether to echo hints when running certain commands."
   :type 'boolean)
 
 (defcustom shx-triggers
@@ -403,10 +404,10 @@ FILES can have various styles of quoting and escaping."
 ;;; sending/inserting
 
 (defun shx-magic-insert ()
-  "Insert the key pressed, except in special circumstances.
-This makes use of `comint-magic-space' to complete substitutions
-like !!, ^pattern^replacement, etc.; if the prompt is a colon,
-send the key pressed to the process."
+  "Insert the key pressed or dynamically change the input.
+`comint-magic-space' completes substitutions like '!!' and
+'^pattern^replacement', and if the prompt is a colon, SPC and q
+are sent straight through to the process to handle paging."
   (interactive)
   (let ((on-last-line (shx-point-on-input?)))
     (if (and on-last-line
@@ -745,14 +746,15 @@ See `Man-notify-method' for what happens when the page is ready."
 
 (defun shx-cmd/pwd (_args)
   "(SAFE) Show what Emacs thinks the default directory is.
-If you're at a shell prompt, you can use \\[shell-resync-dirs] to
-Emacs' pwd to the shell's pwd."
+\nNote if you're at a shell prompt, you can use
+\\[shell-resync-dirs] to reset Emacs' pwd to the shell's pwd."
   (shx-insert default-directory "\n"))
 
 (defun shx-cmd/ssh (host)
   "Open a shell on (remote) HOST using tramp.
 Benefit from the remote host's completions.
-Syntax: :ssh hostname:port"
+\nExample:\n
+  :ssh hostname:port"
   (if (equal host "")
       (shx-insert 'error "ssh host\n")
     (let* ((host (replace-regexp-in-string ":" "#" host))
