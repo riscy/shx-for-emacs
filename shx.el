@@ -89,7 +89,9 @@
 
 (defcustom shx-kept-commands
   '(("enable textwrap" . ":eval (shx-textwrap)"))
-  "Shell commands of the form (command . description)."
+  "Shell commands of the form (description . command)."
+  :link '(function-link shx-cmd/kept)
+  :link '(function-link shx-cmd/keep)
   :type '(alist :key-type string :value-type string))
 
 (defvar shx-cmd-prefix "shx-cmd/"
@@ -702,10 +704,12 @@ If function doesn't exist (or none is supplied), read from user."
   "(SAFE) Put the previous command into `shx-kept-commands'."
   (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
          (desc (read-string (format "'%s'\nDescription: " command))))
-    (add-to-list 'shx-kept-commands `(,desc . ,command))
-    (customize-save-variable 'shx-kept-commands shx-kept-commands)
-    (shx-insert "Kept as " 'font-lock-doc-face desc "\n"))
-  (shx--hint "type ':kept' to see a list of all kept commands."))
+    (if (string= desc "")
+        (shx-insert 'error "Description is required\n")
+      (add-to-list 'shx-kept-commands `(,desc . ,command))
+      (customize-save-variable 'shx-kept-commands shx-kept-commands)
+      (shx-insert "Kept as " 'font-lock-doc-face desc "\n")
+      (shx--hint "type ':kept' to see a list of all kept commands."))))
 
 (defun shx-cmd/kept (regexp)
   "(SAFE) Show the `shx-kept-commands' commands matching REGEXP.
