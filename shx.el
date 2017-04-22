@@ -88,7 +88,7 @@
   :type '(alist :key-type regexp :value-type function))
 
 (defcustom shx-kept-commands
-  '(("enable textwrap" . ":eval (shx-textwrap)"))
+  '(("enable textwrap at 90 columns" . ":eval (shx-textwrap 90)"))
   "Shell commands of the form (description . command)."
   :link '(function-link shx-cmd/kept)
   :link '(function-link shx-cmd/keep)
@@ -203,9 +203,9 @@ enabling this can provide a significant performance boost."
   (setq-local fill-column (or cols 80))
   (setq-local adaptive-fill-regexp nil)            ; necessary!
   (setq-local adaptive-fill-first-line-regexp nil) ; faster
-  (add-hook 'comint-output-filter-functions #'shx-fill-paragraph nil 'local))
+  (add-hook 'comint-output-filter-functions #'shx--fill-paragraph nil 'local))
 
-(defun shx-fill-paragraph (_str)
+(defun shx--fill-paragraph (_str)
   "Fill (justify) text from the host.
 Apply this justification from `comint-last-output-start' to the
 buffer's `process-mark'."
