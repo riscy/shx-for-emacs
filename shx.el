@@ -28,6 +28,7 @@
 ;;
 ;; Use M-x customize-group RET shx RET to see customization options.
 
+(require 'color)
 (require 'comint)
 (require 'shell)
 
@@ -494,8 +495,9 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
     (when (zerop (call-process shx-path-to-gnuplot nil t nil "-e"
                                (concat "set term png transparent truecolor;"
                                        "set border lw 3 lc rgb \""
-                                       (face-attribute 'default :foreground) "\";"
-                                       "set out \"" img-name "\"; "
+                                       (color-lighten-name
+                                        (face-attribute 'default :foreground) 5)
+                                       "\"; set out \"" img-name "\"; "
                                        plot-command " \""
                                        (shx--expand-filename filename) "\" "
                                        line-style)))
@@ -773,7 +775,7 @@ Benefit from the remote host's completions.
   \"Topic 1\" YHEIGHT1
   \"Topic 2\" YHEIGHT2
   \"Topic 3\" YHEIGHT3"
-  (shx-insert-plot filename
+  (shx-insert-plot (car (shx--parse-filenames filename))
                    (concat "set boxwidth 1.5 relative;"
                            "set style data histograms;"
                            "set xtic rotate by -40 scale 0 font \",10\";"
@@ -789,7 +791,7 @@ Benefit from the remote host's completions.
   1.5   2    3
   4     5    6
   7     8    9.5"
-  (shx-insert-plot filename
+  (shx-insert-plot (car (shx--parse-filenames filename))
                    (concat "set view map; unset xtics; unset ytics;"
                            "unset title; set colorbox; set palette defined"
                            "(0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\","
@@ -809,14 +811,15 @@ Benefit from the remote host's completions.
   2
   3
   5"
-  (shx-insert-plot filename "plot" "w l lw 1 notitle"))
+  (shx-insert-plot (car (shx--parse-filenames filename))
+                   "plot" "w l lw 1 notitle"))
 (define-obsolete-function-alias 'shx-cmd/plot #'shx-cmd/plotline)
 
 (defun shx-cmd/plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
 Read about gnuplot's expectations of the data here:
 http://www.gnuplotting.org/tag/pm3d/"
-  (shx-insert-plot filename
+  (shx-insert-plot (car (shx--parse-filenames filename))
                    "unset tics;set view 4, 20, 1.4, 1;splot"
                    "w pm3d notitle"))
 
@@ -831,7 +834,8 @@ http://www.gnuplotting.org/tag/pm3d/"
   2
   3
   5"
-  (shx-insert-plot filename "plot" "w p ps 2 pt 7 notitle"))
+  (shx-insert-plot (car (shx--parse-filenames filename))
+                   "plot" "w p ps 2 pt 7 notitle"))
 (define-obsolete-function-alias 'shx-cmd/scatter #'shx-cmd/plotscatter)
 
 (defun shx-cmd/view (filename)
