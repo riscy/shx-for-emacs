@@ -684,7 +684,7 @@ therefore ensure `comint-prompt-read-only' is nil."
   (grep (format "grep -nH %s" pattern)))
 
 (defun shx-cmd/header (header)
-  "(SAFE) Set the header-line to to HEADER.
+  "(SAFE) Set the header-line to HEADER.
 See `header-line-format' for formatting options.
 \nExamples:\n
   :header remote:%@  status:%s  size:%i
