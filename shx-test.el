@@ -33,12 +33,13 @@
 In particular run every function with the prefix shx-test-case.
 Example:
 :test"
-  (insert "Running tests \n")
+  (insert "\n")
   (shx--asynch-funcall
    (lambda ()
      (dolist (test-function (all-completions "shx-test-case" obarray 'functionp))
-       (message test-function)
-       (funcall (intern test-function))))))
+       (funcall (intern test-function)))
+     (message "Success!")
+     (recenter -1))))
 
 (defun shx-test-assert (comment val)
   "Describe test with COMMENT; test truth of VAL."
@@ -47,8 +48,8 @@ Example:
     (forward-line -1)
     (goto-char (point-at-eol))
     (if (not val)
-        (shx-insert 'error (format "\n✘ %s" comment))
-      (shx-insert 'font-lock-string-face "✔")
+        (shx-insert 'error (format "✘ %s\n" comment))
+      (shx-insert 'font-lock-string-face "✔ " 'default comment "\n")
       t)))
 
 (defun shx-test-warn (text)
@@ -56,8 +57,8 @@ Example:
   (save-excursion
     (goto-char (point-max))
     (forward-line -1)
-    (goto-char (point-at-eol))
-    (shx-insert 'error "\n" text "\n")))
+    (goto-char (point-at-bol))
+    (shx-insert 'error text "\n")))
 
 
 ;; tests!
@@ -71,11 +72,11 @@ Example:
   "Test magic insert."
   (insert "^:test^^")
   (shx-magic-insert)
-  (shx-test-assert "Inline substitution."
+  (shx-test-assert "Inline substitution with magic insert works."
                    (equal (shx--current-input) ""))
   (insert ":test !!")
   (shx-magic-insert)
-  (shx-test-assert "Previous command expansion."
+  (shx-test-assert "Previous command expansion with magic insert works."
                    (equal (shx--current-input) ":test :test"))
   (comint-kill-input))
 
@@ -114,10 +115,10 @@ Example:
   (shx-test-assert "Recent input is recognized."
                    (string= "test" (shx--current-input)))
   (comint-kill-input)
-  (forward-line -1)
+  (forward-line -2)
   (shx-send-input-or-copy-line)
   (shx-test-assert "Test line is copied"
-                   (string= (substring (shx--current-input) 0 7) "Running"))
+                   (string= (substring (shx--current-input) 0 1) "✔"))
   (comint-kill-input)
   (shx-test-assert "Blank input is recognized."
                    (string= (shx--current-input) "")))
