@@ -504,17 +504,19 @@ are sent straight through to the process to handle paging."
   "Prepare a plot of the data in FILENAME.
 Use a gnuplot specific PLOT-COMMAND (for example 'plot') and
 LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
-  (let ((img-name (make-temp-file "tmp" nil ".png")))
-    (when (zerop (call-process shx-path-to-gnuplot nil t nil "-e"
-                               (concat "set term png transparent truecolor;"
-                                       "set border lw 3 lc rgb \""
-                                       (color-lighten-name
-                                        (face-attribute 'default :foreground) 5)
-                                       "\"; set out \"" img-name "\"; "
-                                       plot-command " \""
-                                       (shx--expand-filename filename) "\" "
-                                       line-style)))
-      (shx-insert-image img-name))))
+  (let ((filename (shx--expand-filename filename))
+        (img-name (make-temp-file "tmp" nil ".png")))
+    (and filename
+         (zerop (call-process shx-path-to-gnuplot nil t nil "-e"
+                              (concat "set term png transparent truecolor;"
+                                      "set border lw 3 lc rgb \""
+                                      (color-lighten-name
+                                       (face-attribute 'default :foreground) 5)
+                                      "\"; set out \"" img-name "\"; "
+                                      plot-command " \""
+                                      filename "\" "
+                                      line-style)))
+         (shx-insert-image img-name))))
 
 (defun shx--insert-timer (timer-number timer)
   "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
