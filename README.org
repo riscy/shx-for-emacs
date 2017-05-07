@@ -174,12 +174,12 @@
     #+end_src
 *** Adding new commands
     New commands are written by defining single-argument elisp functions named
-    ~shx-cmd/command-name~, where ~command-name~ is what the user would type to
+    ~shx-cmd-COMMAND-NAME~, where ~COMMAND-NAME~ is what the user would type to
     invoke it.
 ***** Example: a command to rename the buffer
     If you execute the following (or add it to your ~.emacs~),
     #+begin_src elisp
-    (defun shx-cmd/name (name)
+    (defun shx-cmd-name (name)
       "(SAFE) Rename the current buffer to NAME."
       (if (ignore-errors (rename-buffer (concat "*" name "*")))
           (shx-insert "Renaming buffer to *" name "*\n")
@@ -200,7 +200,7 @@
 ***** Example: a command to browse URLs
       If you execute the following,
       #+begin_src elisp
-      (defun shx-cmd/browse (url)
+      (defun shx-cmd-browse (url)
         "Browse the supplied URL."
         (shx-insert "Browsing " 'font-lock-keyword-face url)
         (browse-url url))

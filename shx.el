@@ -1,9 +1,11 @@
-;;; shx.el -- convenience functions for the (comint-mode) shell
+;;; shx.el --- "Extras" for the (comint-mode) shell
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Created: May 23 2011
-;; Keywords: comint-mode, shell-mode
-;; Git: https://github.com/riscy/shx-for-emacs
+;; Keywords: processes, tools
+;; Homepage: https://github.com/riscy/shx-for-emacs
+;; Package-Requires: ((emacs "24.4"))
+;; Version: 0.1
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -25,11 +27,13 @@
 ;; shx or "shell-extras" extends comint-mode.  It parses simple markup in the
 ;; output stream (enabling plots and graphics to be embedded in the shell) and
 ;; adds several command-line functions which plug into Emacs (for example, use
-;; :e <filename> to edit a file).  See README.org for more details.
+;; :e <filename> to edit a file).
+;;
+;; See <https://github.com/riscy/shx-for-emacs/README.org> for more details.
 ;;
 ;; This version tested with Emacs 25.1.1
 
-;;; Installation:
+;;; Manual install:
 
 ;; 1. Move shx.el to a directory in your load-path or add
 ;;    this to your .emacs:
@@ -37,15 +41,20 @@
 ;; 2. Next add this line to your .emacs:
 ;;    (require 'shx)
 ;;
-;; By default, shx runs automatically in all comint-mode buffers.
+;; By default, shx runs automatically in all comint-mode buffers, but you
+;; can always use M-x shx RET to create a new shell session using shx.
 ;;
 ;; Use M-x customize-group RET shx RET to see customization options.
+
+;;; Code:
 
 (require 'color)
 (require 'comint)
 (require 'shell)
 
-;;; Code:
+;; Compiler pacifier
+(defvar evil-state)
+(declare-function evil-insert "evil-commands")
 
 
 ;;; customization options and other variables
@@ -88,7 +97,7 @@
   :type 'boolean)
 
 (defcustom shx-add-more-syntax-highlighting t
-  "Whether to add more syntax highlighting to the shell-mode."
+  "Whether to add more syntax highlighting to ‘shell-mode’."
   :type 'boolean)
 
 (defcustom shx-show-hints t
@@ -101,13 +110,13 @@
   :type '(alist :key-type regexp :value-type function))
 
 (defcustom shx-kept-commands
-  '(("enable textwrap at 90 columns" . ":eval (shx-textwrap 90)"))
+  '(("Enable textwrap at 90 columns" . ":eval (shx-wordwrap 90)"))
   "Shell commands of the form (description . command)."
-  :link '(function-link shx-cmd/kept)
-  :link '(function-link shx-cmd/keep)
+  :link '(function-link shx-cmd-kept)
+  :link '(function-link shx-cmd-keep)
   :type '(alist :key-type string :value-type string))
 
-(defvar shx-cmd-prefix "shx-cmd/"
+(defvar shx-cmd-prefix "shx-cmd-"
   "Prefix for user-command functions.")
 
 (defvar shx-cmd-syntax "\\([^[:space:]]+\\)[[:space:]]*\\(.*[^[:space:]]?\\)"
@@ -191,7 +200,7 @@ This function overrides `comint-input-sender'."
       (comint-send-string process "\n"))))
 
 (defun shx--switch-to-insert-mode ()
-  "Switch to insert mode when using evil-mode."
+  "Switch to insert-mode (when applicable)."
   (and (featurep 'evil-vars)
        (equal evil-state 'normal)
        (featurep 'evil-commands)
@@ -208,7 +217,7 @@ This function overrides `comint-input-sender'."
 
 ;;; output
 
-(defun shx-textwrap (&optional cols)
+(defun shx-wordwrap (&optional cols)
   "Enable textwrap at COLS columns.
 Emacs is especially bad at handling long lines; sometimes
 enabling this can provide a significant performance boost."
@@ -216,9 +225,9 @@ enabling this can provide a significant performance boost."
   (setq-local fill-column (or cols 80))
   (setq-local adaptive-fill-regexp nil)            ; necessary!
   (setq-local adaptive-fill-first-line-regexp nil) ; faster
-  (add-hook 'comint-output-filter-functions #'shx--fill-paragraph nil 'local))
+  (add-hook 'comint-output-filter-functions #'shx-fill-paragraph nil 'local))
 
-(defun shx--fill-paragraph (_str)
+(defun shx-fill-paragraph (_str)
   "Fill (justify) text from the host.
 Apply this justification from `comint-last-output-start' to the
 buffer's `process-mark'."
@@ -296,11 +305,10 @@ buffer's `process-mark'."
   "Try to describe the named SHX-COMMAND."
   (let ((prefix (concat shx-cmd-prefix shx-command)))
     (if (functionp (intern prefix))
-        (describe-function
-         (intern prefix))
-      (describe-function
-       (intern
-        (completing-read "shx command: " (shx--all-commands) nil t prefix))))))
+        (describe-function (intern prefix))
+      (let ((comp (completing-read "Complete shx command: "
+                                   (shx--all-commands) nil t prefix)))
+        (describe-function (intern comp))))))
 
 (defun shx-point-on-input? ()
   "Check if point is on the input region."
@@ -317,7 +325,7 @@ Warn the user if there are characters in the string that could be
 used in an injection attack."
   (if (string-match "[\"';&<>`]" filename)
       (shx-insert 'error "shx can't securely accept special characters "
-                  "like '" (match-string 0 filename) "' in a filename")
+                  "like '" (match-string 0 filename) "' in a filename\n")
     (expand-file-name filename)))
 
 (defun shx--hint (text)
@@ -332,7 +340,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
           delimiter))
 
 (defun shx--shell-mode-font-locks ()
-  "Return some additional syntax highlighting for shell-mode."
+  "Return some additional syntax highlighting for ‘shell-mode’."
   (when shx-add-more-syntax-highlighting
     `(("#.*\\'"                                     0 'font-lock-comment-face)
       ("~"                                          0 'font-lock-preprocessor-face)
@@ -555,10 +563,10 @@ REPEAT-INTERVAL specifies delays between repetitions."
 
 ;;; asynch user commands
 
-(defun shx-cmd/delay (args)
+(defun shx-cmd-delay (args)
   "Run a command after a specific delay.
 ARGS are <delay in seconds> <command>.
-Cancel a delayed command with :stop (`shx-cmd/stop').
+Cancel a delayed command with :stop (`shx-cmd-stop').
 \nExample:\n
   :delay 10 echo Ten seconds are up!"
   (cond
@@ -571,10 +579,10 @@ Cancel a delayed command with :stop (`shx-cmd/stop').
     (shx--hint "cancel a delayed command with :stop"))
    (t (shx-insert 'error "delay <delay> <command>\n"))))
 
-(defun shx-cmd/pulse (args)
+(defun shx-cmd-pulse (args)
   "Repeat a shell command indefinitely with a given delay.
 ARGS are <deley in seconds> <command>.
-Cancel a pulsing command with :stop (`shx-cmd/stop').
+Cancel a pulsing command with :stop (`shx-cmd-stop').
 \nExample:\n
   :pulse 10 date"
   (cond
@@ -587,10 +595,10 @@ Cancel a pulsing command with :stop (`shx-cmd/stop').
     (shx--hint "cancel a pulsing command with :stop"))
    (t (shx-insert 'error "pulse <delay> <command>\n"))))
 
-(defun shx-cmd/repeat (args)
+(defun shx-cmd-repeat (args)
   "Repeat a shell command a number of times with a given delay.
 ARGS are <count> <delay in seconds> <command>.
-Cancel a repeating command with :stop (`shx-cmd/stop').
+Cancel a repeating command with :stop (`shx-cmd-stop').
 \nExample:\n
   :repeat 3 1 echo Echo... echo... echo..."
   (cond
@@ -605,7 +613,7 @@ Cancel a repeating command with :stop (`shx-cmd/stop').
     (shx--hint "cancel a repeating command with :stop"))
    (t (shx-insert 'error "repeat <count> <delay> <command>\n"))))
 
-(defun shx-cmd/stop (timer-number)
+(defun shx-cmd-stop (timer-number)
   "(SAFE) Stop the specified shx timer.
 If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 \nExamples:\n
@@ -624,25 +632,25 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 
 ;;; general user commands
 
-(defun shx-cmd/alert (string)
-  "(SAFE) Show the shx-buffer in the other window with STRING."
+(defun shx-cmd-alert (string)
+  "(SAFE) Show the ‘shx-buffer’ in the other window with STRING."
   (message (format "From %s at %s: '%s'\n"
                    shx-buffer
                    (format-time-string "%X")
                    string))
   (display-buffer shx-buffer))
 
-(defun shx-cmd/clear (_args)
+(defun shx-cmd-clear (_args)
   "(SAFE) Clear the buffer.
 Fails if there are read-only elements such as a prompt -
 therefore ensure `comint-prompt-read-only' is nil."
   (erase-buffer))
 
-(defun shx-cmd/date (_args)
+(defun shx-cmd-date (_args)
   "(SAFE) Show the date."
   (shx-insert (current-time-string) "\n"))
 
-(defun shx-cmd/diff (files)
+(defun shx-cmd-diff (files)
   "(SAFE) Launch an Emacs `ediff' between FILES.
 \nExample:\n
   :diff file1.txt file2.csv"
@@ -650,7 +658,7 @@ therefore ensure `comint-prompt-read-only' is nil."
   (shx--asynch-funcall
    'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
 
-(defun shx-cmd/edit (file)
+(defun shx-cmd-edit (file)
   "(SAFE) open FILE in the current window.
 \nExamples:\n
   :e directory/to/file
@@ -660,9 +668,9 @@ therefore ensure `comint-prompt-read-only' is nil."
       (shx--asynch-funcall #'find-file (list "" t))
     (let ((name (expand-file-name (car (shx--parse-filenames file)))))
       (shx--asynch-funcall #'find-file (list name t)))))
-(defalias 'shx-cmd/e #'shx-cmd/edit)
+(defalias 'shx-cmd-e #'shx-cmd-edit)
 
-(defun shx-cmd/eval (sexp)
+(defun shx-cmd-eval (sexp)
   "Evaluate the elisp SEXP.
 \nExamples:\n
   :eval (format \"%d\" (+ 1 2))
@@ -674,7 +682,7 @@ therefore ensure `comint-prompt-read-only' is nil."
           (shx-insert 'font-lock-constant-face "=> " output)))
     (error (shx-insert 'error "invalid sexp\n"))))
 
-(defun shx-cmd/find (file)
+(defun shx-cmd-find (file)
   "Run fuzzy find for FILE."
   (if (equal file "")
       (shx-insert 'error "find <prefix>\n")
@@ -687,18 +695,18 @@ therefore ensure `comint-prompt-read-only' is nil."
                (split-string (substring output 0 -1) "\n"))
         (insert "\n")))))
 
-(defun shx-cmd/g (pattern)
+(defun shx-cmd-g (pattern)
   "Launch a recursive grep for PATTERN."
   (grep (format "grep -irnH '%s' *" pattern)))
 
-(defun shx-cmd/grep (pattern)
+(defun shx-cmd-grep (pattern)
   "Launch a grep for PATTERN.
 \nExamples:\n
   :grep -r 'pattern' *
   :grep 'pattern' * | grep -v 'exclusion'"
   (grep (format "grep -nH %s" pattern)))
 
-(defun shx-cmd/header (header)
+(defun shx-cmd-header (header)
   "(SAFE) Set the header-line to HEADER.
 See `header-line-format' for formatting options.
 \nExamples:\n
@@ -710,13 +718,13 @@ See `header-line-format' for formatting options.
   (setq header-line-format
         (and (not (string= header "")) header)))
 
-(defun shx-cmd/help (shx-command)
+(defun shx-cmd-help (shx-command)
   "(SAFE) Display help on the SHX-COMMAND.
 If function doesn't exist (or none is supplied), read from user."
   (shx--asynch-funcall #'shx-describe-command (list shx-command)))
-(defalias 'shx-cmd/h #'shx-cmd/help)
+(defalias 'shx-cmd-h #'shx-cmd-help)
 
-(defun shx-cmd/keep (_arg)
+(defun shx-cmd-keep (_arg)
   "(SAFE) Put the previous command into `shx-kept-commands'."
   (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
          (desc (read-string (format "'%s'\nDescription: " command))))
@@ -727,7 +735,7 @@ If function doesn't exist (or none is supplied), read from user."
       (shx-insert "Kept as " 'font-lock-doc-face desc "\n")
       (shx--hint "type ':kept' to see a list of all kept commands."))))
 
-(defun shx-cmd/kept (regexp)
+(defun shx-cmd-kept (regexp)
   "(SAFE) Show the `shx-kept-commands' commands matching REGEXP.
 Each matching command is appended to the input history, enabling
 access via \\[comint-previous-input].
@@ -741,19 +749,19 @@ access via \\[comint-previous-input].
         (ring-insert comint-input-ring (cdr command))))
     (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
 
-(defun shx-cmd/man (topic)
+(defun shx-cmd-man (topic)
   "Launch an Emacs `man' window for TOPIC.
 See `Man-notify-method' for what happens when the page is ready."
   (if (equal topic "")
       (shx-insert 'error "man <topic>\n")
     (man topic)))
 
-(defun shx-cmd/name (name)
+(defun shx-cmd-name (name)
   "(SAFE) Rename the current buffer to NAME."
   (unless (ignore-errors (rename-buffer (concat "*" name "*")))
     (shx-insert 'error "Can't name buffer *" name "* (is this name taken?)\n")))
 
-(defun shx-cmd/oedit (file)
+(defun shx-cmd-oedit (file)
   "(SAFE) open FILE in other window.
 \nExamples:\n
   :oedit directory/to/file
@@ -764,13 +772,13 @@ See `Man-notify-method' for what happens when the page is ready."
      (let ((name (expand-file-name (car (shx--parse-filenames file)))))
        (expand-file-name (replace-regexp-in-string "\\\\" "" file))))))
 
-(defun shx-cmd/pwd (_args)
+(defun shx-cmd-pwd (_args)
   "(SAFE) Show what Emacs thinks the default directory is.
 \nNote if you're at a shell prompt, you can use
 \\[shell-resync-dirs] to reset Emacs' pwd to the shell's pwd."
   (shx-insert default-directory "\n"))
 
-(defun shx-cmd/ssh (host)
+(defun shx-cmd-ssh (host)
   "Open a shell on (remote) HOST using tramp.
 Benefit from the remote host's completions.
 \nExample:\n
@@ -784,7 +792,7 @@ Benefit from the remote host's completions.
 
 ;;; graphical user commands
 
-(defun shx-cmd/plotbar (filename)
+(defun shx-cmd-plotbar (filename)
   "(SAFE) Show barplot of FILENAME.
 \nFor example, :plotbar file.dat where file.dat contains:\n
   \"Topic 1\" YHEIGHT1
@@ -798,9 +806,9 @@ Benefit from the remote host's completions.
                            "set style fill solid 1.0 border -1;"
                            "plot")
                    "u 2:xticlabels(1) notitle"))
-(define-obsolete-function-alias 'shx-cmd/barplot #'shx-cmd/plotbar)
+(define-obsolete-function-alias 'shx-cmd-barplot #'shx-cmd-plotbar)
 
-(defun shx-cmd/plotmatrix (filename)
+(defun shx-cmd-plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
 \nFor example, :plotmatrix file.dat where file.dat contains:\n
   1.5   2    3
@@ -813,9 +821,9 @@ Benefit from the remote host's completions.
                            "3 \"#55a550\", 4 \"#1e5500\");"
                            "plot")
                    "u 1:(-$2):3 matrix w image notitle"))
-(define-obsolete-function-alias 'shx-cmd/matrix #'shx-cmd/plotmatrix)
+(define-obsolete-function-alias 'shx-cmd-matrix #'shx-cmd-plotmatrix)
 
-(defun shx-cmd/plotline (filename)
+(defun shx-cmd-plotline (filename)
   "(SAFE) Show line plot of FILENAME.
 \nFor example, :plotline file.dat where file.dat contains:\n
   1 2
@@ -828,9 +836,9 @@ Benefit from the remote host's completions.
   5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    "plot" "w l lw 1 notitle"))
-(define-obsolete-function-alias 'shx-cmd/plot #'shx-cmd/plotline)
+(define-obsolete-function-alias 'shx-cmd-plot #'shx-cmd-plotline)
 
-(defun shx-cmd/plot3d (filename)
+(defun shx-cmd-plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
 Read about gnuplot's expectations of the data here:
 http://www.gnuplotting.org/tag/pm3d/"
@@ -838,7 +846,7 @@ http://www.gnuplotting.org/tag/pm3d/"
                    "unset tics;set view 4, 20, 1.4, 1;splot"
                    "w pm3d notitle"))
 
-(defun shx-cmd/plotscatter (filename)
+(defun shx-cmd-plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
 \nFor example, :plotscatter file.dat, where file.dat contains:
   1 2
@@ -851,9 +859,9 @@ http://www.gnuplotting.org/tag/pm3d/"
   5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    "plot" "w p ps 2 pt 7 notitle"))
-(define-obsolete-function-alias 'shx-cmd/scatter #'shx-cmd/plotscatter)
+(define-obsolete-function-alias 'shx-cmd-scatter #'shx-cmd-plotscatter)
 
-(defun shx-cmd/view (filename)
+(defun shx-cmd-view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
   (shx-insert-image filename))
 
@@ -872,9 +880,9 @@ http://www.gnuplotting.org/tag/pm3d/"
   (advice-add 'comint-history-isearch-backward-regexp
               :before (lambda () (goto-char (point-max))))
   (advice-add 'comint-previous-input
-              :before (lambda (arg) (goto-char (point-max))))
+              :before (lambda (_arg) (goto-char (point-max))))
   (advice-add 'comint-next-input
-              :before (lambda (arg) (goto-char (point-max))))
+              :before (lambda (_arg) (goto-char (point-max))))
   (advice-add 'comint-kill-input
               :before (lambda ()
                         (and (featurep 'evil-vars)
@@ -883,9 +891,9 @@ http://www.gnuplotting.org/tag/pm3d/"
                              (evil-insert 1))
                         (goto-char (point-max))))
   (advice-add 'comint-previous-prompt
-              :after (lambda (arg) (recenter-top-bottom 0)))
+              :after (lambda (_arg) (recenter-top-bottom 0)))
   (advice-add 'comint-next-prompt
-              :after (lambda (arg) (recenter-top-bottom 0))))
+              :after (lambda (_arg) (recenter-top-bottom 0))))
 
 (defun shx-activate ()
   "Activate shx on the current buffer.
@@ -924,4 +932,4 @@ shx provides the following key bindings:
     (shell name)))
 
 (provide 'shx)
-;;; shx ends here
+;;; shx.el ends here

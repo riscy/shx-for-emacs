@@ -1,9 +1,11 @@
-;;; shx-split.el -- split a comint-mode buffer while scrolling
+;;; shx-split.el --- Split a comint-mode buffer while scrolling
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Created: May 23 2011
-;; Keywords: comint-mode, shell-mode
-;; Git: https://github.com/riscy/shx-for-emacs
+;; Keywords: frames, tools
+;; Homepage: https://github.com/riscy/shx-for-emacs
+;; Package-Requires: ((emacs "24.4"))
+;; Version: 0.1
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -55,6 +57,10 @@
 
 (require 'shx)
 
+;; Compiler pacifier
+(defvar evil-insert-state-local-map)
+(defvar evil-normal-state-local-map)
+
 (defgroup shx-split nil
   "For split-scrolling inside a comint-mode buffer."
   :prefix "shx-split-"
@@ -72,10 +78,10 @@
 (defvar-local shx-split-min 30
   "The minimum window height before splitting is allowed.")
 
-(defvar-local shx-default-scroll-on-output
+(defvar-local shx-split-default-scroll-on-output
   "Internal variable for remembering user scroll options.")
 
-(defvar-local shx-default-scroll-on-input
+(defvar-local shx-split-default-scroll-on-input
   "Internal variable for remembering user scroll options.")
 
 (defun shx-split-on-tail? ()
@@ -90,13 +96,13 @@
        ;; check if the bottom window is approximately the right size
        (< (abs (- (window-height (next-window)) shx-split-rows)) 5)))
 
-(defun shx-unsplittable? ()
+(defun shx-split-unsplittable? ()
   "True if the window is too small to be split."
   (or (not (shx-point-on-input?))
-      (and (not (shx-scroll-find-tail))
+      (and (not (shx-split-find-tail))
            (< (window-height) shx-split-min))))
 
-(defun shx-scroll-begin ()
+(defun shx-split-begin ()
   "Create the head/tail window pair."
   (interactive)
   (goto-char (point-max))
@@ -105,23 +111,23 @@
     (split-window-vertically (- (window-height) shx-split-rows)))
   (setq-local shx-split-active t)
   ;; remember previous comint settings regarding the scrolling
-  (setq-local shx-default-scroll-on-output comint-scroll-to-bottom-on-output)
-  (setq-local shx-default-scroll-on-input comint-scroll-to-bottom-on-input)
+  (setq-local shx-split-default-scroll-on-output comint-scroll-to-bottom-on-output)
+  (setq-local shx-split-default-scroll-on-input comint-scroll-to-bottom-on-input)
   ;; only auto-scroll the window the user's cursor is in
   (setq-local comint-scroll-to-bottom-on-output "this")
   (setq-local comint-scroll-to-bottom-on-input nil))
 
-(defun shx-scroll-end ()
+(defun shx-split-end ()
   "If the window is split, remove the split.
-See `shx-scroll-up' and `shx-scroll-down'."
+See `shx-split-scroll-up' and `shx-split-scroll-down'."
   (interactive)
-  (when (not (shx-scroll-find-tail))
+  (when (not (shx-split-find-tail))
     (goto-char (point-max))
     (recenter -1))
-  (when (shx-scroll-find-tail)
+  (when (shx-split-find-tail)
     (goto-char (point-max))
-    (setq-local comint-scroll-to-bottom-on-output shx-default-scroll-on-output)
-    (setq-local comint-scroll-to-bottom-on-input shx-default-scroll-on-input)
+    (setq-local comint-scroll-to-bottom-on-output shx-split-default-scroll-on-output)
+    (setq-local comint-scroll-to-bottom-on-input shx-split-default-scroll-on-input)
     (windmove-up) ;; go to the head?
     (delete-window))
   (setq-local shx-split-active nil)
@@ -129,7 +135,7 @@ See `shx-scroll-up' and `shx-scroll-down'."
   (goto-char (point-max))
   (recenter -1))
 
-(defun shx-scroll-find-tail ()
+(defun shx-split-find-tail ()
   "Find the tail window.
 Put the cursor on the tail at the end of buffer, or return nil if
 the tail is not visible and/or the matching buffer is not above."
@@ -137,22 +143,22 @@ the tail is not visible and/or the matching buffer is not above."
         ((shx-split-on-head?) (select-window (next-window)))
         (t nil)))
 
-(defun shx-scroll-up (&optional home)
+(defun shx-split-scroll-up (&optional home)
   "Scroll up in the buffer.
 If the window is not split, try to split it.  Then scroll the top
 window up.  If HOME is non-nil, scroll all the way to the top."
   (interactive)
   (cond
-   ((shx-unsplittable?)
+   ((shx-split-unsplittable?)
     (if home
         (goto-char (point-min))
       (let ((line-move-visual t))
         (ignore-errors (line-move (- shx-split-rows))))
       (recenter -1)))
    (t
-    (if (shx-scroll-find-tail)
+    (if (shx-split-find-tail)
         (select-window (previous-window))
-      (shx-scroll-begin))
+      (shx-split-begin))
     (if home
         (goto-char (point-min))
       (let ((line-move-visual t))
@@ -162,12 +168,12 @@ window up.  If HOME is non-nil, scroll all the way to the top."
     (goto-char (point-max))
     (recenter -1))))                    ; realign tail
 
-(defun shx-scroll-down ()
+(defun shx-split-scroll-down ()
   "Scroll down in the buffer.
 If the window is split, scroll the top window only.  If scrolling
 down scrolls all the way down to the prompt, remove the split."
   (interactive)
-  (if (not (shx-scroll-find-tail))
+  (if (not (shx-split-find-tail))
       (let ((line-move-visual t))
         (ignore-errors (line-move shx-split-rows)))
     (select-window (previous-window))
@@ -177,15 +183,15 @@ down scrolls all the way down to the prompt, remove the split."
     (recenter -1)
     ;; go to end of line so that on-last-line works:
     (if (save-excursion (end-of-line) (shx-point-on-input?))
-        (shx-scroll-end)
+        (shx-split-end)
       (select-window (next-window)))
     (goto-char (point-max)))
   (recenter -1))
 
-(defun shx-scroll-home ()
+(defun shx-split-home ()
   "Scroll all the way to the top."
   (interactive)
-  (shx-scroll-up 'home))
+  (shx-split-scroll-up 'home))
 
 (defun shx-split-mode-map (&optional parent)
   "Keymap used for `shx-split'.
@@ -196,15 +202,15 @@ PARENT keymap is optional."
       (define-key evil-insert-state-local-map (kbd "C-u") nil)
       (define-key evil-normal-state-local-map (kbd "C-u") nil)
       (define-key evil-insert-state-local-map (kbd "C-d") nil)
-      (define-key evil-normal-state-local-map (kbd "C-d") nil))
-    (define-key keymap (kbd "C-u") #'shx-scroll-up)
-    (define-key keymap (kbd "C-d") #'shx-scroll-down)
-    (define-key keymap (kbd "<prior>") #'shx-scroll-up)
-    (define-key keymap (kbd "<next>") #'shx-scroll-down)
-    (define-key keymap (kbd "<home>") #'shx-scroll-home)
-    (define-key keymap (kbd "M-<") #'shx-scroll-home)
-    (define-key keymap (kbd "<end>") #'shx-scroll-end)
-    (define-key keymap (kbd "M->") #'shx-scroll-end)
+      (define-key evil-normal-state-local-map (kbd "C-d") nil)
+      (define-key keymap (kbd "C-u") #'shx-split-scroll-up)
+      (define-key keymap (kbd "C-d") #'shx-split-scroll-down))
+    (define-key keymap (kbd "<prior>") #'shx-split-scroll-up)
+    (define-key keymap (kbd "<next>") #'shx-split-scroll-down)
+    (define-key keymap (kbd "<home>") #'shx-split-home)
+    (define-key keymap (kbd "M-<") #'shx-split-home)
+    (define-key keymap (kbd "<end>") #'shx-split-end)
+    (define-key keymap (kbd "M->") #'shx-split-end)
     keymap))
 
 (defun shx-split-activate ()
@@ -216,4 +222,4 @@ PARENT keymap is optional."
 (add-hook 'comint-mode-hook 'shx-split-activate)
 
 (provide 'shx-split)
-;;; shx-split ends here
+;;; shx-split.el ends here
