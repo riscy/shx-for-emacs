@@ -733,7 +733,7 @@ If function doesn't exist (or none is supplied), read from user."
       (add-to-list 'shx-kept-commands `(,desc . ,command))
       (customize-save-variable 'shx-kept-commands shx-kept-commands)
       (shx-insert "Kept as " 'font-lock-doc-face desc "\n")
-      (shx--hint "type ':kept' to see a list of all kept commands."))))
+      (shx--hint "type ':kept' or ':k' to see a list of all kept commands."))))
 
 (defun shx-cmd-kept (regexp)
   "(SAFE) Show the `shx-kept-commands' commands matching REGEXP.
@@ -748,6 +748,7 @@ access via \\[comint-previous-input].
                     'comint-highlight-input command (cdr command) "\n")
         (ring-insert comint-input-ring (cdr command))))
     (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
+(defalias 'shx-cmd-k #'shx-cmd-kept)
 
 (defun shx-cmd-man (topic)
   "Launch an Emacs `man' window for TOPIC.
