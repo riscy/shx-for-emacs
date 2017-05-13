@@ -110,7 +110,7 @@
   :type '(alist :key-type regexp :value-type function))
 
 (defcustom shx-kept-commands
-  '(("Enable textwrap at 90 columns" . ":eval (shx-wordwrap 90)"))
+  '(("Enable wordwrap at 90 columns" . ":eval (shx-wordwrap 90)"))
   "Shell commands of the form (description . command)."
   :link '(function-link shx-cmd-kept)
   :link '(function-link shx-cmd-keep)
@@ -218,7 +218,7 @@ This function overrides `comint-input-sender'."
 ;;; output
 
 (defun shx-wordwrap (&optional cols)
-  "Enable textwrap at COLS columns.
+  "Enable wordwrap at COLS columns.
 Emacs is especially bad at handling long lines; sometimes
 enabling this can provide a significant performance boost."
   (interactive)
