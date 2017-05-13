@@ -29,7 +29,7 @@
 ;; adds several command-line functions which plug into Emacs (for example, use
 ;; :e <filename> to edit a file).
 ;;
-;; See <https://github.com/riscy/shx-for-emacs/README.org> for more details.
+;; See <https://github.com/riscy/shx-for-emacs/blob/master/README.org> for more.
 ;;
 ;; This version tested with Emacs 25.1.1
 
