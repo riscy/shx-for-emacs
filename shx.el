@@ -188,7 +188,7 @@ In normal circumstances this input is additionally filtered by
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
 This function overrides `comint-input-sender'."
-  (let* ((match (string-match (concat "^" shx-leader shx-cmd-syntax) input))
+  (let* ((match (string-match (concat "^[\n\s]*" shx-leader shx-cmd-syntax) input))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
         (comint-simple-send process input)
