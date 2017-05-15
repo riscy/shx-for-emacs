@@ -84,21 +84,21 @@
 (defvar-local shx-split-default-scroll-on-input
   "Internal variable for remembering user scroll options.")
 
-(defun shx-split-on-tail? ()
+(defun shx-split-on-tail-p ()
   "True if the cursor is on the tail window."
   (and (eq (current-buffer) (window-buffer (previous-window)))
        ;; check if the bottom window is approximately the right size
        (< (abs (- (window-height) shx-split-rows)) 5)))
 
-(defun shx-split-on-head? ()
+(defun shx-split-on-head-p ()
   "True if the cursor is on the head window."
   (and (eq (current-buffer) (window-buffer (next-window)))
        ;; check if the bottom window is approximately the right size
        (< (abs (- (window-height (next-window)) shx-split-rows)) 5)))
 
-(defun shx-split-unsplittable? ()
+(defun shx-split-unsplittable-p ()
   "True if the window is too small to be split."
-  (or (not (shx-point-on-input?))
+  (or (not (shx-point-on-input-p))
       (and (not (shx-split-find-tail))
            (< (window-height) shx-split-min))))
 
@@ -139,8 +139,8 @@ See `shx-split-scroll-up' and `shx-split-scroll-down'."
   "Find the tail window.
 Put the cursor on the tail at the end of buffer, or return nil if
 the tail is not visible and/or the matching buffer is not above."
-  (cond ((shx-split-on-tail?) t)
-        ((shx-split-on-head?) (select-window (next-window)))
+  (cond ((shx-split-on-tail-p) t)
+        ((shx-split-on-head-p) (select-window (next-window)))
         (t nil)))
 
 (defun shx-split-scroll-up (&optional home)
@@ -149,7 +149,7 @@ If the window is not split, try to split it.  Then scroll the top
 window up.  If HOME is non-nil, scroll all the way to the top."
   (interactive)
   (cond
-   ((shx-split-unsplittable?)
+   ((shx-split-unsplittable-p)
     (if home
         (goto-char (point-min))
       (let ((line-move-visual t))
@@ -182,7 +182,7 @@ down scrolls all the way down to the prompt, remove the split."
       (ignore-errors (line-move shx-split-rows)))
     (recenter -1)
     ;; go to end of line so that on-last-line works:
-    (if (save-excursion (end-of-line) (shx-point-on-input?))
+    (if (save-excursion (end-of-line) (shx-point-on-input-p))
         (shx-split-end)
       (select-window (next-window)))
     (goto-char (point-max)))

@@ -159,14 +159,14 @@
 (defun shx-send-input-or-open-thing ()
   "Open thing at point, or send input if no identifiable thing."
   (interactive)
-  (if (shx-point-on-input?)
+  (if (shx-point-on-input-p)
       (shx-send-input)
     (find-file-at-point)))
 
 (defun shx-send-input-or-copy-line ()
   "Copy current line to prompt, or send input if at the prompt."
   (interactive)
-  (if (shx-point-on-input?)
+  (if (shx-point-on-input-p)
       (shx-send-input)
     (let ((line (buffer-substring-no-properties
                  (point-at-bol) (point-at-eol))))
@@ -253,7 +253,7 @@ buffer's `process-mark'."
       (while (shx--search-forward shx-markup-syntax)
         (let ((command (shx--get-user-cmd (match-string 1)))
               (args    (match-string 2)))
-          (if (not (and command (shx--safe-as-markup? command)))
+          (if (not (and command (shx--safe-as-markup-p command)))
               (add-text-properties
                (point-at-bol) (point-at-eol)
                `(help-echo "shx: this markup was unsafe/undefined"))
@@ -310,7 +310,7 @@ buffer's `process-mark'."
                                    (shx--all-commands) nil t prefix)))
         (describe-function (intern comp))))))
 
-(defun shx-point-on-input? ()
+(defun shx-point-on-input-p ()
   "Check if point is on the input region."
   (>= (point-marker)
       (process-mark (get-buffer-process (current-buffer)))))
@@ -358,7 +358,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
       ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
       ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))))
 
-(defun shx--safe-as-markup? (command)
+(defun shx--safe-as-markup-p (command)
   "Return t if COMMAND is safe to call to generate markup.
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (let ((doc (documentation command)))
@@ -432,7 +432,7 @@ FILES can have various styles of quoting and escaping."
 '^pattern^replacement', and if the prompt is a colon, SPC and q
 are sent straight through to the process to handle paging."
   (interactive)
-  (let ((on-last-line (shx-point-on-input?)))
+  (let ((on-last-line (shx-point-on-input-p)))
     (if (and on-last-line
              (string-match ".*:$" (shx--current-prompt))
              (string-match "^\\s-*$" (shx--current-input)))

@@ -99,13 +99,13 @@ Example:
   "Test some predicate functions on the point."
   (shx-test-assert "Point on last line works at point-max."
                    (save-excursion (goto-char (point-max))
-                                   (shx-point-on-input?)))
+                                   (shx-point-on-input-p)))
   (shx-test-assert "Point on last line works on last line and point-max."
                    (save-excursion (goto-char (point-max)) (backward-char)
-                                   (not (shx-point-on-input?))))
+                                   (not (shx-point-on-input-p))))
   (shx-test-assert "Point on last line fails when not on last line."
                    (not (save-excursion (goto-char (point-min))
-                                        (shx-point-on-input?))))
+                                        (shx-point-on-input-p))))
   (goto-char (point-max)))
 
 (defun shx-test-case-input-handling ()
