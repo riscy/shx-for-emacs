@@ -178,7 +178,7 @@
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (shx--switch-to-insert-mode)
+  (shx-switch-to-insert-mode)
   (if (> (length (shx--current-input)) 1000)
       (message "Input too long (shorten to < 1000 chars)")
     (shx--timestamp-prompt)
@@ -199,7 +199,7 @@ This function overrides `comint-input-sender'."
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
 
-(defun shx--switch-to-insert-mode ()
+(defun shx-switch-to-insert-mode ()
   "Switch to insert-mode (when applicable)."
   (and (featurep 'evil-vars)
        (equal evil-state 'normal)
