@@ -315,6 +315,14 @@ buffer's `process-mark'."
   (>= (point-marker)
       (process-mark (get-buffer-process (current-buffer)))))
 
+(defun shx-show-output (&optional _args)
+  "Recenter window so that as much output as possible is shown."
+  (comint-show-maximum-output))
+
+(defun shx-snap-to-top (&optional _args)
+  "Recenter window so the current line is at the top."
+  (recenter-top-bottom 0))
+
 (defun shx--all-commands ()
   "Return a list of all shx commands."
   (all-completions shx-cmd-prefix obarray 'functionp))
@@ -875,25 +883,14 @@ http://www.gnuplotting.org/tag/pm3d/"
 (add-hook 'shell-mode-hook 'shx-for-shell-mode) ; always run in shell-mode
 (when shx-comint-auto-run (add-hook 'comint-mode-hook 'shx-activate))
 (when shx-comint-advise
-  (advice-add 'comint-send-eof
-              :before (lambda () (goto-char (point-max))))
-  (advice-add 'comint-history-isearch-backward-regexp
-              :before (lambda () (goto-char (point-max))))
-  (advice-add 'comint-previous-input
-              :before (lambda (_arg) (goto-char (point-max))))
-  (advice-add 'comint-next-input
-              :before (lambda (_arg) (goto-char (point-max))))
-  (advice-add 'comint-kill-input
-              :before (lambda ()
-                        (and (featurep 'evil-vars)
-                             (equal evil-state 'normal)
-                             (featurep 'evil-commands)
-                             (evil-insert 1))
-                        (goto-char (point-max))))
-  (advice-add 'comint-previous-prompt
-              :after (lambda (_arg) (recenter-top-bottom 0)))
-  (advice-add 'comint-next-prompt
-              :after (lambda (_arg) (recenter-top-bottom 0))))
+  (advice-add #'comint-history-isearch-backward-regexp :before #'shx-show-output)
+  (advice-add #'comint-previous-input :before #'shx-show-output)
+  (advice-add #'comint-next-input :before #'shx-show-output)
+  (advice-add #'comint-kill-input :before #'shx-switch-to-insert-mode)
+  (advice-add #'comint-kill-input :before #'shx-show-output)
+  (advice-add #'comint-send-eof :before #'shx-show-output)
+  (advice-add #'comint-previous-prompt :after #'shx-snap-to-top)
+  (advice-add #'comint-next-prompt :after #'shx-snap-to-top))
 
 (defun shx-activate ()
   "Activate shx on the current buffer.
