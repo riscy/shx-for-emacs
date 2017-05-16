@@ -70,18 +70,21 @@
           "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-split-rows 12
-  "How large the tail will be.")
+  "How large the tail will be."
+  :type 'integer)
+
+(defcustom shx-split-min-rows 30
+  "The minimum window height before splitting is allowed."
+  :link '(function-link shx-split-unsplittable-p)
+  :type 'integer)
 
 (defvar-local shx-split-active nil
   "Whether the split is active.")
 
-(defvar-local shx-split-min 30
-  "The minimum window height before splitting is allowed.")
-
-(defvar-local shx-split-default-scroll-on-output
+(defvar-local shx-split--default-scroll-on-output
   "Internal variable for remembering user scroll options.")
 
-(defvar-local shx-split-default-scroll-on-input
+(defvar-local shx-split--default-scroll-on-input
   "Internal variable for remembering user scroll options.")
 
 (defun shx-split-on-tail-p ()
@@ -100,7 +103,7 @@
   "True if the window is too small to be split."
   (or (not (shx-point-on-input-p))
       (and (not (shx-split-find-tail))
-           (< (window-height) shx-split-min))))
+           (< (window-height) shx-split-min-rows))))
 
 (defun shx-split-begin ()
   "Create the head/tail window pair."
@@ -111,8 +114,8 @@
     (split-window-vertically (- (window-height) shx-split-rows)))
   (setq-local shx-split-active t)
   ;; remember previous comint settings regarding the scrolling
-  (setq-local shx-split-default-scroll-on-output comint-scroll-to-bottom-on-output)
-  (setq-local shx-split-default-scroll-on-input comint-scroll-to-bottom-on-input)
+  (setq-local shx-split--default-scroll-on-output comint-scroll-to-bottom-on-output)
+  (setq-local shx-split--default-scroll-on-input comint-scroll-to-bottom-on-input)
   ;; only auto-scroll the window the user's cursor is in
   (setq-local comint-scroll-to-bottom-on-output "this")
   (setq-local comint-scroll-to-bottom-on-input nil))
@@ -126,8 +129,8 @@ See `shx-split-scroll-up' and `shx-split-scroll-down'."
     (recenter -1))
   (when (shx-split-find-tail)
     (goto-char (point-max))
-    (setq-local comint-scroll-to-bottom-on-output shx-split-default-scroll-on-output)
-    (setq-local comint-scroll-to-bottom-on-input shx-split-default-scroll-on-input)
+    (setq-local comint-scroll-to-bottom-on-output shx-split--default-scroll-on-output)
+    (setq-local comint-scroll-to-bottom-on-input shx-split--default-scroll-on-input)
     (windmove-up) ;; go to the head?
     (delete-window))
   (setq-local shx-split-active nil)
