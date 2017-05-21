@@ -342,25 +342,6 @@ used in an injection attack."
   "Show a hint containing TEXT."
   (when shx-show-hints (message (concat "Hint: " text))))
 
-(defun shx--shell-mode-font-locks ()
-  "Return some additional syntax highlighting for ‘shell-mode’."
-  (when shx-add-more-syntax-highlighting
-    `(("#.*\\'"                                     0 'font-lock-comment-face)
-      ("~"                                          0 'font-lock-preprocessor-face)
-      (,(regexp-opt '(">" "<" "&&" "|"))            0 'font-lock-keyword-face)
-      (,(shx--quote-regexp "`")                     0 'font-lock-preprocessor-face)
-      (,(shx--quote-regexp "\"")                    0 'font-lock-string-face)
-      ;; disallow leading alphabet chars so we don't match on contractions
-      (,(concat "[^A-Za-z]\\(" (shx--quote-regexp "'") "\\)")
-       1 'font-lock-string-face)
-      (,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
-                (regexp-opt (mapcar (lambda (cmd)
-                                      (string-remove-prefix shx-cmd-prefix cmd))
-                                    (shx--all-commands)))
-                "\\).*\\'")                         1 'font-lock-constant-face)
-      ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
-      ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))))
-
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
   (cond ((get-buffer-process (current-buffer))
@@ -910,6 +891,24 @@ For this function to work properly, it should be in `shell-mode-hook'."
   (dolist (command shx-kept-commands nil)
     (ring-insert comint-input-ring (cdr command)))
   (shx-activate))
+(defcustom shx-shell-mode-font-locks
+  `(("#.*\\'"                                     0 'font-lock-comment-face)
+    ("~"                                          0 'font-lock-preprocessor-face)
+    (,(regexp-opt '(">" "<" "&&" "|"))            0 'font-lock-keyword-face)
+    (,(shx--quote-regexp "`")                     0 'font-lock-preprocessor-face)
+    (,(shx--quote-regexp "\"")                    0 'font-lock-string-face)
+    ;; disallow leading alphabet chars so we 'don't match on contractions'
+    (,(concat "[^A-Za-z]\\(" (shx--quote-regexp "'") "\\)")
+     1 'font-lock-string-face)
+    (,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
+              (regexp-opt (mapcar (lambda (cmd)
+                                    (string-remove-prefix shx-cmd-prefix cmd))
+                                  (shx--all-commands)))
+              "\\).*\\'")                         1 'font-lock-constant-face)
+    ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
+    ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))
+  "Some additional syntax highlighting for `shell-mode'."
+  :type '(alist :key-type regexp))
 
 (defun shx (&optional name)
   "Create a new shell session using shx.
