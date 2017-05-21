@@ -342,13 +342,6 @@ used in an injection attack."
   "Show a hint containing TEXT."
   (when shx-show-hints (message (concat "Hint: " text))))
 
-(defun shx--quote-regexp (delimiter &optional max-length)
-  "Regexp matching strings delimited by DELIMITER.
-MAX-LENGTH is the length of the longest match (default 80)."
-  (concat delimiter
-          "[^" delimiter "]" "\\{0," (format "%d" (or max-length 80)) "\\}"
-          delimiter))
-
 (defun shx--shell-mode-font-locks ()
   "Return some additional syntax highlighting for ‘shell-mode’."
   (when shx-add-more-syntax-highlighting
@@ -368,12 +361,6 @@ MAX-LENGTH is the length of the longest match (default 80)."
       ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
       ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))))
 
-(defun shx--safe-as-markup-p (command)
-  "Return t if COMMAND is safe to call to generate markup.
-In particular whether \"(SAFE)\" prepends COMMAND's docstring."
-  (let ((doc (documentation command)))
-    (ignore-errors (string-suffix-p "(SAFE)" doc))))
-
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
   (cond ((get-buffer-process (current-buffer))
@@ -389,6 +376,24 @@ In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   "Return what's written after the prompt."
   (buffer-substring (process-mark (get-buffer-process (current-buffer)))
                     (point-at-eol)))
+
+(defun shx--get-timer-list ()
+  "Get the list of resident timers."
+  (let ((timer-list-1 (copy-sequence timer-list)))
+    ;; select only timers with shx--auto prefix, "(lambda nil (shx--auto..."
+    (setq timer-list-1
+          (remove nil
+                  (mapcar (lambda (timer)
+                            (when (string-prefix-p
+                                   "(lambda nil (shx--auto"
+                                   (format "%s" (aref timer 5)))
+                              timer))
+                          timer-list-1)))
+    ;; sort the timers for consistency
+    (sort timer-list-1
+          (lambda (first-timer second-timer)
+            (string< (format "%s" (aref first-timer 5))
+                     (format "%s" (aref second-timer 5)))))))
 
 (defun shx--get-user-cmd (shx-command)
   "Return user command prefixed by SHX-COMMAND, or nil."
@@ -415,23 +420,19 @@ FILES can have various styles of quoting and escaping."
               (replace-regexp-in-string tmp-space " " filename))
             (split-string-and-unquote escaped))))
 
-(defun shx--get-timer-list ()
-  "Get the list of resident timers."
-  (let ((timer-list-1 (copy-sequence timer-list)))
-    ;; select only timers with shx--auto prefix, "(lambda nil (shx--auto..."
-    (setq timer-list-1
-          (remove nil
-                  (mapcar (lambda (timer)
-                            (when (string-prefix-p
-                                   "(lambda nil (shx--auto"
-                                   (format "%s" (aref timer 5)))
-                              timer))
-                          timer-list-1)))
-    ;; sort the timers for consistency
-    (sort timer-list-1
-          (lambda (first-timer second-timer)
-            (string< (format "%s" (aref first-timer 5))
-                     (format "%s" (aref second-timer 5)))))))
+(defun shx--quote-regexp (delimiter &optional max-length)
+  "Regexp matching strings delimited by DELIMITER.
+MAX-LENGTH is the length of the longest match (default 80)."
+  (concat delimiter
+          "[^" delimiter "]" "\\{0," (format "%d" (or max-length 80)) "\\}"
+          delimiter))
+
+(defun shx--safe-as-markup-p (command)
+  "Return t if COMMAND is safe to call to generate markup.
+In particular whether \"(SAFE)\" prepends COMMAND's docstring."
+  (let ((doc (documentation command)))
+    (ignore-errors (string-suffix-p "(SAFE)" doc))))
+
 (defun shx--restore-kept-commands (&optional regexp insert-kept-command)
   "Restore the kept commands matching REGEXP."
   (dolist (command shx-kept-commands nil)
