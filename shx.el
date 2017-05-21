@@ -650,7 +650,7 @@ therefore ensure `comint-prompt-read-only' is nil."
   :diff file1.txt file2.csv"
   (shx-insert "Invoking ediff " files "\n")
   (shx--asynch-funcall
-   'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
+   #'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
 
 (defun shx-cmd-edit (file)
   "(SAFE) open FILE in the current window.
