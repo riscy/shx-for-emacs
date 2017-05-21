@@ -126,6 +126,17 @@
 (defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">$")
   "Regex for recognizing shx commands in markup.")
 
+(defvar shx-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (when shx-use-magic-insert
+      (define-key keymap " " #'shx-magic-insert)
+      (define-key keymap "q" #'shx-magic-insert))
+    (define-key keymap (kbd "<return>") #'shx-send-input-or-open-thing)
+    (define-key keymap (kbd "C-<return>") #'shx-send-input-or-copy-line)
+    (define-key keymap (kbd "C-c C-k") #'comint-kill-subjob)
+    keymap)
+  "Keymap for shx.")
+
 (defvar-local shx-buffer nil
   "Local reference to the shx buffer.")
 
@@ -139,23 +150,6 @@
 
 
 ;;; input
-
-(defun shx-get-keymap (&optional parent)
-  "Keymap used for shx; inherits PARENT."
-  (let ((keymap (make-sparse-keymap)))
-    (set-keymap-parent keymap (or parent (current-local-map)))
-    (when shx-use-magic-insert
-      (define-key keymap " " #'shx-magic-insert)
-      (define-key keymap "q" #'shx-magic-insert))
-    ;; redefine some of comint-mode's existing bindings
-    (define-key keymap (kbd "C-c C-z") #'shx-send-stop)
-    (define-key keymap (kbd "C-c C-d") #'shx-send-eof)
-    (define-key keymap (kbd "C-c C-c") #'shx-send-break)
-    (define-key keymap (kbd "C-c C-b") #'shx-browse-urls)
-    (define-key keymap (kbd "<return>") #'shx-send-input-or-open-thing)
-    (define-key keymap (kbd "C-<return>") #'shx-send-input-or-copy-line)
-    (define-key keymap (kbd "C-c C-k") #'comint-kill-subjob)
-    keymap))
 
 (defun shx-send-input-or-open-thing ()
   "Open thing at point, or send input if no identifiable thing."
@@ -851,9 +845,6 @@ http://www.gnuplotting.org/tag/pm3d/"
 
 
 ;;; loading
-
-(defvar shx-keymap (shx-get-keymap)
-  "To self-document the shx/shx-active functions.")
 
 ;; Add hooks and advise some existing comint functions:
 (add-hook 'shell-mode-hook 'shx-for-shell-mode) ; always run in shell-mode
