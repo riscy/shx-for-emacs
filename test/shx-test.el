@@ -1,4 +1,4 @@
-;;; shx-test.el --- Tests for shx and shx-split
+;;; shx-test.el --- Tests for shx
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Homepage: https://github.com/riscy/shx-for-emacs
@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'shx)
-(require 'shx-split)
+;;(require 'shx-split)
 
 (defun shx-cmd-test (_args)
   "(SAFE) Test shx.
@@ -136,37 +136,37 @@ Example:
   (shx-test-assert "Recognizing hyphenated command names."
                    (string= (match-string 1 ":plot-bar") "plot-bar")))
 
-(defun shx-test-case-split ()
-  "Test window splitting functions."
-  (goto-char (point-max))
-  (if (< (window-height) shx-split-min)
-      (shx-test-warn "Warning: window too short to test shx-split")
-    (shx-test-assert "Create split."
-                     (let ((currpt (point)))
-                       (shx-split-scroll-up)
-                       (and shx-split-active
-                            (eq currpt (point)))))
-    (shx-test-assert "Maintain split."
-                     (let ((currpt (point)))
-                       (shx-split-home)
-                       (eq currpt (point))))
-    (shx-test-assert "Destroy split."
-                     (let ((currpt (point)))
-                       (shx-split-end)
-                       (and (not shx-split-active)
-                            (eq currpt (point)))))
-    (shx-test-assert "Create and destroy with home/end."
-                     (let ((currpt (point)))
-                       (shx-split-home)
-                       (shx-split-end)
-                       (eq currpt (point))))
-    (shx-test-assert "Create destroy with pgup/pgdn."
-                     (let ((currpt (point)))
-                       (shx-split-scroll-up) (shx-split-scroll-up)
-                       (shx-split-scroll-down) (shx-split-scroll-down) (shx-split-scroll-down)
-                       (eq currpt (point))))
-    (shx-test-assert "Try to find nonexistent split."
-                     (null (shx-split-find-tail)))))
+;;(defun shx-test-case-split ()
+;;  "Test window splitting functions."
+;;  (goto-char (point-max))
+;;  (if (< (window-height) shx-split-min-rows)
+;;      (shx-test-warn "Warning: window too short to test shx-split")
+;;    (shx-test-assert "Create split."
+;;                     (let ((currpt (point)))
+;;                       (shx-split-scroll-up)
+;;                       (and shx-split-active
+;;                            (eq currpt (point)))))
+;;    (shx-test-assert "Maintain split."
+;;                     (let ((currpt (point)))
+;;                       (shx-split-home)
+;;                       (eq currpt (point))))
+;;    (shx-test-assert "Destroy split."
+;;                     (let ((currpt (point)))
+;;                       (shx-split-end)
+;;                       (and (not shx-split-active)
+;;                            (eq currpt (point)))))
+;;    (shx-test-assert "Create and destroy with home/end."
+;;                     (let ((currpt (point)))
+;;                       (shx-split-home)
+;;                       (shx-split-end)
+;;                       (eq currpt (point))))
+;;    (shx-test-assert "Create destroy with pgup/pgdn."
+;;                     (let ((currpt (point)))
+;;                       (shx-split-scroll-up) (shx-split-scroll-up)
+;;                       (shx-split-scroll-down) (shx-split-scroll-down) (shx-split-scroll-down)
+;;                       (eq currpt (point))))
+;;    (shx-test-assert "Try to find nonexistent split."
+;;                     (null (shx-split-find-tail)))))
 
 (defun shx-test-case-shx-cat ()
   "Test the `shx-cat' command."
