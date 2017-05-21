@@ -301,7 +301,7 @@ buffer's `process-mark'."
   "Prompt user for a URL to browse from the list `shx-urls'."
   (interactive)
   (let ((urls shx-urls)) ; clone url list so user edits don't modify the entries
-    (browse-url (completing-read (format "URLs in %s: " (buffer-name)) urls))))
+    (browse-url (completing-read "URL: " urls))))
 
 (defun shx-describe-command (shx-command)
   "Try to describe the named SHX-COMMAND."
@@ -453,26 +453,6 @@ are sent straight through to the process to handle paging."
       (if shx-use-magic-insert
           (comint-magic-space 1)
         (self-insert-command 1)))))
-
-(defun shx-send-break ()
-  "Send a BREAK signal to the current process."
-  (interactive)
-  (process-send-string nil ""))
-
-(defun shx-send-eof ()
-  "Send an EOF signal to the current process."
-  (interactive)
-  (if (not (get-buffer-process (current-buffer)))
-      (kill-buffer) ; if there's no process, kill the buffer
-    (if (string-empty-p (shx--current-input))
-        (process-send-eof)
-      (goto-char (point-max))
-      (comint-kill-input))))
-
-(defun shx-send-stop ()
-  "Send a STOP signal to the current process."
-  (interactive)
-  (process-send-string nil ""))
 
 (defun shx-cat (&rest args)
   "Like `concat' but ARGS can be strings or face names."
@@ -712,6 +692,10 @@ therefore ensure `comint-prompt-read-only' is nil."
 (defun shx-cmd-g (pattern)
   "Launch a recursive grep for PATTERN."
   (grep (format "grep -irnH '%s' *" pattern)))
+
+(defun shx-cmd-goto-url (_arg)
+  "Go to a a URL, offering completions from the buffer."
+  (shx--asynch-funcall #'shx-browse-urls))
 
 (defun shx-cmd-grep (pattern)
   "Launch a grep for PATTERN.
