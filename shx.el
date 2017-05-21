@@ -51,6 +51,7 @@
 (require 'color)
 (require 'comint)
 (require 'shell)
+(require 'subr-x)
 
 ;; Compiler pacifier
 (defvar evil-state)
@@ -188,7 +189,8 @@ In normal circumstances this input is additionally filtered by
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
 This function overrides `comint-input-sender'."
-  (let* ((match (string-match (concat "^[\n\s]*" shx-leader shx-cmd-syntax) input))
+  (let* ((match (string-match (concat "^" shx-leader shx-cmd-syntax)
+                              (string-trim-left input)))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
         (comint-simple-send process input)
@@ -360,7 +362,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
        1 'font-lock-string-face)
       (,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
                 (regexp-opt (mapcar (lambda (cmd)
-                                      (substring cmd (length shx-cmd-prefix)))
+                                      (string-remove-prefix shx-cmd-prefix cmd))
                                     (shx--all-commands)))
                 "\\).*\\'")                         1 'font-lock-constant-face)
       ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
@@ -370,7 +372,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
   "Return t if COMMAND is safe to call to generate markup.
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (let ((doc (documentation command)))
-    (ignore-errors (string= "(SAFE)" (substring doc 0 6)))))
+    (ignore-errors (string-suffix-p "(SAFE)" doc))))
 
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
@@ -462,7 +464,7 @@ are sent straight through to the process to handle paging."
   (interactive)
   (if (not (get-buffer-process (current-buffer)))
       (kill-buffer) ; if there's no process, kill the buffer
-    (if (string= (shx--current-input) "")
+    (if (string-empty-p (shx--current-input))
         (process-send-eof)
       (goto-char (point-max))
       (comint-kill-input))))
@@ -543,8 +545,12 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 (defun shx--format-timer-string (timer)
   "Create a human-readable string out of TIMER."
-  (let ((timer-string (format "%s" (aref timer 5))))
-    (concat "[" (substring timer-string 23 (- (length timer-string) 2)) "]")))
+  (let* ((timer-string (string-remove-prefix
+                        "(lambda nil (shx--auto "
+                        (string-remove-suffix
+                         "))"
+                         (format "%s" (aref timer 5))))))
+    (concat "[" timer-string "]")))
 
 
 ;;; asynch functions
@@ -700,7 +706,7 @@ therefore ensure `comint-prompt-read-only' is nil."
       (if (equal "" output)
           (shx-insert 'error "No matches for \"" file "\"\n")
         (apply #'shx-insert-filenames
-               (split-string (substring output 0 -1) "\n"))
+               (split-string (string-remove-suffix "\n" output) "\n"))
         (insert "\n")))))
 
 (defun shx-cmd-g (pattern)
@@ -724,7 +730,7 @@ See `header-line-format' for formatting options.
   export PS1=\"<header \\$(git rev-parse --abbrev-ref HEAD)>\\\\n$PS1\"
   export PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
   (setq header-line-format
-        (and (not (string= header "")) header)))
+        (and (not (string-empty-p header)) header)))
 
 (defun shx-cmd-help (shx-command)
   "(SAFE) Display help on the SHX-COMMAND.
@@ -736,7 +742,7 @@ If function doesn't exist (or none is supplied), read from user."
   "(SAFE) Put the previous command into `shx-kept-commands'."
   (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
          (desc (read-string (format "'%s'\nDescription: " command))))
-    (if (string= desc "")
+    (if (string-empty-p desc)
         (shx-insert 'error "Description is required\n")
       (add-to-list 'shx-kept-commands `(,desc . ,command))
       (customize-save-variable 'shx-kept-commands shx-kept-commands)
@@ -748,7 +754,7 @@ If function doesn't exist (or none is supplied), read from user."
 Each matching command is appended to the input history, enabling
 access via \\[comint-previous-input].
 \nMemorized commands are stored in `shx-kept-commands'."
-  (if (string= regexp "")
+  (if (string-empty-p regexp)
       (shx-insert 'error "kept <regexp>\n")
     (dolist (command shx-kept-commands nil)
       (when (string-match regexp (concat (car command) (cdr command)))
