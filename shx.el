@@ -432,6 +432,14 @@ FILES can have various styles of quoting and escaping."
           (lambda (first-timer second-timer)
             (string< (format "%s" (aref first-timer 5))
                      (format "%s" (aref second-timer 5)))))))
+(defun shx--restore-kept-commands (&optional regexp insert-kept-command)
+  "Restore the kept commands matching REGEXP."
+  (dolist (command shx-kept-commands nil)
+    (when (string-match (or regexp ".") (concat (car command) (cdr command)))
+      (when insert-kept-command
+        (shx-insert 'font-lock-doc-face (car command) 'default ": "
+                    'comint-highlight-input command (cdr command) "\n")
+        (ring-insert comint-input-ring (cdr command))))))
 
 
 ;;; sending/inserting
@@ -740,11 +748,7 @@ access via \\[comint-previous-input].
 \nMemorized commands are stored in `shx-kept-commands'."
   (if (string-empty-p regexp)
       (shx-insert 'error "kept <regexp>\n")
-    (dolist (command shx-kept-commands nil)
-      (when (string-match regexp (concat (car command) (cdr command)))
-        (shx-insert 'font-lock-doc-face (car command) 'default ": "
-                    'comint-highlight-input command (cdr command) "\n")
-        (ring-insert comint-input-ring (cdr command))))
+    (shx--restore-kept-commands regexp t)
     (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
 (defalias 'shx-cmd-k #'shx-cmd-kept)
 
