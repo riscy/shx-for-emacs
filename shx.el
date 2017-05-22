@@ -97,10 +97,6 @@
   "Whether to advise the behavior of a number of `comint-mode' functions."
   :type 'boolean)
 
-(defcustom shx-add-more-syntax-highlighting t
-  "Whether to add more syntax highlighting to `shell-mode'."
-  :type 'boolean)
-
 (defcustom shx-show-hints t
   "Whether to echo hints when running certain commands."
   :type 'boolean)
