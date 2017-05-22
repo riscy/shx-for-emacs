@@ -6,17 +6,19 @@
 [[file:img/screenshot.png]]
 
 * Table of Contents :TOC_3_gh:noexport:
- - [[#description][Description]]
- - [[#related][Related]]
- - [[#install][Install]]
- - [[#key-bindings][Key bindings]]
- - [[#markup-in-the-shell][Markup in the shell]]
- - [[#extra-shell-commands][Extra shell commands]]
-     - [[#general-commands][General commands]]
-     - [[#graphical-commands][Graphical commands]]
-     - [[#asynchronous-commands][Asynchronous commands]]
-     - [[#adding-new-commands][Adding new commands]]
- - [[#split-screen-scrolling][Split-screen scrolling]]
+- [[#description][Description]]
+- [[#related][Related]]
+- [[#install][Install]]
+- [[#run][Run]]
+- [[#key-bindings][Key bindings]]
+- [[#markup-in-the-shell][Markup in the shell]]
+- [[#extra-shell-commands][Extra shell commands]]
+    - [[#general-commands][General commands]]
+    - [[#graphical-commands][Graphical commands]]
+    - [[#asynchronous-commands][Asynchronous commands]]
+    - [[#adding-new-commands][Adding new commands]]
+- [[#changelog][Changelog]]
+    - [[#001][0.0.1]]
 
 * Description
   /shx/ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
@@ -37,7 +39,7 @@
 
   Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
-  /This version is tested with Emacs 25.1.1/
+  /This version is tested with Emacs 25.1.1/  Check out the [[#changelog][changelog]].
 * Related
   If you're here, these might be interesting:
   - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
@@ -53,29 +55,37 @@
   - [[https://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
   - [[https://getbitbar.com/][BitBar]] for macOS
 * Install
-  Add the following to your ~.emacs~:
+  Installing via MELPA is on its way.
+
+  For now, add the following to your ~.emacs~:
   #+begin_src elisp
-  (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path:
+  (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path
   (require 'shx)                            ; load shell-extras
   #+end_src
-
-  Now shx will run automatically in any ~comint-mode~ buffer, including
-  ~shell-mode~.  If you don't want shx to run in every comint-mode buffer, use
-  ~M-x customize-group RET shx RET~ and set ~shx-comint-auto-run~ to ~nil~.
-
+* Run
   Typing ~M-x shx <return>~ begins a new ~shell~ session with shx enabled.  The
   following commands will get you started:
   1. Type ~:man ls~ and the man page for ~ls~ will be brought up within Emacs.
-  2. Type ~:help~ and you'll see a list of commands you can run besides ~:man~
-     and ~:help~.
+  2. Type ~:help~ and you'll enter a completing read for shx commands that you
+     can run besides ~:man~ and ~:help~.
+
+  If you like shx-mode, you can enable it everywhere:
+
+  #+begin_src elisp
+  (shx-global-mode 1)                       ; toggle shx-mode on globally
+  #+end_src
+
+  Now shx will run automatically in any ~comint-mode~ buffer.  If you don't want
+  shx to run in every comint-mode buffer, you can use ~M-x ~shx-mode~ on a
+  case-by-case basis, or just add hooks to the mode in question, for example:
+
+  #+begin_src elisp
+  (add-hook 'inferior-python-mode-hook #'shx-mode)
+  #+end_src
 * Key bindings
   | Key binding | Description                                                              |
   |-------------+--------------------------------------------------------------------------|
-  | ~C-c C-c~   | Send a ~SIGTERM~ (break) to the foreground process                       |
-  | ~C-c C-z~   | Send a ~SIGSTOP~ to to the foreground process                            |
-  | ~C-c C-k~   | Send a ~SIGKILL~ to the subjob (what ~C-c C-c~ did before)               |
-  | ~C-c C-b~   | Open a list of URLs that have been in the output                         |
-  | ~C-c C-d~   | Clear the input OR kill the process OR delete the buffer (in that order) |
+  | ~C-c C-k~   | Send a ~SIGKILL~ to the subjob                                           |
   | ~C-RET~     | If the cursor is not on the prompt, paste the current line to the input  |
   | ~RET~       | If the cursor is on a filename or a URL, try to open it                  |
   | ~SPC~       | If the prompt is ~:~, send ~SPC~ straight through to the process         |
@@ -211,31 +221,17 @@
       This means ~<browse url>~ will not become part of shx's markup.  That
       makes sense in this case, since you wouldn't want to give a process the
       power to open arbitrary URLs without prompting.
-* Split-screen scrolling
-  To enable split-screen scrolling, add the following to your ~.emacs~:
-  #+begin_src elisp
-  (require 'shx-split)
-  #+end_src
-
-  Now paging up causes a comint-mode window to be split in two, with a larger
-  window on top and a smaller input window preserved on the bottom:
-  #+begin_src
-  +--------------+
-  | -------      |
-  | -------      |
-  | -------      |
-  |    [head]    |
-  |(show history)|
-  +--------------+
-  |    [tail]    |
-  |(show context)|
-  +--------------+
-  #+end_src
-  Paging down to the bottom causes the split to disappear.
-
-  This lets you enter text at the prompt (in the input window) and monitor new
-  input, while consulting previous output (in the scrolling window)
-  uninterrupted.
-
-  Change the height of the tail to something else by customizing the
-  ~shx-split-rows~ variable.
+* Changelog
+*** 0.0.1
+    To make shx a better fit for MELPA, I've modified it for compatibility with
+    other packages.  Once it's on MELPA it will follow semantic versioning.
+    Breaking changes are as follows:
+    1. Obsolete function aliases have been removed, so the following commands
+       will no longer work out of the box: ~barplot~, ~matrix~, ~plot~, and
+       ~scatter~. Use ~plotbar~, ~plotmatrix~, ~plotline~, and ~plotscatter~
+       instead.
+    2. The URL-browsing binding ~C-c C-b~ has been retired (it clashed with an
+       existing shell-mode binding).  Instead you can use the shx user command
+       ~:go~, or click on a visible URL, or arrow up to a URL and press
+       ~<enter>~.
+    3. ~shx-split.el~ has moved: https://github.com/riscy/split-scroll
