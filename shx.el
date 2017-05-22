@@ -72,6 +72,10 @@
   "Path to ImageMagick's convert binary."
   :type 'string)
 
+(defcustom shx-mode-lighter "shx"
+  "Lighter for the shx minor mode."
+  :type 'string)
+
 (defcustom shx-path-to-gnuplot "gnuplot"
   "Path to gnuplot binary."
   :type 'string)
@@ -91,10 +95,6 @@
 
 (defcustom shx-comint-advise t
   "Whether to advise the behavior of a number of `comint-mode' functions."
-  :type 'boolean)
-
-(defcustom shx-comint-auto-run t
-  "Whether to run shx in all comint sessions (e.g., \\[inferior-python-mode])."
   :type 'boolean)
 
 (defcustom shx-add-more-syntax-highlighting t
@@ -147,6 +147,12 @@
                          (define-key keymap [mouse-1] 'ffap-at-mouse)
                          keymap)
   "Keymap for capturing mouse clicks on files/URLs.")
+
+(defvar-local shx--old-prompt-read-only nil
+  "Whether the prompt was read-only before shx-mode was enabled.")
+
+(defvar-local shx--old-undo-disabled nil
+  "Whether undo was disabled before shx-mode was enabled.")
 
 
 ;;; input
@@ -828,30 +834,6 @@ http://www.gnuplotting.org/tag/pm3d/"
 
 ;;; loading
 
-
-(defun shx-activate ()
-  "Activate shx on the current buffer.
-shx provides the following key bindings:
-\n\\{shx-keymap}"
-  (interactive)
-  (use-local-map (shx-get-keymap (current-local-map)))
-  (buffer-disable-undo)
-  (setq-local shx-urls (list "https://github.com/riscy/shx-for-emacs"))
-  (setq-local shx-buffer (current-buffer))
-  (setq comint-prompt-read-only nil)
-  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil 'localy)
-  ;; do this asynch with a delay; spacemacs tries to set this variable too
-  (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input))))
-
-(defun shx-for-shell-mode ()
-  "Activate shx in the context of `shell-mode'.
-For this function to work properly, it should be in `shell-mode-hook'."
-  (setq-local shell-font-lock-keywords
-              (append shell-font-lock-keywords (shx--shell-mode-font-locks)))
-  (setq-local font-lock-defaults '(shell-font-lock-keywords t))
-  (dolist (command shx-kept-commands nil)
-    (ring-insert comint-input-ring (cdr command)))
-  (shx-activate))
 (defcustom shx-shell-mode-font-locks
   `(("#.*\\'"                                     0 'font-lock-comment-face)
     ("~"                                          0 'font-lock-preprocessor-face)
@@ -872,15 +854,58 @@ For this function to work properly, it should be in `shell-mode-hook'."
   :type '(alist :key-type regexp))
 
 (defun shx (&optional name)
-  "Create a new shell session using shx.
-NAME is the optional name of the buffer.
+  "Create a new shx-enhanced shell session.
+NAME is the optional name of the new buffer.
 See the function `shx-mode' for details."
   (interactive)
   (let ((name (or name (generate-new-buffer-name "*shx*"))))
     ;; switch-to-buffer first -- shell uses pop-to-buffer
     ;; which is unpredictable! :(
     (switch-to-buffer name)
-    (shell name)))
+    (shell name)
+    (shx-mode)))
+
+;;;###autoload
+(define-minor-mode shx-mode
+  "Toggle shx-mode on or off.
+\nThis minor mode provides extra functionality to shell-mode and
+comint-mode in general.  Use `shx-global-mode' to enable
+`shx-mode' in all buffers that support it.
+\nProvides the following key bindings: \n\\{shx-mode-map}"
+  :lighter shx-mode-lighter
+  :keymap shx-mode-map
+  (if shx-mode (shx--activate) (shx--deactivate)))
+
+;;;###autoload
+(define-globalized-minor-mode shx-global-mode shx-mode shx--turn-on)
+
+(defun shx--activate ()
+  "Add font-locks, tweak defaults, add hooks/advice."
+  (setq-local shx-buffer (current-buffer))
+  (when (derived-mode-p 'shell-mode)
+    (font-lock-add-keywords nil shx-shell-mode-font-locks))
+  (setq-local shx--old-prompt-read-only comint-prompt-read-only)
+  (setq-local comint-prompt-read-only nil)
+  (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
+  (unless shx--old-undo-disabled (buffer-disable-undo))
+  ;; do this one with a delay because spacemacs tries to set this variable too:
+  (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
+  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
+  (shx--restore-kept-commands))
+
+(defun shx--deactivate ()
+  "Remove font-locks and hooks, and restore variable defaults."
+  (when (derived-mode-p 'shell-mode)
+    (font-lock-remove-keywords nil shx-shell-mode-font-locks))
+  (setq-local comint-prompt-read-only shx--old-prompt-read-only)
+  (unless shx--old-undo-disabled (buffer-enable-undo))
+  (setq comint-input-sender 'comint-simple-send)
+  (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
+
+(defun shx--turn-on ()
+  "Call the function `shx-mode' if appropriate."
+  (interactive)
+  (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
 
 ;; advise some comint-mode functions -- but only within shx-mode
