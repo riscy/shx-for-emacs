@@ -98,7 +98,7 @@
   :type 'boolean)
 
 (defcustom shx-add-more-syntax-highlighting t
-  "Whether to add more syntax highlighting to ‘shell-mode’."
+  "Whether to add more syntax highlighting to `shell-mode'."
   :type 'boolean)
 
 (defcustom shx-show-hints t
@@ -393,7 +393,9 @@ In particular whether \"(SAFE)\" prepends COMMAND's docstring."
     (ignore-errors (string-suffix-p "(SAFE)" doc))))
 
 (defun shx--restore-kept-commands (&optional regexp insert-kept-command)
-  "Restore the kept commands matching REGEXP."
+  "Add commands from `shx-kept-commands' into `comint-input-ring'.
+REGEXP filters which commands to add.  If INSERT-KEPT-COMMAND is
+not nil, then insert the command into the current buffer."
   (dolist (command shx-kept-commands nil)
     (when (string-match (or regexp ".") (concat (car command) (cdr command)))
       (when insert-kept-command
@@ -595,7 +597,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 ;;; general user commands
 
 (defun shx-cmd-alert (string)
-  "(SAFE) Show the ‘shx-buffer’ in the other window with STRING."
+  "(SAFE) Show the `shx-buffer' in the other window with STRING."
   (message (format "From %s at %s: '%s'\n"
                    shx-buffer
                    (format-time-string "%X")
@@ -768,7 +770,6 @@ Benefit from the remote host's completions.
                            "set style fill solid 1.0 border -1;"
                            "plot")
                    "u 2:xticlabels(1) notitle"))
-(define-obsolete-function-alias 'shx-cmd-barplot #'shx-cmd-plotbar)
 
 (defun shx-cmd-plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
@@ -783,7 +784,6 @@ Benefit from the remote host's completions.
                            "3 \"#55a550\", 4 \"#1e5500\");"
                            "plot")
                    "u 1:(-$2):3 matrix w image notitle"))
-(define-obsolete-function-alias 'shx-cmd-matrix #'shx-cmd-plotmatrix)
 
 (defun shx-cmd-plotline (filename)
   "(SAFE) Show line plot of FILENAME.
@@ -798,7 +798,6 @@ Benefit from the remote host's completions.
   5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    "plot" "w l lw 1 notitle"))
-(define-obsolete-function-alias 'shx-cmd-plot #'shx-cmd-plotline)
 
 (defun shx-cmd-plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
@@ -821,7 +820,6 @@ http://www.gnuplotting.org/tag/pm3d/"
   5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    "plot" "w p ps 2 pt 7 notitle"))
-(define-obsolete-function-alias 'shx-cmd-scatter #'shx-cmd-plotscatter)
 
 (defun shx-cmd-view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
@@ -876,8 +874,7 @@ For this function to work properly, it should be in `shell-mode-hook'."
 (defun shx (&optional name)
   "Create a new shell session using shx.
 NAME is the optional name of the buffer.
-shx provides the following key bindings:
-\n\\{shx-keymap}"
+See the function `shx-mode' for details."
   (interactive)
   (let ((name (or name (generate-new-buffer-name "*shx*"))))
     ;; switch-to-buffer first -- shell uses pop-to-buffer
