@@ -55,7 +55,7 @@
 
 ;; Compiler pacifier
 (defvar evil-state)
-(declare-function evil-insert "evil-commands")
+(declare-function evil-insert-state "evil-states")
 
 
 ;;; customization options and other variables
@@ -173,7 +173,6 @@
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (shx-switch-to-insert-mode)
   (if (> (length (shx--current-input)) 1000)
       (message "Input too long (shorten to < 1000 chars)")
     (shx--timestamp-prompt)
@@ -194,13 +193,6 @@ This function overrides `comint-input-sender'."
         (set-marker (process-mark process) (point)))
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
-
-(defun shx-switch-to-insert-mode ()
-  "Switch to insert-mode (when applicable)."
-  (and (featurep 'evil-vars)
-       (equal evil-state 'normal)
-       (featurep 'evil-commands)
-       (evil-insert 1)))
 
 (defun shx--timestamp-prompt ()
   "Add a mouseover timestamp to the last prompt."
@@ -310,14 +302,6 @@ buffer's `process-mark'."
   "Check if point is on the input region."
   (>= (point-marker)
       (process-mark (get-buffer-process (current-buffer)))))
-
-(defun shx-show-output (&optional _args)
-  "Recenter window so that as much output as possible is shown."
-  (comint-show-maximum-output))
-
-(defun shx-snap-to-top (&optional _args)
-  "Recenter window so the current line is at the top."
-  (recenter-top-bottom 0))
 
 (defun shx--all-commands ()
   "Return a list of all shx commands."
@@ -846,18 +830,6 @@ http://www.gnuplotting.org/tag/pm3d/"
 
 ;;; loading
 
-;; Add hooks and advise some existing comint functions:
-(add-hook 'shell-mode-hook 'shx-for-shell-mode) ; always run in shell-mode
-(when shx-comint-auto-run (add-hook 'comint-mode-hook 'shx-activate))
-(when shx-comint-advise
-  (advice-add #'comint-history-isearch-backward-regexp :before #'shx-show-output)
-  (advice-add #'comint-previous-input :before #'shx-show-output)
-  (advice-add #'comint-next-input :before #'shx-show-output)
-  (advice-add #'comint-kill-input :before #'shx-switch-to-insert-mode)
-  (advice-add #'comint-kill-input :before #'shx-show-output)
-  (advice-add #'comint-send-eof :before #'shx-show-output)
-  (advice-add #'comint-previous-prompt :after #'shx-snap-to-top)
-  (advice-add #'comint-next-prompt :after #'shx-snap-to-top))
 
 (defun shx-activate ()
   "Activate shx on the current buffer.
@@ -912,6 +884,39 @@ shx provides the following key bindings:
     ;; which is unpredictable! :(
     (switch-to-buffer name)
     (shell name)))
+
+
+;; advise some comint-mode functions -- but only within shx-mode
+
+(defun shx-show-output (&rest _args)
+  "Recenter window so that as much output as possible is shown.
+This function only works when the shx minor mode is active."
+  (when shx-mode (comint-show-maximum-output)))
+
+(defun shx-snap-to-top (&rest _args)
+  "Recenter window so the current line is at the top.
+This function only works when the shx minor mode is active."
+  (when shx-mode (recenter-top-bottom 0)))
+
+(defun shx-switch-to-insert (&rest _args)
+  "Switch to insert-mode (when applicable).
+This function only works when the shx minor mode is active."
+  (and shx-mode
+       (featurep 'evil-vars)
+       (not (equal evil-state 'insert))
+       (featurep 'evil-states)
+       (evil-insert-state)))
+
+(when shx-comint-advise
+  (advice-add #'comint-kill-input :before #'shx-switch-to-insert)
+  (advice-add #'comint-send-input :after #'shx-switch-to-insert)
+  (advice-add #'comint-history-isearch-backward-regexp :before #'shx-show-output)
+  (advice-add #'comint-previous-input :before #'shx-show-output)
+  (advice-add #'comint-next-input :before #'shx-show-output)
+  (advice-add #'comint-kill-input :before #'shx-show-output)
+  (advice-add #'comint-send-eof :before #'shx-show-output)
+  (advice-add #'comint-previous-prompt :after #'shx-snap-to-top)
+  (advice-add #'comint-next-prompt :after #'shx-snap-to-top))
 
 (provide 'shx)
 ;;; shx.el ends here
