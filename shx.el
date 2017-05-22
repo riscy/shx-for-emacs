@@ -842,14 +842,18 @@ http://www.gnuplotting.org/tag/pm3d/"
     (,(shx--quote-regexp "\"")                    0 'font-lock-string-face)
     ;; disallow leading alphabet chars so we 'don't match on contractions'
     (,(concat "[^A-Za-z]\\(" (shx--quote-regexp "'") "\\)")
-     1 'font-lock-string-face)
-    (,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
+                                                  1 'font-lock-string-face)
+    ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
+    ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))
+  "Some additional syntax highlighting for `shell-mode'."
+  :type '(alist :key-type regexp))
+
+(defcustom shx-font-locks
+  `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
               (regexp-opt (mapcar (lambda (cmd)
                                     (string-remove-prefix shx-cmd-prefix cmd))
                                   (shx--all-commands)))
-              "\\).*\\'")                         1 'font-lock-constant-face)
-    ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
-    ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))
+              "\\).*\\'")                         1 'font-lock-constant-face))
   "Some additional syntax highlighting for `shell-mode'."
   :type '(alist :key-type regexp))
 
@@ -884,6 +888,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (setq-local shx-buffer (current-buffer))
   (when (derived-mode-p 'shell-mode)
     (font-lock-add-keywords nil shx-shell-mode-font-locks))
+  (font-lock-add-keywords nil shx-font-locks)
   (setq-local shx--old-prompt-read-only comint-prompt-read-only)
   (setq-local comint-prompt-read-only nil)
   (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
@@ -897,6 +902,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   "Remove font-locks and hooks, and restore variable defaults."
   (when (derived-mode-p 'shell-mode)
     (font-lock-remove-keywords nil shx-shell-mode-font-locks))
+  (font-lock-remove-keywords nil shx-font-locks)
   (setq-local comint-prompt-read-only shx--old-prompt-read-only)
   (unless shx--old-undo-disabled (buffer-enable-undo))
   (setq comint-input-sender 'comint-simple-send)
