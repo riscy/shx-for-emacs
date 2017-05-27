@@ -9,6 +9,8 @@
 - [[#description][Description]]
 - [[#related][Related]]
 - [[#install][Install]]
+    - [[#from-melpa][From MELPA]]
+    - [[#manually][Manually]]
 - [[#run][Run]]
 - [[#key-bindings][Key bindings]]
 - [[#markup-in-the-shell][Markup in the shell]]
@@ -17,8 +19,6 @@
     - [[#graphical-commands][Graphical commands]]
     - [[#asynchronous-commands][Asynchronous commands]]
     - [[#adding-new-commands][Adding new commands]]
-- [[#changelog][Changelog]]
-    - [[#001][0.0.1]]
 
 * Description
   /shx/ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
@@ -39,7 +39,7 @@
 
   Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
-  /This version is tested with Emacs 25.1.1/  Check out the [[#changelog][changelog]].
+  /This version is tested with Emacs 25.1.1/  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
 * Related
   If you're here, these might be interesting:
   - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
@@ -55,13 +55,14 @@
   - [[https://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
   - [[https://getbitbar.com/][BitBar]] for macOS
 * Install
-  Installing via MELPA is on its way.
-
-  For now, add the following to your ~.emacs~:
-  #+begin_src elisp
-  (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path
-  (require 'shx)                            ; load shell-extras
-  #+end_src
+*** From MELPA
+    ~M-x package-install RET shx RET~ to install shx from [[https://melpa.org/][MELPA]].
+*** Manually
+    Add the following to your ~.emacs~:
+    #+begin_src elisp
+    (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path
+    (require 'shx)                            ; load shell-extras
+    #+end_src
 * Run
   Typing ~M-x shx <return>~ begins a new ~shell~ session with shx enabled.  The
   following commands will get you started:
@@ -221,17 +222,3 @@
       This means ~<browse url>~ will not become part of shx's markup.  That
       makes sense in this case, since you wouldn't want to give a process the
       power to open arbitrary URLs without prompting.
-* Changelog
-*** 0.0.1
-    To make shx a better fit for MELPA, I've modified it for compatibility with
-    other packages.  Once it's on MELPA it will follow semantic versioning.
-    Breaking changes are as follows:
-    1. Obsolete function aliases have been removed, so the following commands
-       will no longer work out of the box: ~barplot~, ~matrix~, ~plot~, and
-       ~scatter~. Use ~plotbar~, ~plotmatrix~, ~plotline~, and ~plotscatter~
-       instead.
-    2. The URL-browsing binding ~C-c C-b~ has been retired (it clashed with an
-       existing shell-mode binding).  Instead you can use the shx user command
-       ~:go~, or click on a visible URL, or arrow up to a URL and press
-       ~<enter>~.
-    3. ~shx-split.el~ has moved: https://github.com/riscy/split-scroll
