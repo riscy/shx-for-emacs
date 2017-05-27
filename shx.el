@@ -401,8 +401,8 @@ not nil, then insert the command into the current buffer."
     (when (string-match (or regexp ".") (concat (car command) (cdr command)))
       (when insert-kept-command
         (shx-insert 'font-lock-doc-face (car command) 'default ": "
-                    'comint-highlight-input command (cdr command) "\n")
-        (ring-insert comint-input-ring (cdr command))))))
+                    'comint-highlight-input command (cdr command) "\n"))
+      (ring-insert comint-input-ring (cdr command)))))
 
 
 ;;; sending/inserting
