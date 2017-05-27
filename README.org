@@ -77,7 +77,7 @@
   #+end_src
 
   Now shx will run automatically in any ~comint-mode~ buffer.  If you don't want
-  shx to run in every comint-mode buffer, you can use ~M-x ~shx-mode~ on a
+  shx to run in every comint-mode buffer, you can use ~M-x shx-mode~ on a
   case-by-case basis, or just add hooks to the mode in question, for example:
 
   #+begin_src elisp
