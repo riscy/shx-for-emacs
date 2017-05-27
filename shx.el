@@ -129,7 +129,6 @@
       (define-key keymap "q" #'shx-magic-insert))
     (define-key keymap (kbd "<return>") #'shx-send-input-or-open-thing)
     (define-key keymap (kbd "C-<return>") #'shx-send-input-or-copy-line)
-    (define-key keymap (kbd "C-c C-k") #'comint-kill-subjob)
     keymap)
   "Keymap for shx.")
 
