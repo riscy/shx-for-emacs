@@ -26,7 +26,6 @@
 ;;; Code:
 
 (require 'shx)
-;;(require 'shx-split)
 
 (defun shx-cmd-test (_args)
   "(SAFE) Test shx.
