@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; Homepage: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 0.0.1
+;; Version: 0.0.3
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -370,6 +370,8 @@ used in an injection attack."
    (match-beginning 0) (match-end 0)
    `(keymap ,shx-click-file mouse-face link font-lock-face font-lock-doc-face)))
 
+;; TODO: do something like this instead:
+;; https://github.com/rubysl/rubysl-shellwords/blob/2.0/lib/rubysl/shellwords/shellwords.rb
 (defun shx--parse-filenames (files)
   "Turn a string of FILES into a list of filename strings.
 FILES can have various styles of quoting and escaping."
