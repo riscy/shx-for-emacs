@@ -28,17 +28,19 @@
 (require 'shx)
 
 (defun shx-cmd-test (_args)
-  "(SAFE) Test shx.
-In particular run every function with the prefix shx-test-case.
+  "Test shx.
 Example:
 :test"
-  (insert "\n")
-  (shx--asynch-funcall
-   (lambda ()
-     (dolist (test-function (all-completions "shx-test-case" obarray 'functionp))
-       (funcall (intern test-function)))
-     (message "Success!")
-     (recenter -1))))
+  ;; Test the use of markup:
+  (insert "\n<test-all>\n"))
+
+(defun shx-cmd-test-all (_args)
+  "(SAFE) Call every function with the prefix 'shx-test-case-'."
+  (shx--asynch-funcall (lambda ()
+                         (dolist (test-function (all-completions "shx-test-case" obarray 'functionp))
+                           (funcall (intern test-function)))
+                         (message "Tests complete!")
+                         (recenter -1))))
 
 (defun shx-test-assert (comment val)
   "Describe test with COMMENT; test truth of VAL."
