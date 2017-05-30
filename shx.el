@@ -391,7 +391,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
   "Return t if COMMAND is safe to call to generate markup.
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (let ((doc (documentation command)))
-    (ignore-errors (string-suffix-p "(SAFE)" doc))))
+    (ignore-errors (string-prefix-p "(SAFE)" doc))))
 
 (defun shx--restore-kept-commands (&optional regexp insert-kept-command)
   "Add commands from `shx-kept-commands' into `comint-input-ring'.
