@@ -64,6 +64,13 @@ Example:
 
 ;; tests!
 
+(defun shx-test-case-safe-as-markup ()
+  "Test recognition of safe functions."
+  (shx-test-assert "The eval function is not safe."
+                   (not (shx--safe-as-markup-p (intern "shx-cmd-eval"))))
+  (shx-test-assert "The stop function is safe."
+                   (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
+
 (defun shx-test-case-shx ()
   "Test core shx functions."
   (shx-test-assert "Image height is a positive integer."
