@@ -3,6 +3,8 @@
 #+AUTHOR: Chris Rayner
 #+EMAIL: dchrisrayner@gmail.com
 
+[[https://melpa.org/#/shx][http://melpa.org/packages/shx-badge.svg]] [[https://stable.melpa.org/#/shx][https://stable.melpa.org/packages/shx-badge.svg]]
+
 [[file:img/screenshot.png]]
 
 * Table of Contents :TOC_3_gh:noexport:
