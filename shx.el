@@ -420,7 +420,7 @@ are sent straight through to the process to handle paging."
              (string-match ".*:$" (shx--current-prompt))
              (string-match "^\\s-*$" (shx--current-input)))
         (progn
-          (message "shx: sending %s" (this-command-keys))
+          (message "shx: sending '%s'" (this-command-keys))
           (process-send-string nil (this-command-keys)))
       (unless on-last-line (goto-char (point-max)))
       (if shx-use-magic-insert
