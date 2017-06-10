@@ -704,7 +704,7 @@ If function doesn't exist (or none is supplied), read from user."
       (add-to-list 'shx-kept-commands `(,desc . ,command))
       (customize-save-variable 'shx-kept-commands shx-kept-commands)
       (shx-insert "Kept as " 'font-lock-doc-face desc "\n")
-      (shx--hint "type ':kept' or ':k' to see a list of all kept commands."))))
+      (shx--hint "type ':kept' or ':k' to see all kept commands"))))
 
 (defun shx-cmd-kept (regexp)
   "(SAFE) Show the `shx-kept-commands' commands matching REGEXP.
@@ -714,7 +714,7 @@ access via \\[comint-previous-input].
   (if (string-empty-p regexp)
       (shx-insert 'error "kept <regexp>\n")
     (shx--restore-kept-commands regexp t)
-    (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
+    (shx--hint "M-x customize-variable shx-kept-commands <RET> edits this list")))
 (defalias 'shx-cmd-k #'shx-cmd-kept)
 
 (defun shx-cmd-man (topic)
@@ -726,8 +726,7 @@ See `Man-notify-method' for what happens when the page is ready."
 
 (defun shx-cmd-name (name)
   "(SAFE) Rename the current buffer to NAME."
-  (unless (ignore-errors (rename-buffer (concat "*" name "*")))
-    (shx-insert 'error "Can't name buffer *" name "* (is this name taken?)\n")))
+  (rename-buffer (generate-new-buffer-name (concat "*" name "*"))))
 
 (defun shx-cmd-oedit (file)
   "(SAFE) open FILE in other window.
