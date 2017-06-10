@@ -304,9 +304,12 @@ buffer's `process-mark'."
   (>= (point-marker)
       (process-mark (get-buffer-process (current-buffer)))))
 
-(defun shx--all-commands ()
-  "Return a list of all shx commands."
-  (all-completions shx-cmd-prefix obarray 'functionp))
+(defun shx--all-commands (&optional without-prefix)
+  "Return a list of all shx commands.
+With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
+  (mapcar (lambda (cmd)
+            (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
+          (all-completions shx-cmd-prefix obarray 'functionp)))
 
 (defun shx--expand-filename (filename)
   "Expand FILENAME to include an absolute path.
@@ -831,7 +834,7 @@ http://www.gnuplotting.org/tag/pm3d/"
 ;;; loading
 
 (defcustom shx-shell-mode-font-locks
-  `(("#.*\\'"                                     0 'font-lock-comment-face)
+  `(("#+[^#]*\\'"                                 0 'font-lock-comment-face)
     ("~"                                          0 'font-lock-preprocessor-face)
     (,(regexp-opt '(">" "<" "&&" "|"))            0 'font-lock-keyword-face)
     (,(shx--quote-regexp "`")                     0 'font-lock-preprocessor-face)
@@ -841,16 +844,14 @@ http://www.gnuplotting.org/tag/pm3d/"
                                                   1 'font-lock-string-face)
     ("\\(\\<git\\>\\) .*\\'"                      1 'font-lock-constant-face)
     ("\\(\\<rm\\>\\) .*\\'"                       1 'font-lock-warning-face))
-  "Some additional syntax highlighting for `shell-mode'."
+  "Some additional syntax highlighting for `shell-mode' only."
   :type '(alist :key-type regexp))
 
 (defcustom shx-font-locks
-  `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\("
-              (regexp-opt (mapcar (lambda (cmd)
-                                    (string-remove-prefix shx-cmd-prefix cmd))
-                                  (shx--all-commands)))
-              "\\).*\\'")                         1 'font-lock-constant-face))
-  "Some additional syntax highlighting for `shell-mode'."
+  `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\(\\<"
+              (regexp-opt (shx--all-commands 'without-prefix))
+              "\\>\\).*\\'")                      1 'font-lock-keyword-face))
+  "Some additional syntax highlighting for the shx minor mode."
   :type '(alist :key-type regexp))
 
 (defun shx (&optional name)
