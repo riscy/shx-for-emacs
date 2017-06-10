@@ -831,7 +831,7 @@ Or just a single column:
 ;;; loading
 
 (defcustom shx-shell-mode-font-locks
-  `(("#+[^#]*\\'"                                 0 'font-lock-comment-face)
+  `(("#.*[^#^\n]*\\'"                             0 'font-lock-comment-face)
     ("~"                                          0 'font-lock-preprocessor-face)
     (,(regexp-opt '(">" "<" "&&" "|"))            0 'font-lock-keyword-face)
     (,(shx--quote-regexp "`")                     0 'font-lock-preprocessor-face)
