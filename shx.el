@@ -392,11 +392,18 @@ FILES can have various styles of quoting and escaping."
               (replace-regexp-in-string tmp-space " " filename))
             (split-string-and-unquote escaped))))
 
-(defun shx--quote-regexp (delimiter &optional max-length)
+(defun shx--quote-regexp (delimiter &optional escape max-length)
   "Regexp matching strings delimited by DELIMITER.
+ESCAPE is the string that can be used to escape the delimiter.
 MAX-LENGTH is the length of the longest match (default 80)."
   (concat delimiter
-          "[^" delimiter "]" "\\{0," (format "%d" (or max-length 80)) "\\}"
+          "\\("
+          (when escape
+            (concat escape escape "\\|"      ; two backslashes OR
+                    escape delimiter "\\|")) ; escaped delimiter
+          "[^" delimiter "]"
+          "\\)"
+          "\\{0," (format "%d" (or max-length 80)) "\\}"
           delimiter))
 
 (defun shx--safe-as-markup-p (command)
@@ -834,8 +841,8 @@ Or just a single column:
   `(("#.*[^#^\n]*\\'"                             0 'font-lock-comment-face)
     ("~"                                          0 'font-lock-preprocessor-face)
     (,(regexp-opt '(">" "<" "&&" "|"))            0 'font-lock-keyword-face)
-    (,(shx--quote-regexp "`")                     0 'font-lock-preprocessor-face)
-    (,(shx--quote-regexp "\"")                    0 'font-lock-string-face)
+    (,(shx--quote-regexp "`" "\\\\")              0 'font-lock-preprocessor-face)
+    (,(shx--quote-regexp "\"" "\\\\")             0 'font-lock-string-face)
     ;; disallow leading alphabet chars so we 'don't match on contractions'
     (,(concat "[^A-Za-z]\\(" (shx--quote-regexp "'") "\\)")
                                                   1 'font-lock-string-face)

@@ -64,6 +64,19 @@ Example:
 
 ;; tests!
 
+(defun shx-test-case-quote-regexp ()
+  "Test pattern matching on delimited regexps like strings."
+  (shx-test-assert
+   "Escaped regexps are matched."
+   (let ((pattern "`echo \\\\\\`echo\\\\\\``"))
+     (string-match (shx--quote-regexp "`" "\\\\") pattern)
+     (string= pattern (match-string 0 pattern))))
+  (shx-test-assert
+   "Unescaped regexps are matched."
+   (let ((pattern "'don\'t'"))
+     (string-match (shx--quote-regexp "'") pattern)
+     (string= "'don\'" (match-string 0 pattern)))))
+
 (defun shx-test-case-safe-as-markup ()
   "Test recognition of safe functions."
   (shx-test-assert "The eval function is not safe."
