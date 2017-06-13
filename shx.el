@@ -750,13 +750,14 @@ See `Man-notify-method' for what happens when the page is ready."
 
 (defun shx-cmd-pwd (_args)
   "(SAFE) Show what Emacs thinks the default directory is.
-\nNote if you're at a shell prompt, you can use
+\nNote if you're at a shell prompt, you can probably use
 \\[shell-resync-dirs] to reset Emacs' pwd to the shell's pwd."
   (shx-insert default-directory "\n"))
 
 (defun shx-cmd-ssh (host)
-  "Open a shell on (remote) HOST using tramp.
-Benefit from the remote host's completions.
+  "Open a shell on HOST using tramp.
+\nThis way you benefit from the remote host's completions, and
+commands like :pwd and :edit will work correctly.
 \nExample:\n
   :ssh hostname:port"
   (if (equal host "")
@@ -770,7 +771,7 @@ Benefit from the remote host's completions.
 
 (defun shx-cmd-plotbar (filename)
   "(SAFE) Show barplot of FILENAME.
-\nFor example, :plotbar file.dat where file.dat contains:\n
+\nFor example, \":plotbar file.dat\" where file.dat contains:\n
   \"Topic 1\" YHEIGHT1
   \"Topic 2\" YHEIGHT2
   \"Topic 3\" YHEIGHT3"
@@ -785,10 +786,8 @@ Benefit from the remote host's completions.
 
 (defun shx-cmd-plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
-\nFor example, :plotmatrix file.dat where file.dat contains:\n
-  1.5   2    3
-  4     5    6
-  7     8    9.5"
+\nFor example, \":plotmatrix file.dat\" where file.dat contains:\n
+  1.5   2    3\n  4     5    6\n  7     8    9.5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    (concat "set view map; unset xtics; unset ytics;"
                            "unset title; set colorbox; set palette defined"
@@ -799,15 +798,10 @@ Benefit from the remote host's completions.
 
 (defun shx-cmd-plotline (filename)
   "(SAFE) Show line plot of FILENAME.
-\nFor example, :plotline file.dat where file.dat contains:\n
-  1 2
-  2 4
-  4 8
-\nOr just a single column:\n
-  1
-  2
-  3
-  5"
+\nFor example, \":plotscatter file.dat\", where file.dat contains:
+  1 2\n  2 4\n  4 8\n
+Or just a single column:
+  1\n  2\n  3\n  5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    "plot" "w l lw 1 notitle"))
 
@@ -821,17 +815,13 @@ http://www.gnuplotting.org/tag/pm3d/"
 
 (defun shx-cmd-plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
-\nFor example, :plotscatter file.dat, where file.dat contains:
-  1 2
-  2 4
-  4 8
-\nOr just a single column:\n
-  1
-  2
-  3
-  5"
+\nFor example, \":plotscatter file.dat\", where file.dat contains:
+  1 2\n  2 4\n  4 8\n
+Or just a single column:
+  1\n  2\n  3\n  5"
   (shx-insert-plot (car (shx--parse-filenames filename))
                    "plot" "w p ps 2 pt 7 notitle"))
+(defalias 'shx-cmd-plot #'shx-cmd-plotscatter)
 
 (defun shx-cmd-view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
