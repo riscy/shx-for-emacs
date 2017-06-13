@@ -743,7 +743,7 @@ See `Man-notify-method' for what happens when the page is ready."
 
 (defun shx-cmd-name (name)
   "(SAFE) Rename the current buffer to NAME."
-  (rename-buffer (generate-new-buffer-name (concat "*" name "*"))))
+  (rename-buffer (generate-new-buffer-name name)))
 
 (defun shx-cmd-oedit (file)
   "(SAFE) open FILE in other window.
