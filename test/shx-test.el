@@ -2,6 +2,8 @@
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Homepage: https://github.com/riscy/shx-for-emacs
+;; Package-Requires: ((emacs "24.4"))
+;; Version: 0.0.0
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -63,6 +65,13 @@ Example:
 
 
 ;; tests!
+
+(defun shx-test-case-escape-filename ()
+  "Test filename escaping."
+  (shx-test-assert
+   "Dangerous characters are escaped in filenames."
+   (string-suffix-p "a\\ filename\\`delete\\`"
+    (shx--escape-filename "a filename`delete`"))))
 
 (defun shx-test-case-quote-regexp ()
   "Test pattern matching on delimited regexps like strings."

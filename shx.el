@@ -318,14 +318,11 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
             (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
           (all-completions shx-cmd-prefix obarray 'functionp)))
 
-(defun shx--expand-filename (filename)
-  "Expand FILENAME to include an absolute path.
-Warn the user if there are characters in the string that could be
-used in an injection attack."
-  (if (string-match "[\"';&<>`]" filename)
-      (shx-insert 'error "shx can't securely accept special characters "
-                  "like '" (match-string 0 filename) "' in a filename\n")
-    (expand-file-name filename)))
+(defun shx--escape-filename (filename)
+  "Escape FILENAME to mitigate injection attacks."
+  (replace-regexp-in-string ; modeled on Ruby's "Shellwords"
+   "\\([^A-Za-z0-9_\-.,:\/@\n]\\)" "\\\\\\1"
+   (expand-file-name filename)))
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
@@ -380,8 +377,6 @@ used in an injection attack."
    (match-beginning 0) (match-end 0)
    `(keymap ,shx-click-file mouse-face link font-lock-face font-lock-doc-face)))
 
-;; TODO: do something like this instead:
-;; https://github.com/rubysl/rubysl-shellwords/blob/2.0/lib/rubysl/shellwords/shellwords.rb
 (defun shx--parse-filenames (files)
   "Turn a string of FILES into a list of filename strings.
 FILES can have various styles of quoting and escaping."
@@ -480,7 +475,9 @@ are sent straight through to the process to handle paging."
   "Insert image FILENAME into the buffer."
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
          (status (call-process
-                  shx-path-to-convert nil t nil (shx--expand-filename filename)
+                  ;; NOTE: FILENAME is interpreted literally by emacs and
+                  ;; does not need to go through shx--escape-filename:
+                  shx-path-to-convert nil t nil (expand-file-name filename)
                   "-resize" (format "x%d>" shx-img-height) img-name)))
     (when (zerop status)
       (let ((pos (point)))
@@ -492,19 +489,18 @@ are sent straight through to the process to handle paging."
   "Prepare a plot of the data in FILENAME.
 Use a gnuplot specific PLOT-COMMAND (for example 'plot') and
 LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
-  (let ((filename (shx--expand-filename filename))
-        (img-name (make-temp-file "tmp" nil ".png")))
-    (and filename
-         (zerop (call-process shx-path-to-gnuplot nil t nil "-e"
-                              (concat "set term png transparent truecolor;"
-                                      "set border lw 3 lc rgb \""
-                                      (color-lighten-name
-                                       (face-attribute 'default :foreground) 5)
-                                      "\"; set out \"" img-name "\"; "
-                                      plot-command " \""
-                                      filename "\" "
-                                      line-style)))
-         (shx-insert-image img-name))))
+  (let* ((img-name (make-temp-file "tmp" nil ".png"))
+         (status (call-process
+                  shx-path-to-gnuplot nil t nil "-e"
+                  (concat
+                   "set term png transparent truecolor;"
+                   "set border lw 3 lc rgb \""
+                   (color-lighten-name (face-attribute 'default :foreground) 5)
+                   "\"; set out \"" img-name "\"; "
+                   plot-command " \""
+                   (shx--escape-filename filename) "\" "
+                   line-style))))
+    (when (zerop status) (shx-insert-image img-name))))
 
 (defun shx--insert-timer (timer-number timer)
   "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
