@@ -362,9 +362,9 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
             (string< (format "%s" (aref first-timer 5))
                      (format "%s" (aref second-timer 5)))))))
 
-(defun shx--get-user-cmd (shx-command)
-  "Return user command prefixed by SHX-COMMAND, or nil."
-  (let* ((prefix (format "%s%s" shx-cmd-prefix (downcase shx-command)))
+(defun shx--get-user-cmd (cmd-prefix)
+  "Return user command prefixed by CMD-PREFIX, or nil."
+  (let* ((prefix (format "%s%s" shx-cmd-prefix (downcase cmd-prefix)))
          (completion (try-completion prefix obarray 'functionp)))
     (when completion
       (intern (if (eq completion t) prefix completion)))))
