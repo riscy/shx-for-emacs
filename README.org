@@ -117,10 +117,11 @@
   stats, or generate an ~:alert~ when a task is finished, and so forth.
 * Extra shell commands
   shx's 'extra' commands are invoked by typing a ~:~ followed by the command's
-  name.  These are written in elisp and so can access all of Emacs' facilities.
-  Type ~:help~ to see a complete listing of shx commands.
+  name.  (You can change the ~:~ prefix by customizing the ~shx-leader~
+  variable.)  These commands are written in elisp and so can access all of
+  Emacs' facilities.  Type ~:help~ to see a complete listing of shx commands.
 
-  The command I use most frequently is the ~:edit~ (shorthand ~:e~) command:
+  One command I use frequently is the ~:edit~ (shorthand ~:e~) command:
   #+begin_src bash
   # edit the .emacs file:
   :edit ~/.emacs
@@ -129,11 +130,22 @@
   :e remote-host.com:~/.emacs
   #+end_src
 
+  I also use the ~:kept~ and ~:keep~ commands frequently:
+  #+begin_src bash
+  # write a complicated command:
+  wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
+
+  # save the last command:
+  :keep
+
+  # search for commands having to do with pip:
+  :kept pip
+  #+end_src
+
   Because these commands are written in elisp, shx gives the ~shell~ a lot of
   the same advantages as ~eshell~.  You can even evaluate elisp code directly in
   the buffer (see ~:help eval~).
 
-  Change the ~:~ prefix by customizing the ~shx-leader~ variable.
 *** General commands
     | Command              | Description                                           |
     |----------------------+-------------------------------------------------------|
