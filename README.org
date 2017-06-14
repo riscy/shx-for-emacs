@@ -72,6 +72,8 @@
   2. Type ~:help~ and you'll enter a completing read for shx commands that you
      can run besides ~:man~ and ~:help~.
 
+  Typing ~M-x shx <return>~ again gets you a fresh shell, numbered accordingly.
+
   If you like shx-mode, you can enable it everywhere:
 
   #+begin_src elisp
