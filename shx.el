@@ -892,8 +892,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (unless shx--old-undo-disabled (buffer-disable-undo))
   ;; do this one with a delay because spacemacs tries to set this variable too:
   (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
-  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
-  (shx--restore-kept-commands))
+  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t))
 
 (defun shx--deactivate ()
   "Remove font-locks and hooks, and restore variable defaults."
