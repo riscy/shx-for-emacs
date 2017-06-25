@@ -906,7 +906,6 @@ comint-mode in general.  Use `shx-global-mode' to enable
 
 (defun shx--turn-on ()
   "Call the function `shx-mode' if appropriate."
-  (interactive)
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
 
