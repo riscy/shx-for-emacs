@@ -635,9 +635,11 @@ therefore ensure `comint-prompt-read-only' is nil."
   "(SAFE) Launch an Emacs `ediff' between FILES.
 \nExample:\n
   :diff file1.txt file2.csv"
-  (shx-insert "Invoking ediff " files "\n")
-  (shx--asynch-funcall
-   #'ediff (mapcar 'expand-file-name (shx--parse-filenames files))))
+  (let ((file-list (shx--parse-filenames files)))
+    (if (not (eq (list-length file-list) 2))
+        (shx-insert 'error "diff <file1> <file2>\n")
+      (shx-insert "Invoking ediff " files "\n")
+      (shx--asynch-funcall #'ediff (mapcar 'expand-file-name file-list)))))
 
 (defun shx-cmd-edit (file)
   "(SAFE) open FILE in the current window.
