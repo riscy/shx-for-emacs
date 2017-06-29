@@ -367,7 +367,8 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
   (let* ((prefix (format "%s%s" shx-cmd-prefix (downcase cmd-prefix)))
          (completion (try-completion prefix obarray 'functionp)))
     (when completion
-      (intern (if (eq completion t) prefix completion)))))
+      (let ((user-cmd (intern (if (eq completion t) prefix completion))))
+        (when (functionp user-cmd) user-cmd)))))
 
 (defun shx--parse-url ()
   "Add a matched URL to `shx-urls' and make it clickable."
