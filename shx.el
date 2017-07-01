@@ -283,10 +283,9 @@ buffer's `process-mark'."
   (forward-line 0))
 
 (defun shx--search-forward (pattern)
-  "Search forward in the past for PATTERN."
-  (and (< (line-number-at-pos (point))
-          (line-number-at-pos (point-max)))
-       (re-search-forward pattern nil t)))
+  "Search forward from the current point for PATTERN."
+  (when (< (point-at-eol) (point-max))
+    (re-search-forward pattern nil t)))
 
 
 ;;; util
