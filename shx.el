@@ -712,7 +712,8 @@ If function doesn't exist (or none is supplied), read from user."
 (defalias 'shx-cmd-h #'shx-cmd-help)
 
 (defun shx-cmd-keep (_arg)
-  "(SAFE) Put the previous command into `shx-kept-commands'."
+  "(SAFE) Add the previous command into `shx-kept-commands'.
+This enables it to be accessed later using `shx-cmd-kept'."
   (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
          (desc (read-string (format "'%s'\nDescription: " command))))
     (if (string-empty-p desc)
@@ -723,10 +724,11 @@ If function doesn't exist (or none is supplied), read from user."
       (shx--hint "type ':kept' or ':k' to see all kept commands"))))
 
 (defun shx-cmd-kept (regexp)
-  "(SAFE) Show the `shx-kept-commands' commands matching REGEXP.
+  "(SAFE) List the \"kept\" commands that match REGEXP.\n
 Each matching command is appended to the input history, enabling
-access via \\[comint-previous-input].
-\nMemorized commands are stored in `shx-kept-commands'."
+access via \\[comint-previous-input] and \\[comint-next-input].\n
+The list containing all of these commands is `shx-kept-commands'.
+That list can be added to using `shx-cmd-keep'."
   (if (string-empty-p regexp)
       (shx-insert 'error "kept <regexp>\n")
     (shx--restore-kept-commands regexp t)
