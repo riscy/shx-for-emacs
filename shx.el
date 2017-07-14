@@ -635,7 +635,7 @@ therefore ensure `comint-prompt-read-only' is nil."
 \nExample:\n
   :diff file1.txt file2.csv"
   (let ((file-list (shx--parse-filenames files)))
-    (if (not (eq (list-length file-list) 2))
+    (if (not (eq (length file-list) 2))
         (shx-insert 'error "diff <file1> <file2>\n")
       (shx-insert "Invoking ediff " files "\n")
       (shx--asynch-funcall #'ediff (mapcar 'expand-file-name file-list)))))
