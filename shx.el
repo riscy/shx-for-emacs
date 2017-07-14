@@ -867,19 +867,6 @@ Or just a single column:
   "Some additional syntax highlighting for the shx minor mode."
   :type '(alist :key-type regexp))
 
-(defun shx (&optional name)
-  "Create a new shx-enhanced shell session.
-NAME is the optional name of the new buffer.
-See the function `shx-mode' for details."
-  (interactive)
-  (let ((name (or name (generate-new-buffer-name "*shx*"))))
-    ;; switch-to-buffer first -- shell uses pop-to-buffer
-    ;; which is unpredictable! :(
-    (switch-to-buffer name)
-    (shell name)
-    ;; shx might already be active due to shx-global-mode:
-    (unless shx-mode (shx-mode))))
-
 ;;;###autoload
 (define-minor-mode shx-mode
   "Toggle shx-mode on or off.
@@ -893,6 +880,19 @@ comint-mode in general.  Use `shx-global-mode' to enable
 
 ;;;###autoload
 (define-globalized-minor-mode shx-global-mode shx-mode shx--turn-on)
+
+(defun shx (&optional name)
+  "Create a new shx-enhanced shell session.
+NAME is the optional name of the new buffer.
+See the function `shx-mode' for details."
+  (interactive)
+  (let ((name (or name (generate-new-buffer-name "*shx*"))))
+    ;; switch-to-buffer first -- shell uses pop-to-buffer
+    ;; which is unpredictable! :(
+    (switch-to-buffer name)
+    (shell name)
+    ;; shx might already be active due to shx-global-mode:
+    (unless shx-mode (shx-mode))))
 
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
