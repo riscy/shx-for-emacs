@@ -665,7 +665,12 @@ therefore ensure `comint-prompt-read-only' is nil."
     (error (shx-insert 'error "invalid sexp\n"))))
 
 (defun shx-cmd-find (file)
-  "Run fuzzy find for FILE."
+  "Run fuzzy find for FILE.
+Depending on the contents of the current directory, this command
+may take a while and unfortunately blocks Emacs in the meantime.
+\nExamples:\n
+  :f prefix
+  :f *suffix"
   (if (equal file "")
       (shx-insert 'error "find <prefix>\n")
     (let* ((fuzzy-file (mapconcat 'char-to-string (string-to-list file) "*"))
@@ -723,7 +728,7 @@ This enables it to be accessed later using `shx-cmd-kept'."
       (shx--hint "type ':kept' or ':k' to see all kept commands"))))
 
 (defun shx-cmd-kept (regexp)
-  "(SAFE) List the \"kept\" commands that match REGEXP.\n
+  "(SAFE) List the \"kept\" commands that match REGEXP.
 Each matching command is appended to the input history, enabling
 access via \\[comint-previous-input] and \\[comint-next-input].\n
 The list containing all of these commands is `shx-kept-commands'.
