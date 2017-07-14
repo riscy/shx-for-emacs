@@ -877,7 +877,8 @@ See the function `shx-mode' for details."
     ;; which is unpredictable! :(
     (switch-to-buffer name)
     (shell name)
-    (shx-mode)))
+    ;; shx might already be active due to shx-global-mode:
+    (unless shx-mode (shx-mode))))
 
 ;;;###autoload
 (define-minor-mode shx-mode
