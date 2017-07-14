@@ -25,7 +25,7 @@
 * Description
   /shx/ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
 
-  Parse the output stream in a few useful ways:
+  It parses the output stream in a few useful ways:
   - *Display graphics and plots* in the shell with a simple markup
     language (e.g., ~<view image.png>~)
   - *Add event-driven and timed behaviors* to any shell session
@@ -33,11 +33,16 @@
   - *Yank any line to the prompt* by arrowing up to it and pressing ~C-<enter>~
   - *Check the time a command was run* by mousing over its prompt
 
-  Write new shell commands in elisp -- and lots already exist:
+  It makes it easy to write new shell commands in elisp (lots already exist):
   - ~:e filename.txt~ opens a file in a new buffer for editing
   - ~:ssh user@host:port~ ssh's to the supplied host using tramp
   - ~:view image_file.png~ displays an image in the shell
   - ~:plotline data_file.txt~ renders a line plot of a data file
+
+  shx also extends ~shell-mode~'s syntax highlighting, improves compatibility
+  with ~evil-mode~ by anticipating when to switch to ~insert~ mode, and
+  recenters the content for better viewing when you run commands like
+  ~comint-previous-prompt~ and ~comint-show-output~.
 
   Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
