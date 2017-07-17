@@ -907,7 +907,9 @@ See the function `shx-mode' for details."
     (unless shx--old-undo-disabled (buffer-disable-undo)))
   ;; do this one with a delay because spacemacs tries to set this variable too:
   (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
-  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t))
+  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
+  (unless (derived-mode-p 'comint-mode)
+    (message "WARNING: shx is incompatible with `%s'" major-mode)))
 
 (defun shx--deactivate ()
   "Remove font-locks and hooks, and restore variable defaults."
