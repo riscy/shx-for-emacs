@@ -394,7 +394,7 @@ FILES can have various styles of quoting and escaping."
 (defun shx--quote-regexp (delimiter &optional escape max-length)
   "Regexp matching strings delimited by DELIMITER.
 ESCAPE is the string that can be used to escape the delimiter.
-MAX-LENGTH is the length of the longest match (default 80)."
+MAX-LENGTH is the length of the longest match (default 300)."
   (concat delimiter
           "\\("
           (when escape
@@ -402,7 +402,7 @@ MAX-LENGTH is the length of the longest match (default 80)."
                     escape delimiter "\\|")) ; escaped delimiter
           "[^" delimiter "]"
           "\\)"
-          "\\{0," (format "%d" (or max-length 80)) "\\}"
+          "\\{0," (format "%d" (or max-length 300)) "\\}"
           delimiter))
 
 (defun shx--safe-as-markup-p (command)
