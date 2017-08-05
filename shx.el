@@ -935,6 +935,13 @@ This function only works when the shx minor mode is active."
     ;; `recenter'ing errors when this isn't the active buffer:
     (ignore-errors (comint-show-maximum-output))))
 
+(defun shx-flash-prompt (&rest _args)
+  "Flash the text on the line with the highlight face."
+  (setq-local shx-prompt-overlay (make-overlay (point) (point-at-eol)))
+  (overlay-put shx-prompt-overlay 'face 'highlight)
+  (sit-for 1)
+  (delete-overlay shx-prompt-overlay))
+
 (defun shx-snap-to-top (&rest _args)
   "Recenter window so the current line is at the top.
 This function only works when the shx minor mode is active."
@@ -958,7 +965,9 @@ This function only works when the shx minor mode is active."
   (advice-add #'comint-kill-input :before #'shx-show-output)
   (advice-add #'comint-send-eof :before #'shx-show-output)
   (advice-add #'comint-previous-prompt :after #'shx-snap-to-top)
-  (advice-add #'comint-next-prompt :after #'shx-snap-to-top))
+  (advice-add #'comint-previous-prompt :after #'shx-flash-prompt)
+  (advice-add #'comint-next-prompt :after #'shx-snap-to-top)
+  (advice-add #'comint-next-prompt :after #'shx-flash-prompt))
 
 (provide 'shx)
 ;;; shx.el ends here
