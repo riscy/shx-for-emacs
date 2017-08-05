@@ -13,7 +13,7 @@
 - [[#install][Install]]
     - [[#from-melpa][From MELPA]]
     - [[#manually][Manually]]
-- [[#run][Run]]
+- [[#setup][Setup]]
 - [[#key-bindings][Key bindings]]
 - [[#markup-in-the-shell][Markup in the shell]]
 - [[#extra-shell-commands][Extra shell commands]]
@@ -23,7 +23,8 @@
     - [[#adding-new-commands][Adding new commands]]
 
 * Description
-  /shx/ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
+  ~shx~ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
+  It's compatible with any underlying shell (zsh, bash, csh, fish, etc.).
 
   It parses the output stream in a few useful ways:
   - *Display graphics and plots* in the shell with a simple markup
@@ -33,7 +34,8 @@
   - *Yank any line to the prompt* by arrowing up to it and pressing ~C-<enter>~
   - *Check the time a command was run* by mousing over its prompt
 
-  It makes it easy to write new shell commands in elisp (lots already exist):
+  Adds (and makes it easy to add) new shell commands written in elisp:
+  - ~:clear~ clears the buffer (like ~clear~ or ~Cmd-K~ on macOS)
   - ~:e filename.txt~ opens a file in a new buffer for editing
   - ~:ssh user@host:port~ ssh's to the supplied host using tramp
   - ~:view image_file.png~ displays an image in the shell
@@ -43,6 +45,8 @@
   with ~evil-mode~ by anticipating when to switch to ~insert~ mode, and
   recenters the content for better viewing when you run commands like
   ~comint-previous-prompt~ and ~comint-show-output~.
+
+  Use ~M-x shx <return>~ to begin a new ~shell~ session with ~shx~ enabled.
 
   Use ~M-x customize-group RET shx RET~ to see shx's customization options.
 
@@ -70,10 +74,9 @@
     (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path
     (require 'shx)                            ; load shell-extras
     #+end_src
-* Run
-  Typing ~M-x shx <return>~ begins a new ~shell~ session with shx enabled.  The
-  following commands will get you started:
-  1. Type ~:man ls~ and the man page for ~ls~ will be brought up within Emacs.
+* Setup
+  Type ~M-x shx <return>~.  The following commands will get you started:
+  1. Type ~:man ls~ to have the man page for ~ls~ brought up in another window.
   2. Type ~:help~ and you'll enter a completing read for shx commands that you
      can run besides ~:man~ and ~:help~.
 
@@ -204,9 +207,9 @@
     :delay 10 :pwd
     #+end_src
 *** Adding new commands
-    New commands are written by defining single-argument elisp functions named
-    ~shx-cmd-COMMAND-NAME~, where ~COMMAND-NAME~ is what the user would type to
-    invoke it.
+    New shx commands are written by defining single-argument elisp functions
+    named ~shx-cmd-COMMAND-NAME~, where ~COMMAND-NAME~ is what the user would
+    type to invoke it.
 ***** Example: a command to rename the buffer
     If you execute the following (or add it to your ~.emacs~),
     #+begin_src elisp
