@@ -9,11 +9,12 @@
 
 * Table of Contents :TOC_3_gh:noexport:
 - [[#description][Description]]
-- [[#related][Related]]
 - [[#install][Install]]
     - [[#from-melpa][From MELPA]]
     - [[#manually][Manually]]
 - [[#setup][Setup]]
+    - [[#quick-start][Quick-start]]
+    - [[#enable-automatically][Enable automatically]]
 - [[#key-bindings][Key bindings]]
 - [[#markup-in-the-shell][Markup in the shell]]
 - [[#extra-shell-commands][Extra shell commands]]
@@ -21,50 +22,38 @@
     - [[#graphical-commands][Graphical commands]]
     - [[#asynchronous-commands][Asynchronous commands]]
     - [[#adding-new-commands][Adding new commands]]
+- [[#related][Related]]
 
 * Description
-  ~shx~ or "shell-extras" extends comint-mode in Emacs (e.g., the ~shell~).
+  /shx/ or "shell-extras" extends comint-mode in Emacs (e.g. ~M-x shell~).
+
   It's compatible with any underlying shell (zsh, bash, csh, fish, etc.).
 
   It parses the output stream in a few useful ways:
   - *Display graphics and plots* in the shell with a simple markup
-    language (e.g., ~<view image.png>~)
+    language (e.g. ~<view image.png>~)
   - *Add event-driven and timed behaviors* to any shell session
   - *Open any filename or URL* by arrowing up to it and pressing ~<enter>~
   - *Yank any line to the prompt* by arrowing up to it and pressing ~C-<enter>~
   - *Check the time a command was run* by mousing over its prompt
 
-  Adds (and makes it easy to add) new shell commands written in elisp:
+  shx also adds (and makes it easy to add) new shell commands written in elisp:
   - ~:clear~ clears the buffer (like ~clear~ or ~Cmd-K~ on macOS)
-  - ~:e filename.txt~ opens a file in a new buffer for editing
-  - ~:ssh user@host:port~ ssh's to the supplied host using tramp
-  - ~:view image_file.png~ displays an image in the shell
-  - ~:plotline data_file.txt~ renders a line plot of a data file
+  - ~:e filename.txt~ opens a file for editing
+  - ~:ssh user@host:port~ starts a remote shell session using tramp
+  - ~:view image_file.png~ embeds an image in the shell
+  - ~:plotline data_file.txt~ embeds a line plot
 
-  shx also extends ~shell-mode~'s syntax highlighting, improves compatibility
-  with ~evil-mode~ by anticipating when to switch to ~insert~ mode, and
-  recenters the content for better viewing when you run commands like
-  ~comint-previous-prompt~ and ~comint-show-output~.
+  It also extends ~shell-mode~'s syntax highlighting, recenters and highlights
+  content for better viewing when you run commands like ~comint-previous-prompt~
+  and ~comint-show-output~, and improves compatibility with ~evil-mode~ by
+  anticipating when to switch to ~insert~ mode.
 
-  Use ~M-x shx <return>~ to begin a new ~shell~ session with ~shx~ enabled.
+  Use ~M-x customize-group RET shx RET~ to see shx's many customization options.
 
-  Use ~M-x customize-group RET shx RET~ to see shx's customization options.
+  Use ~M-x shx <return>~ to quickly start a new ~shell~ session with ~shx~ enabled.
 
   /This version is tested with Emacs 25.2.1/  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
-* Related
-  If you're here, these might be interesting:
-  - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
-  - [[https://www.booleanworld.com/customizing-coloring-bash-prompt/][Creating dynamic bash prompts]]
-  - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the ~kept~ and ~keep~ commands
-
-  And if running a ~dumb~ terminal in Emacs isn't for you, here are some
-  alternatives:
-  - [[https://leanpub.com/the-tao-of-tmux/read][The Tao of tmux]], re: working in the terminal with tmux
-  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configuration
-  - [[https://github.com/zsh-users/zsh-syntax-highlighting][zsh-syntax-highlighting]]
-  - [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][Shell configuration tips]] from Vitaly Belman
-  - [[https://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
-  - [[https://getbitbar.com/][BitBar]] for macOS
 * Install
 *** From MELPA
     ~M-x package-install RET shx RET~ to install shx from [[https://melpa.org/][MELPA]].
@@ -75,26 +64,27 @@
     (require 'shx)                            ; load shell-extras
     #+end_src
 * Setup
-  Type ~M-x shx <return>~.  The following commands will get you started:
-  1. Type ~:man ls~ to have the man page for ~ls~ brought up in another window.
-  2. Type ~:help~ and you'll enter a completing read for shx commands that you
-     can run besides ~:man~ and ~:help~.
+*** Quick-start
+    Type ~M-x shx <return>~.  Try out the following commands:
 
-  Typing ~M-x shx <return>~ again gets you a fresh shell, numbered accordingly.
+    1. ~:e ~/.bashrc~ to edit your .bashrc file (for example)
+    2. ~:man ls~ to display the man page for ~ls~ up
+    3. ~:help~ to a start a completing read for other shx commands.
 
-  If you like shx-mode, you can enable it everywhere:
+*** Enable automatically
+    If you like shx-mode, you can enable it everywhere:
 
-  #+begin_src elisp
-  (shx-global-mode 1)                       ; toggle shx-mode on globally
-  #+end_src
+    #+begin_src elisp
+    (shx-global-mode 1)                       ; toggle shx-mode on globally
+    #+end_src
 
-  Now shx will run automatically in any ~comint-mode~ buffer.  If you don't want
-  shx to run in every comint-mode buffer, you can use ~M-x shx-mode~ on a
-  case-by-case basis, or just add hooks to the mode in question, for example:
+    Now shx will run automatically in any ~comint-mode~ buffer.  If you don't want
+    shx to run in every comint-mode buffer, you can use ~M-x shx-mode~ on a
+    case-by-case basis, or just add hooks to the mode in question, for example:
 
-  #+begin_src elisp
-  (add-hook 'inferior-python-mode-hook #'shx-mode)
-  #+end_src
+    #+begin_src elisp
+    (add-hook 'inferior-python-mode-hook #'shx-mode)
+    #+end_src
 * Key bindings
   | Key binding | Description                                                              |
   |-------------+--------------------------------------------------------------------------|
@@ -245,3 +235,17 @@
       This means ~<browse url>~ will not become part of shx's markup.  That
       makes sense in this case, since you wouldn't want to give a process the
       power to open arbitrary URLs without prompting.
+* Related
+  If you're here, these might be interesting:
+  - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
+  - [[https://www.booleanworld.com/customizing-coloring-bash-prompt/][Creating dynamic bash prompts]]
+  - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the ~kept~ and ~keep~ commands
+
+  And if running a ~dumb~ terminal in Emacs isn't for you, here are some
+  alternatives:
+  - [[https://leanpub.com/the-tao-of-tmux/read][The Tao of tmux]], re: working in the terminal with tmux
+  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configuration
+  - [[https://github.com/zsh-users/zsh-syntax-highlighting][zsh-syntax-highlighting]]
+  - [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][Shell configuration tips]] from Vitaly Belman
+  - [[https://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
+  - [[https://getbitbar.com/][BitBar]] for macOS
