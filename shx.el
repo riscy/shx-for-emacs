@@ -689,6 +689,20 @@ may take a while and unfortunately blocks Emacs in the meantime.
                (split-string (string-remove-suffix "\n" output) "\n"))
         (insert "\n")))))
 
+(defun shx-cmd-pipe (command)
+  "Pipe the output of COMMAND to a compilation buffer.
+\nExamples:\n
+  :pipe make
+  :pipe git repack -a -d --depth=250 --window=250"
+  (if (equal command "")
+      (shx-insert 'error "cap <command>\n")
+    (let ((compilation-buffer-name-function
+           (lambda (_mode) "*shx-pipe*")))
+      (shx-insert "Piping "
+                  'comint-highlight-input command 'default
+                  " to " "*shx-pipe*\n")
+      (compile command t))))
+
 (defun shx-cmd-g (pattern)
   "Launch a recursive grep for PATTERN."
   (grep (format "grep -irnH '%s' *" pattern)))
