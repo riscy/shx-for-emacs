@@ -799,6 +799,12 @@ commands like :pwd and :edit will work correctly.
            (default-directory (concat "/" host ":~")))
       (shx))))
 
+(defun shx-cmd-sedit (file)
+  "Open local FILE using sudo (i.e. as super-user).
+\nExample:\n
+  :sedit /etc/passwd"
+  (shx-cmd-edit (concat "/sudo::" (expand-file-name file))))
+
 
 ;;; graphical user commands
 
