@@ -127,7 +127,10 @@
   :edit ~/.emacs
 
   # use tramp to edit the .emacs file on a remote host:
-  :e remote-host.com:~/.emacs
+  :e /remote-host.com:~/.emacs
+
+  # edit a local file as root
+  :sedit /etc/passwd
   #+end_src
 
   I also use the ~:kept~ and ~:keep~ commands frequently:
@@ -244,8 +247,9 @@
   And if running a ~dumb~ terminal in Emacs isn't for you, here are some
   alternatives:
   - [[https://leanpub.com/the-tao-of-tmux/read][The Tao of tmux]], re: working in the terminal with tmux
-  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh shell configuration
+  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh configuration
+  - [[https://github.com/Bash-it/bash-it][bash-it]], a community driven bash configuration
   - [[https://github.com/zsh-users/zsh-syntax-highlighting][zsh-syntax-highlighting]]
   - [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][Shell configuration tips]] from Vitaly Belman
   - [[https://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
-  - [[https://getbitbar.com/][BitBar]] for macOS
+  - [[https://getbitbar.com/][BitBar]] adds program output to menus on macOS
