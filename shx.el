@@ -314,8 +314,8 @@ buffer's `process-mark'."
 
 (defun shx-point-on-input-p ()
   "Check if point is on the input region."
-  (>= (point-marker)
-      (process-mark (get-buffer-process (current-buffer)))))
+  (let ((process (get-buffer-process (current-buffer))))
+    (and process (>= (point-marker) (process-mark process)))))
 
 (defun shx--all-commands (&optional without-prefix)
   "Return a list of all shx commands.
