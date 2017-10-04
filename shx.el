@@ -3,7 +3,7 @@
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Created: May 23 2011
 ;; Keywords: processes, tools
-;; Homepage: https://github.com/riscy/shx-for-emacs
+;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
 ;; Version: 0.0.9
 
@@ -138,6 +138,9 @@
 
 (defvar-local shx-buffer nil
   "Local reference to the shx buffer.")
+
+(defvar-local shx-prompt-overlay nil
+  "Overlay used to highlight the prompt.")
 
 (defvar-local shx-urls nil
   "Local record of URLs seen.")
@@ -879,7 +882,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (if shx-mode (shx--activate) (shx--deactivate)))
 
 ;;;###autoload
-(define-globalized-minor-mode shx-global-mode shx-mode shx--turn-on)
+(define-globalized-minor-mode shx-global-mode shx-mode shx--turn-on :require 'shx)
 
 (defun shx (&optional name)
   "Create a new shx-enhanced shell session.

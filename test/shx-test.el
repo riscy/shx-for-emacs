@@ -1,7 +1,7 @@
 ;;; shx-test.el --- Tests for shx
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
-;; Homepage: https://github.com/riscy/shx-for-emacs
+;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
 ;; Version: 0.0.0
 
