@@ -65,7 +65,7 @@
   :prefix "shx-"
   :group 'comint
   :link '(url-link
-          :tag "shx on Github"
+          :tag "shx on GitHub"
           "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-disable-undo nil
