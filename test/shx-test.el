@@ -110,20 +110,25 @@ Example:
                    (equal (shx--current-input) ":test :test"))
   (comint-kill-input))
 
-(defun shx-test-case-filename-parsing ()
-  "Test filename parsing."
-  (shx-test-assert "Filename splitting works with apostrophes."
-                   (equal '("first file" "second file" "third")
-                          (shx--parse-filenames "'first file' 'second file' 'third'")))
-  (shx-test-assert "Filename splitting works with mixed apostrophes."
-                   (equal '("first file" "secondfile")
-                          (shx--parse-filenames "'first file' secondfile")))
-  (shx-test-assert "Filename splitting works with escaped spaces."
-                   (equal '("first file" "secondfile")
-                          (shx--parse-filenames "first\\ file secondfile")))
-  (shx-test-assert "Filename splitting works with current directory specified."
+(defun shx-test-case-tokenize ()
+  "Test string tokenizaton."
+  (shx-test-assert "Tokenization works with apostrophes."
+                   (equal '("first" "second token" "third")
+                          (shx-tokenize "'first' 'second token' 'third'")))
+  (shx-test-assert "Tokenization works with partial apostrophes."
+                   (equal '("first-token" "secondtoken")
+                          (shx-tokenize "'first-token' secondtoken")))
+  (shx-test-assert "Tokenization returns nil when quoting doesn't match."
+                   (equal nil (shx-tokenize "first/token 'second token")))
+  (shx-test-assert "Tokenization works with apostrophes and quotation marks."
+                   (equal '("first token" "second token" "3")
+                          (shx-tokenize "'first token' \"second token\" 3")))
+  (shx-test-assert "Tokenization works with escaped spaces."
+                   (equal '("first token" "secondtoken")
+                          (shx-tokenize "first\\ token secondtoken")))
+  (shx-test-assert "Tokenization works with a directory specified."
                    (equal '("~/././~/.spacemacs")
-                          (shx--parse-filenames "~/././~/.spacemacs"))))
+                          (shx-tokenize "~/././~/.spacemacs"))))
 
 (defun shx-test-case-point-predicates ()
   "Test some predicate functions on the point."
