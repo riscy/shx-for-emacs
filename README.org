@@ -206,13 +206,13 @@
 ***** Example: a command to rename the buffer
     If you execute the following (or add it to your ~.emacs~),
     #+begin_src elisp
-    (defun shx-cmd-name (name)
+    (defun shx-cmd-rename (name)
       "(SAFE) Rename the current buffer to NAME."
       (if (ignore-errors (rename-buffer (concat "*" name "*")))
           (shx-insert "Renaming buffer to *" name "*\n")
-        (shx-insert 'error "Can't rename buffer to *" name "* (is this name taken?)\n")))
+        (shx-insert 'error "Can't rename buffer.")))
     #+end_src
-    then each shx buffer will immediately have access to the ~:name~ command.
+    then each shx buffer will immediately have access to the ~:rename~ command.
 
     Note the importance of defining a comment string.  This documents the
     command so that typing ~:help name~ will give the user information on what
@@ -223,7 +223,27 @@
     #+end_src
     appears on a line by itself in the output, the buffer will try to
     automatically rename itself.
-
+***** Example: invoking ediff from the shell
+      The following command is built into shx:
+      #+begin_src elisp
+     (defun shx-cmd-diff (files)
+       "(SAFE) Launch an Emacs `ediff' between FILES."
+       (setq files (shx-tokenize files))
+       (if (not (eq (length files) 2))
+           (shx-insert 'error "diff <file1> <file2>\n")
+         (shx-insert "invoking ediff...\n")
+         (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
+      #+end_src
+      Note that ~files~ is supplied as a string, but it's immediately parsed
+      into a list of strings using ~shx-tokenize~.  Helpfully, this function is
+      able to parse various styles of quoting and escaping, for example the string
+      #+begin_src elisp
+      "'file one' file\\ two"
+      #+end_src
+      turns into the list
+      #+begin_src elisp
+      ("file one" "file two")
+      #+end_src
 ***** Example: a command to browse URLs
       If you execute the following,
       #+begin_src elisp
