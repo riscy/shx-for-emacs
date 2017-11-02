@@ -695,7 +695,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :pipe make
   :pipe git repack -a -d --depth=250 --window=250"
   (if (equal command "")
-      (shx-insert 'error "cap <command>\n")
+      (shx-insert 'error "pipe <command>\n")
     (let ((compilation-buffer-name-function
            (lambda (_mode) "*shx-pipe*")))
       (shx-insert "Piping "
