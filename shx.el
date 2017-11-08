@@ -796,7 +796,10 @@ commands like :pwd and :edit will work correctly.
   (if (equal host "")
       (shx-insert 'error "ssh host\n")
     (let* ((host (replace-regexp-in-string ":" "#" host))
-           (default-directory (concat "/" host ":~")))
+           (default-directory
+             (if (eq tramp-syntax 'default)
+                 (concat "/ssh:" host ":~")
+               (concat "/" host ":~"))))
       (shx))))
 
 (defun shx-cmd-sedit (file)
