@@ -202,7 +202,9 @@ This function overrides `comint-input-sender'."
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
         (comint-simple-send process input)
-      (funcall shx-cmd (match-string 2 input))
+      (condition-case-unless-debug error-descriptor
+          (funcall shx-cmd (match-string 2 input))
+        (error (shx-insert 'error (error-message-string error-descriptor) "\n")))
       (with-current-buffer (process-buffer process)
         ;; advance the process mark to trick comint-mode
         (set-marker (process-mark process) (point)))
@@ -664,12 +666,10 @@ therefore ensure `comint-prompt-read-only' is nil."
 \nExamples:\n
   :eval (format \"%d\" (+ 1 2))
   :eval (* 2 (+ 3 5))"
-  (condition-case nil
-      (let ((originating-buffer (current-buffer))
-            (output (format "%s\n" (eval (car (read-from-string sexp))))))
-        (with-current-buffer originating-buffer
-          (shx-insert 'font-lock-constant-face "=> " output)))
-    (error (shx-insert 'error "invalid sexp\n"))))
+  (let ((originating-buffer (current-buffer))
+        (output (format "%s\n" (eval (car (read-from-string sexp))))))
+    (with-current-buffer originating-buffer
+      (shx-insert 'font-lock-constant-face "=> " output))))
 
 (defun shx-cmd-find (file)
   "Run fuzzy find for FILE.
