@@ -9,25 +9,22 @@
 
 ;; This file is NOT part of GNU Emacs.
 
-;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
+;; This file is free software; you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License as published by the Free Software
+;; Foundation; either version 3, or (at your option) any later version.
 
-;; This file is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This file is distributed in the hope that it will be useful, but WITHOUT ANY
+;; WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+;; A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with this file.  If not, see <http://www.gnu.org/licenses/>.
+;; You should have received a copy of the GNU General Public License along with
+;; this file.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
-;; shx or "shell-extras" extends comint-mode.  It parses simple markup in the
-;; output stream (enabling plots and graphics to be embedded in the shell) and
-;; adds several command-line functions which plug into Emacs (for example, use
-;; :e <filename> to edit a file).
+;; shx ("shell-extras") extends comint-mode: it parses markup in the output
+;; stream, enabling plots and graphics to be embedded, and adds command-line
+;; functions which plug into Emacs (e.g., use :e <filename> to edit a file).
 ;;
 ;; See <https://github.com/riscy/shx-for-emacs/blob/master/README.org> for more.
 ;;
@@ -35,14 +32,13 @@
 
 ;;; Manual install:
 
-;; 1. Move shx.el to a directory in your load-path or add
-;;    this to your .emacs:
+;; 1. Move shx.el to a directory in your load-path or add this to your .emacs:
 ;;    (add-to-list 'load-path "~/path/to/this-file/")
-;; 2. Next add this line to your .emacs:
+;; 2. Add this line to your .emacs:
 ;;    (require 'shx)
 ;;
-;; By default, shx runs automatically in all comint-mode buffers, but you
-;; can always use M-x shx RET to create a new shell session using shx.
+;; By default, shx runs automatically in all comint-mode buffers, but you can
+;; always use M-x shx RET to create a new shell session using shx.
 ;;
 ;; Use M-x customize-group RET shx RET to see customization options.
 
@@ -64,9 +60,7 @@
   "Extras for the (comint-mode) shell."
   :prefix "shx-"
   :group 'comint
-  :link '(url-link
-          :tag "shx on GitHub"
-          "https://github.com/riscy/shx-for-emacs"))
+  :link '(url-link :tag "GitHub" "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-disable-undo nil
   "Whether to disable undo in shx buffers."
@@ -265,7 +259,7 @@ buffer's `process-mark'."
             (replace-match "")          ; hide the markup
             (funcall command args)
             (set-buffer originating-buffer)
-            ;; some shx commands might add extra newline:
+            ;; some shx commands might add an extra newline:
             (and (zerop (current-column))
                  (not (eq 1 (point)))
                  (delete-char 1))))))))
@@ -651,11 +645,12 @@ therefore ensure `comint-prompt-read-only' is nil."
 (defun shx-cmd-diff (files)
   "(SAFE) Launch an Emacs `ediff' between FILES.
 \nExample:\n
-  :diff file1.txt file2.csv"
+  :diff file1.txt \"file 2.csv\""
   (setq files (shx-tokenize files))
   (if (not (eq (length files) 2))
       (shx-insert 'error "diff <file1> <file2>\n")
-    (shx-insert "invoking ediff...\n")
+    (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
+                " and " 'font-lock-doc-face (cadr files) 'default "\n")
     (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
 
 (defun shx-cmd-edit (file)
@@ -665,9 +660,10 @@ therefore ensure `comint-prompt-read-only' is nil."
 \nOr edit a remote file using `tramp':\n
   :e /user@server#port:directory/to/file"
   (setq file (car (shx-tokenize file)))
-  (if file
-      (shx--asynch-funcall #'find-file (list (expand-file-name file) t))
-    (shx--asynch-funcall #'find-file (list "" t))))
+  (if (or (string= "" file) (not file))
+      (shx-insert 'error "Couldn't parse filename" 'default "\n")
+    (shx-insert "Editing " 'font-lock-doc-face file 'default "\n")
+    (shx--asynch-funcall #'find-file (list (expand-file-name file) t))))
 (defalias 'shx-cmd-e #'shx-cmd-edit)
 
 (defun shx-cmd-eval (sexp)
@@ -754,7 +750,7 @@ This enables it to be accessed later using `shx-cmd-kept'."
         (shx-insert 'error "Description is required\n")
       (add-to-list 'shx-kept-commands `(,desc . ,command))
       (customize-save-variable 'shx-kept-commands shx-kept-commands)
-      (shx-insert "Kept as " 'font-lock-doc-face desc "\n")
+      (shx-insert "Keeping as " 'font-lock-doc-face desc "\n")
       (shx--hint "type ':kept' or ':k' to see all kept commands"))))
 
 (defun shx-cmd-kept (regexp)
@@ -786,9 +782,10 @@ See `Man-notify-method' for what happens when the page is ready."
   :oedit directory/to/file
   :oedit /username@server:~/directory/to/file"
   (setq file (car (shx-tokenize file)))
-  (if file
-      (find-file-other-window (expand-file-name file))
-    (find-file-other-window "")))
+  (if (or (string= "" file) (not file))
+      (shx-insert 'error "Couldn't parse filename" 'default "\n")
+    (shx-insert "Editing " 'font-lock-doc-face file 'default "\n")
+    (find-file-other-window (expand-file-name file))))
 
 (defun shx-cmd-pwd (_args)
   "(SAFE) Show what Emacs thinks the default directory is.
