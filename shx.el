@@ -106,7 +106,7 @@
   :type 'boolean)
 
 (defcustom shx-triggers
-  '(("https?://[A-Za-z0-9,./?=&;_-]+[^.\n\s\"'>)]+" . shx--parse-url))
+  '(("https?://[A-Za-z0-9,./?=&;_-]+[^[:space:].\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
@@ -319,6 +319,19 @@ buffer's `process-mark'."
   (let ((process (get-buffer-process (current-buffer))))
     (and process (>= (point-marker) (process-mark process)))))
 
+(defun shx-tokenize (str)
+  "Turn STR into a list of tokens, or nil if parsing fails.
+This is robust to various styles of quoting and escaping."
+  (setq str (shx--replace-from-list
+             ;; protect escaped single/double quotes and spaces:
+             '(("\\\\'" "") ("\\\\ " "") ("\\\\\"" "")
+               ("'" "\"")               ; prefer double quoting
+               ("\\\\\\(.\\)" "\\1"))   ; remove escape chars
+             str))
+  (mapcar (lambda (token)
+            (shx--replace-from-list '(("" "'") ("" " ") ("" "\"")) token))
+          (ignore-errors (split-string-and-unquote str))))
+
 (defun shx--all-commands (&optional without-prefix)
   "Return a list of all shx commands.
 With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
@@ -386,16 +399,6 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
    (match-beginning 0) (match-end 0)
    `(keymap ,shx-click-file mouse-face link font-lock-face font-lock-doc-face)))
 
-(defun shx-tokenize (string)
-  "Turn STRING into a list of tokens, or nil if parsing fails.
-This is robust to various styles of quoting and escaping."
-  (let* ((tmp-space "")
-         (requoted (replace-regexp-in-string "'" "\"" string))
-         (escaped (replace-regexp-in-string "\\\\ " tmp-space requoted)))
-    (mapcar (lambda (token)
-              (replace-regexp-in-string tmp-space " " token))
-            (ignore-errors (split-string-and-unquote escaped)))))
-
 (defun shx--quote-regexp (delimiter &optional escape max-length)
   "Regexp matching strings delimited by DELIMITER.
 ESCAPE is the string that can be used to escape the delimiter.
@@ -415,6 +418,12 @@ MAX-LENGTH is the length of the longest match (default 300)."
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (let ((doc (documentation command)))
     (ignore-errors (string-prefix-p "(SAFE)" doc))))
+
+(defun shx--replace-from-list (patterns str)
+  "Replace multiple PATTERNS in STR -- in the supplied order."
+  (dolist (pattern patterns nil)
+    (setq str (replace-regexp-in-string (car pattern) (cadr pattern) str)))
+  str)
 
 (defun shx--restore-kept-commands (&optional regexp insert-kept-command)
   "Add commands from `shx-kept-commands' into `comint-input-ring'.

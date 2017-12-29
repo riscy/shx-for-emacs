@@ -126,6 +126,11 @@ Example:
   (shx-test-assert "Tokenization works with escaped spaces."
                    (equal '("first token" "secondtoken")
                           (shx-tokenize "first\\ token secondtoken")))
+  (shx-test-assert "Tokenization works with escaped quotation marks."
+                   (equal '("\"test file\"" "'test file'")
+                          (shx-tokenize "\\\"test\\ file\\\" \\\'test\\ file\\\'")))
+  (shx-test-assert "Tokenization works with escaped characters"
+                   (equal '("a" "b c.d") (shx-tokenize "a b\\ \\c\\.d")))
   (shx-test-assert "Tokenization works with a directory specified."
                    (equal '("~/././~/.spacemacs")
                           (shx-tokenize "~/././~/.spacemacs"))))
