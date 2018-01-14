@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 0.0.13
+;; Version: 0.0.14
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -37,8 +37,8 @@
 ;; 2. Add this line to your .emacs:
 ;;    (require 'shx)
 ;;
-;; By default, shx runs automatically in all comint-mode buffers, but you can
-;; always use M-x shx RET to create a new shell session using shx.
+;; Type M-x shx RET to create a new shell session using shx.  If you like shx,
+;; you can enable shx in every comint-mode buffer with (shx-global-mode 1).
 ;;
 ;; Use M-x customize-group RET shx RET to see customization options.
 
