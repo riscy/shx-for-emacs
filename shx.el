@@ -252,17 +252,18 @@ buffer's `process-mark'."
       (while (shx--search-forward shx-markup-syntax)
         (let ((command (shx--get-user-cmd (match-string 1)))
               (args    (match-string 2)))
-          (if (not (and command (shx--safe-as-markup-p command)))
-              (add-text-properties
-               (point-at-bol) (point-at-eol)
-               `(help-echo "shx: this markup was unsafe/undefined"))
-            (replace-match "")          ; hide the markup
-            (funcall command args)
-            (set-buffer originating-buffer)
-            ;; some shx commands might add an extra newline:
-            (and (zerop (current-column))
-                 (not (eq 1 (point)))
-                 (delete-char 1))))))))
+          (cond ((not command) nil)
+                ((not (shx--safe-as-markup-p command))
+                 (add-text-properties
+                  (point-at-bol) (point-at-eol)
+                  `(help-echo "shx: this markup was unsafe/undefined")))
+                (t (replace-match "")   ; hide the markup
+                   (funcall command args)
+                   (set-buffer originating-buffer)
+                   ;; some shx commands might add an extra newline:
+                   (and (zerop (current-column))
+                        (not (eq 1 (point)))
+                        (delete-char 1)))))))))
 
 (defun shx--parse-output-for-triggers ()
   "Look for triggers since `comint-last-output' (e.g., URLs)."
@@ -768,9 +769,7 @@ That list can be added to using `shx-cmd-keep'."
 (defun shx-cmd-man (topic)
   "Launch an Emacs `man' window for TOPIC.
 See `Man-notify-method' for what happens when the page is ready."
-  (if (equal topic "")
-      (shx-insert 'error "man <topic>\n")
-    (man topic)))
+  (man topic))
 
 (defun shx-cmd-name (name)
   "(SAFE) Rename the current buffer to NAME."
