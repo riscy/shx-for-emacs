@@ -559,7 +559,7 @@ REPEAT-INTERVAL specifies delays between repetitions."
 (defun shx-cmd-delay (args)
   "Run a command after a specific delay.
 ARGS are <delay in seconds> <command>.
-Cancel a delayed command with :stop (`shx-cmd-stop').
+Cancel a delayed command with :stop \(`shx-cmd-stop'\).
 \nExample:\n
   :delay 10 echo Ten seconds are up!"
   (cond

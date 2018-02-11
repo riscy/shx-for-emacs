@@ -155,7 +155,7 @@
     | ~:clear~             | Clear the buffer                                      |
     | ~:diff file1 file2~  | Launch an Emacs diff between two files                |
     | ~:edit file~         | Edit a file.  Shortcut: ~:e <file>~                   |
-    | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~eval (pwd)~      |
+    | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~:eval (pwd)~     |
     | ~:man topic~         | Invoke the Emacs man page browser on a topic          |
     | ~:header New header~ | Change the current ~header-line-format~               |
     | ~:ssh host~          | Open another shell on the specified host              |
@@ -204,7 +204,7 @@
     named ~shx-cmd-COMMAND-NAME~, where ~COMMAND-NAME~ is what the user would
     type to invoke it.
 ***** Example: a command to rename the buffer
-    If you execute the following (or add it to your ~.emacs~),
+    If you evaluate the following (or add it to your ~.emacs~),
     #+begin_src elisp
     (defun shx-cmd-rename (name)
       "(SAFE) Rename the current buffer to NAME."
