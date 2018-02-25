@@ -805,7 +805,7 @@ commands like :pwd and :edit will work correctly.
              (if (eq tramp-syntax 'default)
                  (concat "/ssh:" host ":~")
                (concat "/" host ":~"))))
-      (shx))))
+      (shx--asynch-funcall #'shx (list nil default-directory)))))
 
 (defun shx-cmd-sedit (file)
   "Open local FILE using sudo (i.e. as super-user).
@@ -912,12 +912,13 @@ comint-mode in general.  Use `shx-global-mode' to enable
 ;;;###autoload
 (define-globalized-minor-mode shx-global-mode shx-mode shx--turn-on :require 'shx)
 
-(defun shx (&optional name)
+(defun shx (&optional name directory)
   "Create a new shx-enhanced shell session.
-NAME is the optional name of the new buffer.
+The new buffer is called NAME and uses DIRECTORY as its `default-directory'.
 See the function `shx-mode' for details."
   (interactive)
-  (let ((name (or name (generate-new-buffer-name "*shx*"))))
+  (let ((name (or name (generate-new-buffer-name "*shx*")))
+        (default-directory (or directory default-directory)))
     ;; switch-to-buffer first -- shell uses pop-to-buffer
     ;; which is unpredictable! :(
     (switch-to-buffer name)
