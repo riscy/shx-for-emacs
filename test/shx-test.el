@@ -100,15 +100,17 @@ Example:
 
 (defun shx-test-case-magic-insert ()
   "Test magic insert."
-  (insert "^:test^^")
-  (shx-magic-insert)
-  (shx-test-assert "Inline substitution with magic insert works."
-                   (equal (shx--current-input) ""))
-  (insert ":test !!")
-  (shx-magic-insert)
-  (shx-test-assert "Previous command expansion with magic insert works."
-                   (equal (shx--current-input) ":test :test"))
-  (comint-kill-input))
+  (let ((previous-input (comint-previous-input-string 0)))
+    (insert "^" previous-input "^^")
+    (shx-magic-insert)
+    (shx-test-assert "Inline substitution with magic insert works."
+                     (equal (shx--current-input) ""))
+    (insert previous-input " !!")
+    (shx-magic-insert)
+    (shx-test-assert "Previous command expansion with magic insert works."
+                     (equal (shx--current-input)
+                            (concat previous-input " " previous-input)))
+    (comint-kill-input)))
 
 (defun shx-test-case-tokenize ()
   "Test string tokenizaton."
