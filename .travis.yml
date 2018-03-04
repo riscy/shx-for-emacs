@@ -1,0 +1,13 @@
+sudo: required
+
+language: c
+
+install:
+  - emacs --version
+  - yes '' | sudo add-apt-repository ppa:kelleyk/emacs
+  - sudo apt update
+  - sudo apt install emacs25-nox
+  - echo `dpkg -L emacs25-nox`
+
+script:
+  - emacs25 -Q --script ./test/script.el

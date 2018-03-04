@@ -29,6 +29,8 @@
 
 (require 'shx)
 
+(defvar shx-test-recent-success t "Whether the last test run succeeded.")
+
 (defun shx-cmd-test (_args)
   "Test shx.
 Example:
@@ -38,6 +40,7 @@ Example:
 
 (defun shx-cmd-test-all (_args)
   "(SAFE) Call the 'shx-test-unit' and 'shx-test-integration' functions."
+  (setq shx-test-recent-success t)
   (shx--asynch-funcall
    (lambda ()
      (dolist (test-function
@@ -53,10 +56,11 @@ Example:
     (goto-char (point-max))
     (forward-line -1)
     (goto-char (point-at-eol))
-    (if (not val)
-        (shx-insert 'error (format "✘ %s\n" comment))
-      (shx-insert 'font-lock-string-face "✔ " 'default comment "\n")
-      t)))
+    (setq shx-test-recent-success (and shx-test-recent-success val))
+    (let ((output (format "%s %s\n" (if val "✔" "✘") comment)))
+      (if (display-graphic-p)
+          (shx-insert output)
+        (send-string-to-terminal output)))))
 
 (defun shx-test-warn (text)
   "Warn with TEXT."
