@@ -37,12 +37,15 @@ Example:
   (insert "\n<test-all>\n"))
 
 (defun shx-cmd-test-all (_args)
-  "(SAFE) Call every function with the prefix 'shx-test-case-'."
-  (shx--asynch-funcall (lambda ()
-                         (dolist (test-function (all-completions "shx-test-case" obarray 'functionp))
-                           (funcall (intern test-function)))
-                         (message "Tests complete!")
-                         (recenter -1))))
+  "(SAFE) Call the 'shx-test-unit' and 'shx-test-integration' functions."
+  (shx--asynch-funcall
+   (lambda ()
+     (dolist (test-function
+              (append
+               (all-completions "shx-test-unit" obarray 'functionp)
+               (all-completions "shx-test-integration" obarray 'functionp)))
+       (funcall (intern test-function))))
+   (recenter -1)))
 
 (defun shx-test-assert (comment val)
   "Describe test with COMMENT; test truth of VAL."
@@ -66,14 +69,14 @@ Example:
 
 ;; tests!
 
-(defun shx-test-case-escape-filename ()
+(defun shx-test-unit-escape-filename ()
   "Test filename escaping."
   (shx-test-assert
    "Dangerous characters are escaped in filenames."
    (string-suffix-p "a\\ filename\\`delete\\`"
     (shx--escape-filename "a filename`delete`"))))
 
-(defun shx-test-case-quote-regexp ()
+(defun shx-test-unit-quote-regexp ()
   "Test pattern matching on delimited regexps like strings."
   (shx-test-assert
    "Escaped regexps are matched."
@@ -86,19 +89,14 @@ Example:
      (string-match (shx--quote-regexp "'") pattern)
      (string= "'don\'" (match-string 0 pattern)))))
 
-(defun shx-test-case-safe-as-markup ()
+(defun shx-test-unit-safe-as-markup ()
   "Test recognition of safe functions."
   (shx-test-assert "The eval function is not safe."
                    (not (shx--safe-as-markup-p (intern "shx-cmd-eval"))))
   (shx-test-assert "The stop function is safe."
                    (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
 
-(defun shx-test-case-shx ()
-  "Test core shx functions."
-  (shx-test-assert "Image height is a positive integer."
-                   (and (integerp shx-img-height) (> shx-img-height 0))))
-
-(defun shx-test-case-magic-insert ()
+(defun shx-test-integration-magic-insert ()
   "Test magic insert."
   (let ((previous-input (comint-previous-input-string 0)))
     (insert "^" previous-input "^^")
@@ -112,7 +110,7 @@ Example:
                             (concat previous-input " " previous-input)))
     (comint-kill-input)))
 
-(defun shx-test-case-tokenize ()
+(defun shx-test-unit-tokenize ()
   "Test string tokenizaton."
   (shx-test-assert "Tokenization works with apostrophes."
                    (equal '("first" "second token" "third")
@@ -137,7 +135,7 @@ Example:
                    (equal '("~/././~/.spacemacs")
                           (shx-tokenize "~/././~/.spacemacs"))))
 
-(defun shx-test-case-point-predicates ()
+(defun shx-test-integration-point-predicates ()
   "Test some predicate functions on the point."
   (shx-test-assert "Point on last line works at point-max."
                    (save-excursion (goto-char (point-max))
@@ -150,7 +148,7 @@ Example:
                                         (shx-point-on-input-p))))
   (goto-char (point-max)))
 
-(defun shx-test-case-input-handling ()
+(defun shx-test-integration-input-handling ()
   "Test shx's input handling."
   (goto-char (point-max))
   (insert "test")
@@ -165,7 +163,7 @@ Example:
   (shx-test-assert "Blank input is recognized."
                    (string= (shx--current-input) "")))
 
-(defun shx-test-case-cmd-syntax-regexps ()
+(defun shx-test-unit-cmd-syntax-regexps ()
   "Test shx-cmd-syntax regexps."
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":help ok")
   (shx-test-assert "Recognizing a command with arguments."
@@ -178,7 +176,7 @@ Example:
   (shx-test-assert "Recognizing hyphenated command names."
                    (string= (match-string 1 ":plot-bar") "plot-bar")))
 
-(defun shx-test-case-shx-cat ()
+(defun shx-test-unit-shx-cat ()
   "Test the `shx-cat' command."
   (let ((concatenation (shx-cat "Test" 'font-lock-string-face "test")))
     (shx-test-assert "Concatenates the strings."
@@ -187,7 +185,7 @@ Example:
                      (equal (get-text-property 4 'font-lock-face concatenation)
                             'font-lock-string-face))))
 
-(defun shx-test-case-timers ()
+(defun shx-test-unit-timers ()
   "Test functions that use Emacs' built-in timer."
   (if (shx--get-timer-list)
       (shx-test-warn "Warning: :stop all timers to run timing tests")
