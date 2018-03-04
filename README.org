@@ -208,11 +208,14 @@
     #+begin_src elisp
     (defun shx-cmd-rename (name)
       "(SAFE) Rename the current buffer to NAME."
-      (if (ignore-errors (rename-buffer (concat "*" name "*")))
-          (shx-insert "Renaming buffer to *" name "*\n")
+      (if (ignore-errors (rename-buffer name))
+          (progn
+            (shx-insert "Renaming buffer to " name "\n")
+            (shx--hint "Emacs won't save buffers starting with *")
         (shx-insert 'error "Can't rename buffer.")))
     #+end_src
     then each shx buffer will immediately have access to the ~:rename~ command.
+    When it's invoked, shx will also display a hint about buffer names.
 
     Note the importance of defining a comment string.  This documents the
     command so that typing ~:help name~ will give the user information on what
@@ -224,7 +227,7 @@
     appears on a line by itself in the output, the buffer will try to
     automatically rename itself.
 ***** Example: invoking ediff from the shell
-      The following command is built into shx:
+      A command similar to this one is built into shx:
       #+begin_src elisp
      (defun shx-cmd-diff (files)
        "(SAFE) Launch an Emacs `ediff' between FILES."

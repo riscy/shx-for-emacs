@@ -797,9 +797,10 @@ See `Man-notify-method' for what happens when the page is ready."
 \nThis way you benefit from the remote host's completions, and
 commands like :pwd and :edit will work correctly.
 \nExample:\n
-  :ssh hostname:port"
+  :ssh username@hostname:port"
   (if (equal host "")
       (shx-insert 'error "ssh host\n")
+    (shx-insert "Connecting to " 'font-lock-doc-face host 'default "\n")
     (let* ((host (replace-regexp-in-string ":" "#" host))
            (default-directory
              (if (eq tramp-syntax 'default)
