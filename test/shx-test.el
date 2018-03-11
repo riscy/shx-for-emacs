@@ -100,6 +100,12 @@ Example:
   (shx-test-assert "The stop function is safe."
                    (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
 
+(defun shx-test-unit-replace-from-list ()
+  (shx-test-assert "replace-from-list acts sequentially."
+                   (string= "a" (shx--replace-from-list '(("aa" "b") ("b" "a")) "aa")))
+  (shx-test-assert "replace-from-list performs the correct replacements."
+                   (string= "24" (shx--replace-from-list '(("1" "2") ("3" "4")) "13"))))
+
 (defun shx-test-integration-magic-insert ()
   "Test magic insert."
   (let ((previous-input (comint-previous-input-string 0)))
@@ -141,13 +147,13 @@ Example:
 
 (defun shx-test-integration-point-predicates ()
   "Test some predicate functions on the point."
-  (shx-test-assert "Point on last line works at point-max."
+  (shx-test-assert "shx-point-on-input-p works at point-max."
                    (save-excursion (goto-char (point-max))
                                    (shx-point-on-input-p)))
-  (shx-test-assert "Point on last line works on last line and point-max."
+  (shx-test-assert "shx-point-on-input-p works on last line and point-max."
                    (save-excursion (goto-char (point-max)) (backward-char)
                                    (not (shx-point-on-input-p))))
-  (shx-test-assert "Point on last line fails when not on last line."
+  (shx-test-assert "shx-point-on-input-p fails when not on last line."
                    (not (save-excursion (goto-char (point-min))
                                         (shx-point-on-input-p))))
   (goto-char (point-max)))
