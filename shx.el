@@ -281,8 +281,6 @@ buffer's `process-mark'."
 
 (defun shx--goto-last-input-or-output ()
   "Go to the beginning of the next event from the process."
-  ;; sometimes `comint-last-output-start' is too far back, so
-  ;; go to `comint-last-input-end' when that's the case.
   (goto-char (max comint-last-output-start comint-last-input-end))
   (forward-line 0))
 
@@ -488,8 +486,6 @@ are sent straight through to the process to handle paging."
   "Insert image FILENAME into the buffer."
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
          (status (call-process
-                  ;; NOTE: FILENAME is interpreted literally by emacs and
-                  ;; does not need to go through shx--escape-filename:
                   shx-path-to-convert nil t nil (expand-file-name filename)
                   "-resize" (format "x%d>" shx-img-height) img-name)))
     (when (zerop status)
