@@ -361,20 +361,19 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 (defun shx--get-timer-list ()
   "Get the list of resident timers."
   (let ((timer-list-1 (copy-sequence timer-list)))
-    ;; select only timers with shx--auto prefix, "(lambda nil (shx--auto..."
     (setq timer-list-1
-          (remove nil
-                  (mapcar (lambda (timer)
-                            (when (string-prefix-p
-                                   "(lambda nil (shx--auto"
-                                   (format "%s" (aref timer 5)))
-                              timer))
-                          timer-list-1)))
+          (mapcar (lambda (timer) (when (shx--timer-by-shx-p timer) timer))
+                  timer-list-1))
+    (setq timer-list-1 (remove nil timer-list-1))
     ;; sort the timers for consistency
     (sort timer-list-1
           (lambda (first-timer second-timer)
             (string< (format "%s" (aref first-timer 5))
                      (format "%s" (aref second-timer 5)))))))
+
+(defun shx--timer-by-shx-p (timer)
+  "Return t if TIMER was created by shx."
+  (string-prefix-p "(lambda nil (shx--auto" (format "%s" (aref timer 5))))
 
 (defun shx--get-user-cmd (cmd-prefix)
   "Return user command prefixed by CMD-PREFIX, or nil."
