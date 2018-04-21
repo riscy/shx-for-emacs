@@ -111,6 +111,12 @@
   :link '(function-link shx-cmd-keep)
   :type '(alist :key-type string :value-type string))
 
+(defcustom shx-max-input nil
+  "The largest input allowed in characters.  On macOS a good
+value is 1024, the size of the typeahead buffer.  Otherwise set
+your terminal to canonical mode with 'stty -icanon'."
+  :type 'integer)
+
 (defvar shx-cmd-prefix "shx-cmd-"
   "Prefix for user-command functions.")
 
@@ -182,8 +188,8 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (if (> (length (shx--current-input)) 1000)
-      (message "Input too long (shorten to < 1000 chars)")
+  (if (and shx-max-input (>= (length (shx--current-input)) shx-max-input))
+      (message "Input line exceeds `shx-max-input'.")
     (shx--timestamp-prompt)
     (comint-send-input nil t)))
 
