@@ -135,6 +135,13 @@
   :sedit /etc/passwd
   #+end_src
 
+  Thanks to [[https://github.com/CeleritasCelery][CeleritasCelery]] it's also ossible to use environment variables in
+  the argument list:
+  #+begin_src bash
+  :e $HOME/.emacs.d
+  #+end_src
+  (To see an environment variable's value, use ~(getenv "<var>")~.)
+
   I also use the ~:kept~ and ~:keep~ commands frequently:
   #+begin_src bash
   # write a complicated command:
