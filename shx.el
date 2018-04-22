@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 0.0.14
+;; Version: 0.0.15
 
 ;; This file is NOT part of GNU Emacs.
 
