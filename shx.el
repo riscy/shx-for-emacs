@@ -366,13 +366,11 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 
 (defun shx--get-timer-list ()
   "Get the list of resident timers."
-  (let ((timer-list-1 (copy-sequence timer-list)))
-    (setq timer-list-1
-          (mapcar (lambda (timer) (when (shx--timer-by-shx-p timer) timer))
-                  timer-list-1))
-    (setq timer-list-1 (remove nil timer-list-1))
+  (let ((timer-list-1 (mapcar
+                       (lambda (timer) (when (shx--timer-by-shx-p timer) timer))
+                       timer-list)))
     ;; sort the timers for consistency
-    (sort timer-list-1
+    (sort (remove nil timer-list-1)
           (lambda (first-timer second-timer)
             (string< (format "%s" (aref first-timer 5))
                      (format "%s" (aref second-timer 5)))))))
