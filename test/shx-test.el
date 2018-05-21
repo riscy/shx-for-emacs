@@ -184,6 +184,14 @@ Example:
   (shx-test-assert "Blank input is recognized."
                    (string= (shx--current-input) "")))
 
+(defun shx-test-integration-output-handling ()
+  "Test shx-insert."
+  (save-excursion
+    (goto-char (point-max))
+    (backward-char 1)
+    (shx-test-assert "shx-insert is propertizing the output"
+                   (eq (field-at-pos (point)) 'output))))
+
 (defun shx-test-unit-cmd-syntax-regexps ()
   "Test shx-cmd-syntax regexps."
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":help ok")
