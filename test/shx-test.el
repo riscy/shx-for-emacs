@@ -36,7 +36,7 @@
 Example:
 :test"
   ;; Test the use of markup:
-  (insert "\n<test-all>\n"))
+  (shx-insert "\n<test-all>\n"))
 
 (defun shx-cmd-test-all (_args)
   "(SAFE) Call the 'shx-test-unit' and 'shx-test-integration' functions."

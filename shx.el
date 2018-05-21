@@ -465,8 +465,8 @@ are sent straight through to the process to handle paging."
     string))
 
 (defun shx-insert (&rest args)
-  "Insert ARGS, combined using `shx-cat'."
-  (insert (apply 'shx-cat args)))
+  "Insert ARGS as an output field, combined using `shx-cat'."
+  (insert (propertize (apply 'shx-cat args) 'field 'output)))
 
 (defun shx-insert-filenames (&rest files)
   "Insert FILES, propertized to be clickable."
