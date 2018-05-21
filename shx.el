@@ -268,7 +268,7 @@ buffer's `process-mark'."
                    (set-buffer originating-buffer)
                    ;; some shx commands might add an extra newline:
                    (and (zerop (current-column))
-                        (not (eq 1 (point)))
+                        (/= (point) 1)
                         (delete-char 1)))))))))
 
 (defun shx--parse-output-for-triggers ()
@@ -647,7 +647,7 @@ therefore ensure `comint-prompt-read-only' is nil."
 \nExample:\n
   :diff file1.txt \"file 2.csv\""
   (setq files (shx-tokenize files))
-  (if (not (eq (length files) 2))
+  (if (/= (length files) 2)
       (shx-insert 'error "diff <file1> <file2>\n")
     (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
                 " and " 'font-lock-doc-face (cadr files) 'default "\n")
