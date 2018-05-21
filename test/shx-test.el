@@ -158,6 +158,17 @@ Example:
                                         (shx-point-on-input-p))))
   (goto-char (point-max)))
 
+(defun shx-test-integration-timestamp-prompt ()
+  "Test that recent prompt gets timestamped."
+  (save-excursion
+    (comint-previous-prompt 1)
+    (forward-line 0)
+    (let ((help-echo (or (get-text-property (point) 'help-echo) "")))
+      (shx-test-assert "Recent prompt gets timestamped."
+                       (string-match
+                        "At [0-9][0-9]:[0-9][0-9]:[0-9][0-9]"
+                        help-echo)))))
+
 (defun shx-test-integration-input-handling ()
   "Test shx's input handling."
   (goto-char (point-max))
