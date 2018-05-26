@@ -197,8 +197,8 @@ In normal circumstances this input is additionally filtered by
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
 This function overrides `comint-input-sender'."
-  (let* ((match (string-match (concat "^" shx-leader shx-cmd-syntax)
-                              (string-trim-left input)))
+  (let* ((regexp (concat "^" shx-leader shx-cmd-syntax))
+         (match (string-match regexp (string-trim-left input)))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
     (if (not shx-cmd)
         (comint-simple-send process input)
@@ -441,14 +441,14 @@ not nil, then insert the command into the current buffer."
 '^pattern^replacement', and if the prompt is a colon, SPC and q
 are sent straight through to the process to handle paging."
   (interactive)
-  (let ((on-last-line (shx-point-on-input-p)))
-    (if (and on-last-line
+  (let ((on-input (shx-point-on-input-p)))
+    (if (and on-input
              (string-match ".*:$" (shx--current-prompt))
              (string-match "^\\s-*$" (shx--current-input)))
         (progn
           (message "shx: sending '%s'" (this-command-keys))
           (process-send-string nil (this-command-keys)))
-      (unless on-last-line (goto-char (point-max)))
+      (unless on-input (goto-char (point-max)))
       (if shx-use-magic-insert
           (comint-magic-space 1)
         (self-insert-command 1)))))
@@ -523,12 +523,10 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 (defun shx--format-timer-string (timer)
   "Create a human-readable string out of TIMER."
-  (let* ((timer-string (string-remove-prefix
-                        "(lambda nil (shx--auto "
-                        (string-remove-suffix
-                         "))"
-                         (format "%s" (aref timer 5))))))
-    (concat "[" timer-string "]")))
+  (let* ((str (format "%s" (aref timer 5)))
+         (output (string-remove-prefix "(lambda nil (shx--auto "
+                                       (string-remove-suffix "))" str))))
+    (concat "[" output "]")))
 
 
 ;;; asynch functions
