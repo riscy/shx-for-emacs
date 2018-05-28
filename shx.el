@@ -994,8 +994,6 @@ This function only works when the shx minor mode is active."
   (advice-add #'comint-next-input :before #'shx-show-output)
   (advice-add #'comint-kill-input :before #'shx-show-output)
   (advice-add #'comint-send-eof :before #'shx-show-output)
-  (advice-add #'comint-previous-prompt :after #'shx-snap-to-top)
-  (advice-add #'comint-previous-prompt :after #'shx-flash-prompt)
   (advice-add #'comint-next-prompt :after #'shx-snap-to-top)
   (advice-add #'comint-next-prompt :after #'shx-flash-prompt))
 
