@@ -95,6 +95,10 @@
   "Whether to advise the behavior of a number of `comint-mode' functions."
   :type 'boolean)
 
+(defcustom shx-flash-prompt-time 0.25
+  "Length of time (in seconds) the prompt flashes, when so advised."
+  :type 'float)
+
 (defcustom shx-show-hints t
   "Whether to echo hints when running certain commands."
   :type 'boolean)
@@ -967,10 +971,11 @@ This function only works when the shx minor mode is active."
 
 (defun shx-flash-prompt (&rest _args)
   "Flash the text on the line with the highlight face."
-  (setq-local shx-prompt-overlay (make-overlay (point) (point-at-eol)))
-  (overlay-put shx-prompt-overlay 'face 'highlight)
-  (sit-for 1)
-  (delete-overlay shx-prompt-overlay))
+  (when (> shx-flash-prompt-time 0)
+    (setq-local shx-prompt-overlay (make-overlay (point) (point-at-eol)))
+    (overlay-put shx-prompt-overlay 'face 'highlight)
+    (sit-for shx-flash-prompt-time)
+    (delete-overlay shx-prompt-overlay)))
 
 (defun shx-snap-to-top (&rest _args)
   "Recenter window so the current line is at the top.
