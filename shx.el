@@ -936,9 +936,8 @@ See the function `shx-mode' for details."
   (font-lock-add-keywords nil shx-font-locks)
   (setq-local shx--old-prompt-read-only comint-prompt-read-only)
   (setq-local comint-prompt-read-only nil)
-  (when shx-disable-undo
-    (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
-    (unless shx--old-undo-disabled (buffer-disable-undo)))
+  (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
+  (when shx-disable-undo (buffer-disable-undo))
   ;; do this one with a delay because spacemacs tries to set this variable too:
   (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
   (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
@@ -951,7 +950,7 @@ See the function `shx-mode' for details."
     (font-lock-remove-keywords nil shx-shell-mode-font-locks))
   (font-lock-remove-keywords nil shx-font-locks)
   (setq-local comint-prompt-read-only shx--old-prompt-read-only)
-  (when shx-disable-undo (unless shx--old-undo-disabled (buffer-enable-undo)))
+  (unless shx--old-undo-disabled (buffer-enable-undo))
   (setq comint-input-sender 'comint-simple-send)
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
 
