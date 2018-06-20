@@ -116,9 +116,9 @@
   :type '(alist :key-type string :value-type string))
 
 (defcustom shx-max-input nil
-  "The largest input allowed in characters.  On macOS a good
-value is 1024, the size of the typeahead buffer.  Otherwise set
-your terminal to canonical mode with 'stty -icanon'."
+  "The largest input allowed in characters.
+A good value on macOS is 1024, the size of the typeahead buffer;
+or, set the terminal to canonical mode with 'stty -icanon'."
   :type 'integer)
 
 (defvar shx-cmd-prefix "shx-cmd-"
