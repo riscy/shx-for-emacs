@@ -51,6 +51,7 @@
 
 ;; Compiler pacifier
 (defvar evil-state)
+(defvar tramp-syntax)
 (declare-function evil-insert-state "evil-states")
 
 
