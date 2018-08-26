@@ -100,6 +100,12 @@ Example:
   (shx-test-assert "The stop function is safe."
                    (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
 
+(defun shx-test-get-user-cmd ()
+  (shx-test-assert "get-user-cmd returns nil for empty string"
+                   (null (shx--get-user-cmd "")))
+  (shx-test-assert "get-user-cmd returns command with correct prefix"
+                   (eq (shx--get-user-cmd "test-al") 'shx-cmd-test-all)))
+
 (defun shx-test-unit-replace-from-list ()
   (shx-test-assert "replace-from-list acts sequentially."
                    (string= "a" (shx--replace-from-list '(("aa" "b") ("b" "a")) "aa")))
