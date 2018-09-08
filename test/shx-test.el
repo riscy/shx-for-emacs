@@ -100,7 +100,7 @@ Example:
   (shx-test-assert "The stop function is safe."
                    (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
 
-(defun shx-test-get-user-cmd ()
+(defun shx-test-unit-get-user-cmd ()
   (shx-test-assert "get-user-cmd returns nil for empty string"
                    (null (shx--get-user-cmd "")))
   (shx-test-assert "get-user-cmd returns command with correct prefix"
