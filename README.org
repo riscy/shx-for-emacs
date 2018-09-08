@@ -48,7 +48,7 @@
 
   It also extends ~shell-mode~'s syntax highlighting, recenters and highlights
   content for better viewing when you run commands like ~comint-previous-prompt~
-  and ~comint-show-output~, and improves compatibility with ~evil-mode~ by
+  and ~comint-kill-input~, and improves compatibility with ~evil-mode~ by
   anticipating when to switch to ~insert~ mode.
 
   Use ~M-x customize-group RET shx RET~ to see shx's many customization options.

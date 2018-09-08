@@ -995,10 +995,9 @@ This function only works when the shx minor mode is active."
   (advice-add #'comint-kill-input :before #'shx-switch-to-insert)
   (advice-add #'comint-send-input :after #'shx-switch-to-insert)
   (advice-add #'comint-history-isearch-backward-regexp :before #'shx-show-output)
-  (advice-add #'comint-previous-input :before #'shx-show-output)
-  (advice-add #'comint-next-input :before #'shx-show-output)
   (advice-add #'comint-kill-input :before #'shx-show-output)
   (advice-add #'comint-send-eof :before #'shx-show-output)
+  ;; NOTE: comint-next-prompt is called by comint-previous prompt too
   (advice-add #'comint-next-prompt :after #'shx-snap-to-top)
   (advice-add #'comint-next-prompt :after #'shx-flash-prompt))
 
