@@ -218,7 +218,7 @@ This function overrides `comint-input-sender'."
 
 (defun shx--timestamp-prompt ()
   "Add a mouseover timestamp to the last prompt."
-  (unless comint-prompt-read-only
+  (ignore-errors
     (add-text-properties
      (let ((inhibit-field-text-motion t)) (point-at-bol))
      (process-mark (get-buffer-process (current-buffer)))
