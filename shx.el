@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 0.0.16
+;; Version: 0.0.17
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -116,7 +116,7 @@
   :link '(function-link shx-cmd-keep)
   :type '(alist :key-type string :value-type string))
 
-(defcustom shx-max-input nil
+(defcustom shx-max-input most-positive-fixnum
   "The largest input allowed in characters.
 A good value on macOS is 1024, the size of the typeahead buffer;
 or, set the terminal to canonical mode with 'stty -icanon'."
@@ -193,7 +193,7 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (if (and shx-max-input (>= (length (shx--current-input)) shx-max-input))
+  (if (>= (length (shx--current-input)) shx-max-input)
       (message "Input line exceeds `shx-max-input'.")
     (shx--timestamp-prompt)
     (comint-send-input nil t)))
