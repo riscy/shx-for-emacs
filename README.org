@@ -27,7 +27,7 @@
 * Description
   /shx/ or "shell-extras" extends comint-mode in Emacs (e.g. ~M-x shell~).
 
-  It's compatible with any underlying shell (zsh, bash, csh, fish, etc.).
+  It's compatible with any underlying REPL (zsh, bash, psql, ipython, etc.).
 
   It parses the output stream in a few useful ways:
   - *Display graphics and plots* in the shell with a simple markup
@@ -70,8 +70,8 @@
     Type ~M-x shx <return>~.  Try out the following commands:
 
     1. ~:e ~/.bashrc~ to edit your .bashrc file (for example)
-    2. ~:man ls~ to display the man page for ~ls~ up
-    3. ~:help~ to a start a completing read for other shx commands.
+    2. ~:man ls~ to display the man page for ~ls~
+    3. ~:help~ to a start a completing read for other shx commands
 
 *** Enable automatically
     If you like shx-mode, you can enable it everywhere:
@@ -135,7 +135,7 @@
   :sedit /etc/passwd
   #+end_src
 
-  Thanks to [[https://github.com/CeleritasCelery][CeleritasCelery]] it's also ossible to use environment variables in
+  Thanks to [[https://github.com/CeleritasCelery][CeleritasCelery]] it's also possible to use environment variables in
   the argument list:
   #+begin_src bash
   :e $HOME/.emacs.d
@@ -230,9 +230,9 @@
     then each shx buffer will immediately have access to the ~:rename~ command.
     When it's invoked, shx will also display a hint about buffer names.
 
-    Note the importance of defining a comment string.  This documents the
+    Note the importance of defining a docstring.  This documents the
     command so that typing ~:help name~ will give the user information on what
-    the command does.  Further, if the comment string begins with ~(SAFE)~ then
+    the command does.  Further, since the docstring begins with ~(SAFE)~,
     it becomes part of shx's markup language.  So in this case if:
     #+begin_src xml
     <name A new name for the buffer>
@@ -270,7 +270,7 @@
       #+end_src
       then each shx buffer will have access to the ~:browse~ command.
 
-      Note the comment string does not specify that this command is ~SAFE~.
+      Note the docstring does not specify that this command is ~SAFE~.
       This means ~<browse url>~ will not become part of shx's markup.  That
       makes sense in this case, since you wouldn't want to give a process the
       power to open arbitrary URLs without prompting.
