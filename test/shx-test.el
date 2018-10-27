@@ -85,13 +85,13 @@ Example:
   (shx-test-assert
    "Escaped regexps are matched."
    (let ((pattern "`echo \\\\\\`echo\\\\\\``"))
-     (string-match (shx--quote-regexp "`" "\\\\") pattern)
+     (string-match (shx--quote-regexp "`") pattern)
      (string= pattern (match-string 0 pattern))))
   (shx-test-assert
    "Unescaped regexps are matched."
-   (let ((pattern "'don\'t'"))
-     (string-match (shx--quote-regexp "'") pattern)
-     (string= "'don\'" (match-string 0 pattern)))))
+   (let ((pattern "'don\\'t'"))
+     (string-match (shx--quote-regexp "'" "") pattern)
+     (string= "'don\\'" (match-string 0 pattern)))))
 
 (defun shx-test-unit-safe-as-markup ()
   "Test recognition of safe functions."
