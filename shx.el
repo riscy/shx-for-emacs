@@ -402,10 +402,10 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
-  `(lambda (&rest _params)
+  `(lambda (bound)
      (let ((inhibit-field-text-motion t))
        (when (eq (point-max) (point-at-eol))
-         (ignore-errors (re-search-forward ,regexp))))))
+         (ignore-errors (re-search-forward ,regexp bound))))))
 
 (defun shx--quote-regexp (delimiter &optional escape max-length)
   "Regexp matching strings delimited by DELIMITER.
