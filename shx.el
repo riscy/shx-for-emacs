@@ -893,21 +893,20 @@ Or just a single column:
   `((,(shx--match-last-line (shx--quote-regexp "`"))  0 'font-lock-builtin-face)
     (,(shx--match-last-line (shx--quote-regexp "\"")) 0 'font-lock-string-face)
     (,(shx--match-last-line (shx--quote-regexp "'"))  0 'font-lock-string-face)
-    ("#.*[^#^\n]*\\'"                                 0 'font-lock-comment-face)
-    ("~"                                              0 'font-lock-builtin-face)
+    (,(shx--match-last-line "#.*[^#^\n]*$")           0 'font-lock-comment-face)
     (,(shx--match-last-line
-       (regexp-opt '(">" "<" "&" "|" ";")))           0 'font-lock-keyword-face)
+       (regexp-opt '("~" ">" "<" "&" "|" ";")))       0 'font-lock-keyword-face)
     ("\\(\\<git\\>\\) .*\\'"                          1 'font-lock-constant-face)
     ("\\(\\<rm\\>\\) .*\\'"                           1 'font-lock-warning-face))
   "Some additional syntax highlighting for `shell-mode' only."
-  :type '(alist :key-type regexp))
+  :type '(alist :key-type (choice regexp function)))
 
 (defcustom shx-font-locks
   `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\(\\<"
               (regexp-opt (shx--all-commands 'without-prefix))
-              "\\>\\).*\\'")                      1 'font-lock-keyword-face))
+              "\\>\\).*\\'")                          1 'font-lock-keyword-face))
   "Some additional syntax highlighting for the shx minor mode."
-  :type '(alist :key-type regexp))
+  :type '(alist :key-type (choice regexp function)))
 
 ;;;###autoload
 (define-minor-mode shx-mode
