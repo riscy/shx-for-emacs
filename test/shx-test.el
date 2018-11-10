@@ -76,40 +76,42 @@ Example:
 (defun shx-test-unit-escape-filename ()
   "Test filename escaping."
   (shx-test-assert
-   "Dangerous characters are escaped in filenames."
+   "shx--escape-filename escapes dangerous dangerous characters"
    (string-suffix-p "a\\ filename\\`delete\\`"
     (shx--escape-filename "a filename`delete`"))))
 
 (defun shx-test-unit-quote-regexp ()
   "Test pattern matching on delimited regexps like strings."
   (shx-test-assert
-   "Escaped regexps are matched."
+   "shx--quote-regexp matches escaped regexps correctly"
    (let ((pattern "`echo \\\\\\`echo\\\\\\``"))
      (string-match (shx--quote-regexp "`") pattern)
      (string= pattern (match-string 0 pattern))))
   (shx-test-assert
-   "Unescaped regexps are matched."
+   "shx--quote-regexp matches unescaped regexps correctly"
    (let ((pattern "'don\\'t'"))
      (string-match (shx--quote-regexp "'" "") pattern)
      (string= "'don\\'" (match-string 0 pattern)))))
 
 (defun shx-test-unit-safe-as-markup ()
   "Test recognition of safe functions."
-  (shx-test-assert "The eval function is not safe."
+  (shx-test-assert "shx--safe-as-markup-p recognizes unsafe command"
                    (not (shx--safe-as-markup-p (intern "shx-cmd-eval"))))
-  (shx-test-assert "The stop function is safe."
+  (shx-test-assert "shx--safe-as-markup-p recognizes a safe command"
                    (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
 
 (defun shx-test-unit-get-user-cmd ()
-  (shx-test-assert "get-user-cmd returns nil for empty string"
+  "Test the shx--get-user-cmd function."
+  (shx-test-assert "shx--get-user-cmd returns nil for empty string"
                    (null (shx--get-user-cmd "")))
-  (shx-test-assert "get-user-cmd returns command with correct prefix"
+  (shx-test-assert "shx--get-user-cmd returns command with correct prefix"
                    (eq (shx--get-user-cmd "test-al") 'shx-cmd-test-all)))
 
 (defun shx-test-unit-replace-from-list ()
-  (shx-test-assert "replace-from-list acts sequentially."
+  "Test the shx--replace-from-list function."
+  (shx-test-assert "shx--replace-from-list acts sequentially"
                    (string= "a" (shx--replace-from-list '(("aa" "b") ("b" "a")) "aa")))
-  (shx-test-assert "replace-from-list performs the correct replacements."
+  (shx-test-assert "shx--replace-from-list performs the correct replacements"
                    (string= "24" (shx--replace-from-list '(("1" "2") ("3" "4")) "13"))))
 
 (defun shx-test-integration-magic-insert ()
@@ -117,37 +119,37 @@ Example:
   (let ((previous-input (comint-previous-input-string 0)))
     (insert "^" previous-input "^^")
     (shx-magic-insert)
-    (shx-test-assert "Inline substitution with magic insert works."
+    (shx-test-assert "shx-magic-insert performs inline substitution"
                      (equal (shx--current-input) ""))
     (insert previous-input " !!")
     (shx-magic-insert)
-    (shx-test-assert "Previous command expansion with magic insert works."
+    (shx-test-assert "shx-magic-insert performs command expansion"
                      (equal (shx--current-input)
                             (concat previous-input " " previous-input)))
     (comint-kill-input)))
 
 (defun shx-test-unit-tokenize ()
   "Test string tokenizaton."
-  (shx-test-assert "Tokenization works with apostrophes."
+  (shx-test-assert "shx-tokenize works with apostrophes."
                    (equal '("first" "second token" "third")
                           (shx-tokenize "'first' 'second token' 'third'")))
-  (shx-test-assert "Tokenization works with partial apostrophes."
+  (shx-test-assert "shx-tokenize works with partial apostrophes."
                    (equal '("first-token" "secondtoken")
                           (shx-tokenize "'first-token' secondtoken")))
-  (shx-test-assert "Tokenization returns nil when quoting doesn't match."
+  (shx-test-assert "shx-tokenize returns nil when quoting doesn't match."
                    (equal nil (shx-tokenize "first/token 'second token")))
-  (shx-test-assert "Tokenization works with apostrophes and quotation marks."
+  (shx-test-assert "shx-tokenize works with apostrophes and quotation marks."
                    (equal '("first token" "second token" "3")
                           (shx-tokenize "'first token' \"second token\" 3")))
-  (shx-test-assert "Tokenization works with escaped spaces."
+  (shx-test-assert "shx-tokenize works with escaped spaces."
                    (equal '("first token" "secondtoken")
                           (shx-tokenize "first\\ token secondtoken")))
-  (shx-test-assert "Tokenization works with escaped quotation marks."
+  (shx-test-assert "shx-tokenize works with escaped quotation marks."
                    (equal '("\"test file\"" "'test file'")
                           (shx-tokenize "\\\"test\\ file\\\" \\\'test\\ file\\\'")))
-  (shx-test-assert "Tokenization works with escaped characters"
+  (shx-test-assert "shx-tokenize works with escaped characters"
                    (equal '("a" "b c.d") (shx-tokenize "a b\\ \\c\\.d")))
-  (shx-test-assert "Tokenization works with a directory specified."
+  (shx-test-assert "shx-tokenize works with a directory specified."
                    (equal '("~/././~/.spacemacs")
                           (shx-tokenize "~/././~/.spacemacs"))))
 
@@ -171,7 +173,7 @@ Example:
       (comint-previous-prompt 1)
       (forward-line 0)
       (let ((help-echo (or (get-text-property (point) 'help-echo) "")))
-        (shx-test-assert "Recent prompt gets timestamped."
+        (shx-test-assert "shx--timestamp-prompt propertizes prompt text"
                          (string-match
                           "At [0-9][0-9]:[0-9][0-9]:[0-9][0-9]"
                           help-echo))))))
@@ -180,15 +182,15 @@ Example:
   "Test shx's input handling."
   (goto-char (point-max))
   (insert "test")
-  (shx-test-assert "Recent input is recognized."
+  (shx-test-assert "shx--current-input recognizes recent input"
                    (string= "test" (shx--current-input)))
   (comint-kill-input)
   (forward-line -2)
   (shx-send-input-or-copy-line)
-  (shx-test-assert "Test line is copied"
+  (shx-test-assert "shx--current-input copies test line"
                    (string= (substring (shx--current-input) 0 1) "✔"))
   (comint-kill-input)
-  (shx-test-assert "Blank input is recognized."
+  (shx-test-assert "shx--current-input recognizes blank line"
                    (string= (shx--current-input) "")))
 
 (defun shx-test-integration-output-handling ()
@@ -196,28 +198,28 @@ Example:
   (save-excursion
     (goto-char (point-max))
     (backward-char 1)
-    (shx-test-assert "shx-insert is propertizing the output"
+    (shx-test-assert "shx-insert propertizes the output"
                    (eq (field-at-pos (point)) 'output))))
 
 (defun shx-test-unit-cmd-syntax-regexps ()
   "Test shx-cmd-syntax regexps."
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":help ok")
-  (shx-test-assert "Recognizing a command with arguments."
+  (shx-test-assert "shx-cmd-syntax recognizes command with arguments"
                    (and (string= (match-string 1 ":help ok") "help")
                         (string= (match-string 2 ":help ok") "ok")))
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":pwd")
-  (shx-test-assert "Recognizing alphabetical command names."
+  (shx-test-assert "shx-cmd-syntax recognizes alphabetical command names"
                    (string= (match-string 1 ":pwd") "pwd"))
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":plot-bar")
-  (shx-test-assert "Recognizing hyphenated command names."
+  (shx-test-assert "shx-cmd-syntax recognizes hyphenated command names"
                    (string= (match-string 1 ":plot-bar") "plot-bar")))
 
 (defun shx-test-unit-shx-cat ()
   "Test the `shx-cat' command."
   (let ((concatenation (shx-cat "Test" 'font-lock-string-face "test")))
-    (shx-test-assert "Concatenates the strings."
+    (shx-test-assert "shx-cat concatenates strings correctly"
                      (string= concatenation "Testtest"))
-    (shx-test-assert "Propertizes the text."
+    (shx-test-assert "shx-cat propertizes text correctly"
                      (equal (get-text-property 4 'font-lock-face concatenation)
                             'font-lock-string-face))))
 
@@ -225,11 +227,11 @@ Example:
   "Test functions that use Emacs' built-in timer."
   (if (shx--get-timer-list)
       (shx-test-warn "Warning: :stop all timers to run timing tests")
-    (shx-test-assert "The timer list starts empty." (not (shx--get-timer-list)))
+    (shx-test-assert "shx--get-timer-list is empty" (not (shx--get-timer-list)))
     (shx--delay-input "10 sec" "stub command")
-    (shx-test-assert "The timer list is not empty." (eq 1 (length (shx--get-timer-list))))
+    (shx-test-assert "shx--shx-timer-list grows by 1" (eq 1 (length (shx--get-timer-list))))
     (cancel-timer (car (shx--get-timer-list)))
-    (shx-test-assert "The timer list is empty again." (not (shx--get-timer-list)))))
+    (shx-test-assert "shx--get-timer-list becomes empty" (not (shx--get-timer-list)))))
 
 (provide 'shx-test)
 ;;; shx-test.el ends here

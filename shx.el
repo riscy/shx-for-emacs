@@ -410,7 +410,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 (defun shx--quote-regexp (delimiter &optional escape max-length)
   "Regexp matching strings delimited by DELIMITER.
 ESCAPE is the string that can be used to escape the delimiter
-(defaults to backslash; ignored when set to the empty string).
+\(defaults to backslash; ignored when set to the empty string).
 MAX-LENGTH is the length of the longest match (default 300)."
   (setq escape (or escape "\\\\"))
   (concat delimiter
