@@ -251,7 +251,7 @@ buffer's `process-mark'."
 
 (defun shx-parse-output-hook (&optional _output)
   "Hook to parse the output stream."
-  ;; FIXME: these can get expensive on buffers w/ more than 9000 lines
+  (shx--split-long-line)
   (shx--parse-output-for-markup)
   (when shx-triggers (shx--parse-output-for-triggers)))
 
@@ -299,6 +299,13 @@ buffer's `process-mark'."
   "Search forward from the current point for PATTERN."
   (when (< (point-at-eol) (point-max))
     (re-search-forward pattern nil t)))
+
+(defun shx--split-long-line ()
+  "Prevent the shell from being crushed by a long line."
+  (when (> (current-column) 300)
+    (backward-char)
+    (insert-char ?\n)
+    (forward-char)))
 
 
 ;;; util
