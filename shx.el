@@ -423,7 +423,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
   `(lambda (bound)
      (let ((inhibit-field-text-motion t))
        (when (eq (point-max) (point-at-eol))
-         (ignore-errors (re-search-forward ,regexp bound))))))
+         (re-search-forward ,regexp bound t)))))
 
 (defun shx--quote-regexp (delimiter &optional escape max-length)
   "Regexp matching strings delimited by DELIMITER.
