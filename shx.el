@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 0.0.18
+;; Version: 1.0.0
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -109,8 +109,7 @@
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
-(defcustom shx-kept-commands
-  '(("Enable wordwrap at 90 columns" . ":eval (shx-wordwrap 90)"))
+(defcustom shx-kept-commands '(())
   "Shell commands of the form (description . command)."
   :link '(function-link shx-cmd-kept)
   :link '(function-link shx-cmd-keep)
@@ -233,28 +232,6 @@ This function overrides `comint-input-sender'."
 
 
 ;;; output
-
-(defun shx-wordwrap (&optional cols)
-  "Enable wordwrap at COLS columns.
-Emacs is especially bad at handling long lines; sometimes
-enabling this can provide a significant performance boost."
-  (interactive)
-  (setq-local fill-column (or cols 80))
-  (setq-local adaptive-fill-regexp nil)            ; necessary!
-  (setq-local adaptive-fill-first-line-regexp nil) ; faster
-  (add-hook 'comint-output-filter-functions #'shx-fill-paragraph nil 'local))
-
-(defun shx-fill-paragraph (_str)
-  "Fill (justify) text from the host.
-Apply this justification from `comint-last-output-start' to the
-buffer's `process-mark'."
-  (save-excursion
-    (let ((start-of-prompt (point-marker)))
-      (goto-char comint-last-output-start)
-      (while (< (point) start-of-prompt)
-        (let ((region-start (point-at-bol)))
-          (forward-line)
-          (fill-region region-start (point) nil t))))))
 
 (defun shx-parse-output-hook (&optional _output)
   "Hook to parse the output stream."
