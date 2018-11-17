@@ -115,11 +115,12 @@
   :link '(function-link shx-cmd-keep)
   :type '(alist :key-type string :value-type string))
 
-(defcustom shx-long-line-length 2000
+(defcustom shx-break-long-line-length 1000
   "Column at which a line are deemed 'too long' and wrapped.
 Turn the feature off by setting this value to `most-positive-fixnum'
-Benchmarking suggests performance starts to deteriorate past 2000."
-  :link '(function-link shx--long-line-split)
+Makes trigger matching unsound but massively improves performance;
+benchmarking suggests performance starts to deteriorate past 1000."
+  :link '(function-link shx-break-long-line)
   :type 'integer)
 
 (defcustom shx-max-input most-positive-fixnum
@@ -246,7 +247,7 @@ This function overrides `comint-input-sender'."
 (defun shx-parse-output-hook (&optional _output)
   "Hook to parse the output stream."
   (shx--parse-output-for-markup)
-  (shx--long-line-split)
+  (shx-break-long-line)
   (when shx-triggers (shx--parse-output-for-triggers)))
 
 (defun shx--parse-output-for-markup ()
@@ -294,15 +295,13 @@ This function overrides `comint-input-sender'."
   (when (< (point-at-eol) (point-max))
     (re-search-forward pattern nil t)))
 
-(defun shx--long-line-split ()
-  "Split the current line if longer than `shx-long-line-length'.
-This can make trigger matching unsound but massively improves
-performance and can keep a session from getting locked up."
-  (when (> (current-column) shx-long-line-length)
-    (or (re-search-backward "[[:space:]]" (- (point) shx-long-line-length) t)
+(defun shx-break-long-line ()
+  "Break the line if it's longer than `shx-break-long-line-length'."
+  (when (> (current-column) shx-break-long-line-length)
+    (or (re-search-backward "[[:space:]]" (- (point) shx-break-long-line-length) t)
         (backward-char))
-    (shx-insert 'underline "\n")
-    (shx--hint "shx split a long line (q.v. `shx-long-line-length').")
+    (insert (propertize "\\\n" 'font-lock-face 'warning 'help-echo
+                        "Line broken at `shx-break-long-line-length`."))
     (goto-char (point-max))))
 
 
