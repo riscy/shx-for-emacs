@@ -111,7 +111,7 @@
   #+begin_src xml
   <command arg1 arg2 ...>
   #+end_src
-  where ~command~ is a shx command and ~arg1 ... argn~ are a space-separated
+  where ~command~ is a shx command and ~arg1 ... argn~ is a space-separated
   list of arguments.  Arguments don't need to be surrounded by quotes -- the
   command will figure out how to parse them.
 
@@ -161,14 +161,14 @@
 *** General commands
     | Command              | Description                                           |
     |----------------------+-------------------------------------------------------|
-    | ~:alert~             | Reveal the buffer with an alert.  Useful for markup.  |
+    | ~:alert~             | Reveal the buffer with an alert.  Useful for markup   |
     | ~:clear~             | Clear the buffer                                      |
-    | ~:date~              | Show the date (even when the process is blocked).     |
+    | ~:date~              | Show the date (even when the process is blocked)      |
     | ~:diff file1 file2~  | Launch an Emacs diff between two files                |
     | ~:edit file~         | Edit a file.  Shortcut: ~:e <file>~                   |
     | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~:eval (pwd)~     |
     | ~:find <filename>~   | Run a fuzzy-find for <filename>                       |
-    | ~:goto-url <url>~    | Completing-read for a URL.                            |
+    | ~:goto-url <url>~    | Completing-read for a URL                             |
     | ~:header New header~ | Change the current ~header-line-format~               |
     | ~:kept regexp~       | Show a list of your 'kept' commands matching regexp   |
     | ~:keep~              | Add the previous command to the list of kept commands |
@@ -287,5 +287,5 @@
   - [[https://github.com/Bash-it/bash-it][bash-it]], a community driven bash configuration
   - [[https://github.com/zsh-users/zsh-syntax-highlighting][zsh-syntax-highlighting]]
   - [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][Shell configuration tips]] from Vitaly Belman
-  - [[https://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
+  - [[http://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
   - [[https://getbitbar.com/][BitBar]] adds program output to menus on macOS

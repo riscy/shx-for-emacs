@@ -315,8 +315,9 @@ performance and can keep a session from getting locked up."
 
 (defun shx-point-on-input-p ()
   "Check if point is on the input region."
-  (let ((process (get-buffer-process (current-buffer))))
-    (and process (>= (point-marker) (process-mark process)))))
+  (or (eq (point) (point-max))
+      (let ((process (get-buffer-process (current-buffer))))
+        (and process (>= (point-marker) (process-mark process))))))
 
 (defun shx-tokenize (str)
   "Turn STR into a list of tokens, or nil if parsing fails.
@@ -341,8 +342,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 (defun shx--escape-filename (filename)
   "Escape FILENAME to mitigate injection attacks."
   (replace-regexp-in-string ; modeled on Ruby's "Shellwords"
-   "\\([^A-Za-z0-9_\-.,:\/@\n]\\)" "\\\\\\1"
-   (expand-file-name filename)))
+   "\\([^A-Za-z0-9_\-.,:\/@\n]\\)" "\\\\\\1" (expand-file-name filename)))
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
