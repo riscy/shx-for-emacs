@@ -461,10 +461,10 @@ are sent straight through to the process to handle paging."
   (interactive)
   (let ((on-input (shx-point-on-input-p)))
     (if (and on-input
-             (string-match ".*:$" (shx--current-prompt))
-             (string-match "^\\s-*$" (shx--current-input)))
+             (string-match "^\\s-*$" (shx--current-input))
+             (string-match ":$" (shx--current-prompt)))
         (progn
-          (message "shx: sending '%s'" (this-command-keys))
+          (shx--hint (format "sending '%s'" (this-command-keys)))
           (process-send-string nil (this-command-keys)))
       (unless on-input (goto-char (point-max)))
       (if shx-use-magic-insert
