@@ -237,8 +237,8 @@ This function overrides `comint-input-sender'."
 (defun shx--restart-process ()
   "Restart the process associated with the buffer if none exists."
   (when (not (get-buffer-process (current-buffer)))
-    (comint-exec (current-buffer) (buffer-name)
-                 (completing-read "Restart:" (list shx--process)) nil nil)))
+    (shx-insert 'font-lock-doc-face "Restarting " shx--process)
+    (comint-exec (current-buffer) (buffer-name) shx--process nil nil)))
 
 
 ;;; output
