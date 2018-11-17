@@ -167,6 +167,9 @@ or, set the terminal to canonical mode with 'stty -icanon'."
 (defvar-local shx--old-undo-disabled nil
   "Whether undo was disabled before shx-mode was enabled.")
 
+(defvar-local shx--process nil
+  "The command that was probably used to start the process.")
+
 
 ;;; input
 
@@ -199,6 +202,7 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
+  (shx--restart-process)
   (if (>= (length (shx--current-input)) shx-max-input)
       (message "Input line exceeds `shx-max-input'.")
     (shx--timestamp-prompt)
@@ -229,6 +233,12 @@ This function overrides `comint-input-sender'."
      (let ((inhibit-field-text-motion t)) (point-at-bol))
      (process-mark (get-buffer-process (current-buffer)))
      `(help-echo ,(format-time-string "At %X")))))
+
+(defun shx--restart-process ()
+  "Restart the process associated with the buffer if none exists."
+  (when (not (get-buffer-process (current-buffer)))
+    (comint-exec (current-buffer) (buffer-name)
+                 (completing-read "Restart:" (list shx--process)) nil nil)))
 
 
 ;;; output
@@ -934,6 +944,8 @@ See the function `shx-mode' for details."
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
   (setq-local shx-buffer (current-buffer))
+  (setq-local shx--process (let ((proc (get-buffer-process (current-buffer))))
+                             (if proc (car (process-command proc)) nil)))
   (when (derived-mode-p 'shell-mode)
     (font-lock-add-keywords nil shx-shell-mode-font-locks))
   (font-lock-add-keywords nil shx-font-locks)
