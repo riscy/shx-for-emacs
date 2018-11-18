@@ -15,6 +15,7 @@
 - [[#setup][Setup]]
     - [[#quick-start][Quick-start]]
     - [[#enable-automatically][Enable automatically]]
+    - [[#customizations][Customizations]]
 - [[#key-bindings][Key bindings]]
 - [[#markup-in-the-shell][Markup in the shell]]
 - [[#extra-shell-commands][Extra shell commands]]
@@ -51,11 +52,9 @@
   and ~comint-kill-input~, and improves compatibility with ~evil-mode~ by
   anticipating when to switch to ~insert~ mode.
 
-  Use ~M-x customize-group RET shx RET~ to see shx's many customization options.
-
   Use ~M-x shx <return>~ to quickly start a new ~shell~ session with ~shx~ enabled.
 
-  /This version is tested with Emacs 25.2.1/  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
+  /This version is tested with Emacs 26.1/  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
 * Install
 *** From MELPA
     ~M-x package-install RET shx RET~ to install shx from [[https://melpa.org/][MELPA]].
@@ -86,6 +85,22 @@
 
     #+begin_src elisp
     (add-hook 'inferior-python-mode-hook #'shx-mode)
+    #+end_src
+*** Customizations
+    Use ~M-x customize-group RET shx RET~ to see shx's many customization options.
+    Here's an example customization using ~setq~:
+    #+begin_src elisp
+      ;; vastly improve display performance by breaking up long output lines, and
+      ;; prevent input longer than macOS's typeahead buffer from going through
+      (setq shx-max-output 1024 shx-max-input 1024)
+      ;; prefer inlined images to have a height of 250 pixels
+      (setq shx-img-height 250)
+      ;; don't show any incidental hint messages about how to use shx
+      (setq shx-show-hints nil)
+      ;; flash the previous comint prompt for a full second when using C-c C-p
+      (setq shx-flash-prompt-time 1.0)
+      ;; use `#' to prefix shx commands instead of the default `:'
+      (setq shx-leader "#")
     #+end_src
 * Key bindings
   | Key binding | Description                                                              |
