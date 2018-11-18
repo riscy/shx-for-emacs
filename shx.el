@@ -122,7 +122,7 @@ or, set the terminal to canonical mode with 'stty -icanon'."
   :type 'integer)
 
 (defcustom shx-max-output most-positive-fixnum
-  "The length at which output lines are considered too long.
+  "The length at which an output line is long enough to be broken.
 Setting this to 1024 can lead to enormous performance gains, but
 sacrifices the soundness of markup and trigger matching."
   :link '(function-link shx--break-long-line-maybe)
@@ -147,19 +147,16 @@ sacrifices the soundness of markup and trigger matching."
     keymap)
   "Keymap for shx.")
 
-(defvar-local shx-buffer nil
-  "Local reference to the shx buffer.")
-
-(defvar-local shx-prompt-overlay nil
-  "Overlay used to highlight the prompt.")
-
-(defvar-local shx-urls nil
-  "Local record of URLs seen.")
-
 (defvar shx-click-file (let ((keymap (make-sparse-keymap)))
                          (define-key keymap [mouse-1] 'ffap-at-mouse)
                          keymap)
   "Keymap for capturing mouse clicks on files/URLs.")
+
+(defvar-local shx-buffer nil "Local reference to the shx buffer.")
+
+(defvar-local shx-prompt-overlay nil "Overlay used to flash the prompt.")
+
+(defvar-local shx-urls nil "Local record of URLs seen.")
 
 (defvar-local shx--old-prompt-read-only nil
   "Whether the prompt was read-only before shx-mode was enabled.")
