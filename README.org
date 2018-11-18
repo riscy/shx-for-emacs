@@ -15,7 +15,7 @@
 - [[#setup][Setup]]
     - [[#quick-start][Quick-start]]
     - [[#enable-automatically][Enable automatically]]
-    - [[#customizations][Customizations]]
+    - [[#customize][Customize]]
 - [[#key-bindings][Key bindings]]
 - [[#markup-in-the-shell][Markup in the shell]]
 - [[#extra-shell-commands][Extra shell commands]]
@@ -76,7 +76,7 @@
     If you like shx-mode, you can enable it everywhere:
 
     #+begin_src elisp
-    (shx-global-mode 1)                       ; toggle shx-mode on globally
+    (shx-global-mode 1)  ; toggle shx-mode on globally
     #+end_src
 
     Now shx will run automatically in any ~comint-mode~ buffer.  If you don't want
@@ -86,21 +86,23 @@
     #+begin_src elisp
     (add-hook 'inferior-python-mode-hook #'shx-mode)
     #+end_src
-*** Customizations
+*** Customize
     Use ~M-x customize-group RET shx RET~ to see shx's many customization options.
     Here's an example customization using ~setq~:
     #+begin_src elisp
-      ;; vastly improve display performance by breaking up long output lines, and
+    (setq
+      ;; vastly improve display performance by breaking up long output lines
+      shx-max-output 1024
       ;; prevent input longer than macOS's typeahead buffer from going through
-      (setq shx-max-output 1024 shx-max-input 1024)
+      shx-max-input 1024
       ;; prefer inlined images to have a height of 250 pixels
-      (setq shx-img-height 250)
+      shx-img-height 250
       ;; don't show any incidental hint messages about how to use shx
-      (setq shx-show-hints nil)
+      shx-show-hints nil
       ;; flash the previous comint prompt for a full second when using C-c C-p
-      (setq shx-flash-prompt-time 1.0)
+      shx-flash-prompt-time 1.0
       ;; use `#' to prefix shx commands instead of the default `:'
-      (setq shx-leader "#")
+      shx-leader "#")
     #+end_src
 * Key bindings
   | Key binding | Description                                                              |
@@ -236,11 +238,10 @@
     #+begin_src elisp
     (defun shx-cmd-rename (name)
       "(SAFE) Rename the current buffer to NAME."
-      (if (ignore-errors (rename-buffer name))
-          (progn
-            (shx-insert "Renaming buffer to " name "\n")
-            (shx--hint "Emacs won't save buffers starting with *")
-        (shx-insert 'error "Can't rename buffer.")))
+      (if (not (ignore-errors (rename-buffer name)))
+          (shx-insert 'error "Can't rename buffer.")
+        (shx-insert "Renaming buffer to " name "\n")
+        (shx--hint "Emacs won't save buffers starting with *")))
     #+end_src
     then each shx buffer will immediately have access to the ~:rename~ command.
     When it's invoked, shx will also display a hint about buffer names.
@@ -257,13 +258,13 @@
 ***** Example: invoking ediff from the shell
       A command similar to this one is built into shx:
       #+begin_src elisp
-     (defun shx-cmd-diff (files)
-       "(SAFE) Launch an Emacs `ediff' between FILES."
-       (setq files (shx-tokenize files))
-       (if (not (eq (length files) 2))
-           (shx-insert 'error "diff <file1> <file2>\n")
-         (shx-insert "invoking ediff...\n")
-         (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
+      (defun shx-cmd-diff (files)
+        "(SAFE) Launch an Emacs `ediff' between FILES."
+        (setq files (shx-tokenize files))
+        (if (not (eq (length files) 2))
+            (shx-insert 'error "diff <file1> <file2>\n")
+          (shx-insert "invoking ediff...\n")
+          (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
       #+end_src
       Note that ~files~ is supplied as a string, but it's immediately parsed
       into a list of strings using ~shx-tokenize~.  Helpfully, this function is
