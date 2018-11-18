@@ -115,18 +115,16 @@
   :link '(function-link shx-cmd-keep)
   :type '(alist :key-type string :value-type string))
 
-(defcustom shx-break-long-line-length 1000
-  "Column at which a line are deemed 'too long' and wrapped.
-Turn the feature off by setting this value to `most-positive-fixnum'
-Makes trigger matching unsound but massively improves performance;
-benchmarking suggests performance starts to deteriorate past 1000."
-  :link '(function-link shx-break-long-line)
-  :type 'integer)
-
 (defcustom shx-max-input most-positive-fixnum
   "The largest input allowed in characters.
 A good value on macOS is 1024, the size of the typeahead buffer;
 or, set the terminal to canonical mode with 'stty -icanon'."
+  :type 'integer)
+
+(defcustom shx-max-output most-positive-fixnum
+  "The length at which output lines are considered long and broken.
+Setting to 1024 leads to enormous performance gains in benchmarks,
+but sacrifices the soundness of trigger/markup matching."
   :type 'integer)
 
 (defvar shx-cmd-prefix "shx-cmd-"
@@ -247,7 +245,7 @@ This function overrides `comint-input-sender'."
 (defun shx-parse-output-hook (&optional _output)
   "Hook to parse the output stream."
   (shx--parse-output-for-markup)
-  (shx-break-long-line)
+  (shx--break-long-line-maybe)
   (when shx-triggers (shx--parse-output-for-triggers)))
 
 (defun shx--parse-output-for-markup ()
@@ -295,13 +293,11 @@ This function overrides `comint-input-sender'."
   (when (< (point-at-eol) (point-max))
     (re-search-forward pattern nil t)))
 
-(defun shx-break-long-line ()
-  "Break the line if it's longer than `shx-break-long-line-length'."
-  (when (> (current-column) shx-break-long-line-length)
-    (or (re-search-backward "[[:space:]]" (- (point) shx-break-long-line-length) t)
-        (backward-char))
-    (insert (propertize "\\\n" 'font-lock-face 'warning 'help-echo
-                        "Line broken at `shx-break-long-line-length`."))
+(defun shx--break-long-line-maybe ()
+  "Break the current line if it's longer than `shx-max-output'."
+  (when (> (current-column) shx-max-output)
+    (or (re-search-backward "\\s-" (- (point) shx-max-output) t) (backward-char))
+    (insert "\n")
     (goto-char (point-max))))
 
 
