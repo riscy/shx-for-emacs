@@ -166,8 +166,8 @@ but sacrifices the soundness of trigger/markup matching."
 (defvar-local shx--old-undo-disabled nil
   "Whether undo was disabled before shx-mode was enabled.")
 
-(defvar-local shx--process nil
-  "The command that was probably used to start the process.")
+(defvar-local shx--process-command nil
+  "The command that was likely used to start the process.")
 
 
 ;;; input
@@ -201,7 +201,7 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (shx--restart-process)
+  (shx--verify-process-exists)
   (if (>= (length (shx--current-input)) shx-max-input)
       (message "Input line exceeds `shx-max-input'.")
     (shx--timestamp-prompt)
@@ -225,6 +225,12 @@ This function overrides `comint-input-sender'."
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
 
+(defun shx--verify-process-exists ()
+  "If no process is associated with the buffer, try to restart the process."
+  (unless (get-buffer-process (current-buffer))
+    (shx-insert 'font-lock-doc-face "Restarting " shx--process-command)
+    (comint-exec (current-buffer) (buffer-name) shx--process-command nil nil)))
+
 (defun shx--timestamp-prompt ()
   "Add a mouseover timestamp to the last prompt."
   (ignore-errors
@@ -232,12 +238,6 @@ This function overrides `comint-input-sender'."
      (let ((inhibit-field-text-motion t)) (point-at-bol))
      (process-mark (get-buffer-process (current-buffer)))
      `(help-echo ,(format-time-string "At %X")))))
-
-(defun shx--restart-process ()
-  "Restart the process associated with the buffer if none exists."
-  (when (not (get-buffer-process (current-buffer)))
-    (shx-insert 'font-lock-doc-face "Restarting " shx--process)
-    (comint-exec (current-buffer) (buffer-name) shx--process nil nil)))
 
 
 ;;; output
@@ -939,8 +939,9 @@ See the function `shx-mode' for details."
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
   (setq-local shx-buffer (current-buffer))
-  (setq-local shx--process (let ((proc (get-buffer-process (current-buffer))))
-                             (if proc (car (process-command proc)) nil)))
+  (setq-local shx--process-command
+              (ignore-errors (car (process-command
+                                   (get-buffer-process shx-buffer)))))
   (when (derived-mode-p 'shell-mode)
     (font-lock-add-keywords nil shx-shell-mode-font-locks))
   (font-lock-add-keywords nil shx-font-locks)
