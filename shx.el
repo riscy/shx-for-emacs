@@ -24,7 +24,7 @@
 
 ;; shx ("shell-extras") extends comint-mode: it parses markup in the output
 ;; stream, enabling plots and graphics to be embedded, and adds command-line
-;; functions which plug into Emacs (e.g., use :e <filename> to edit a file).
+;; functions which plug into Emacs (e.g. use :e <filename> to edit a file).
 ;;
 ;; See <https://github.com/riscy/shx-for-emacs/blob/master/README.org> for more.
 ;;
@@ -122,9 +122,10 @@ or, set the terminal to canonical mode with 'stty -icanon'."
   :type 'integer)
 
 (defcustom shx-max-output most-positive-fixnum
-  "The length at which output lines are considered long and broken.
-Setting to 1024 leads to enormous performance gains in benchmarks,
-but sacrifices the soundness of trigger/markup matching."
+  "The length at which output lines are considered too long.
+Setting this to 1024 can lead to enormous performance gains, but
+sacrifices the soundness of markup and trigger matching."
+  :link '(function-link shx--break-long-lines-maybe)
   :type 'integer)
 
 (defvar shx-cmd-prefix "shx-cmd-"
@@ -270,7 +271,7 @@ This function overrides `comint-input-sender'."
                         (delete-char 1)))))))))
 
 (defun shx--parse-output-for-triggers ()
-  "Look for triggers since `comint-last-output' (e.g., URLs)."
+  "Look for triggers since `comint-last-output' (e.g. URLs)."
   (dolist (trigger shx-triggers nil)
     (save-excursion
       (shx--goto-last-input-or-output)
@@ -415,7 +416,7 @@ MAX-LENGTH is the length of the longest match (default 300)."
   (setq escape (or escape "\\\\"))
   (concat delimiter
           "\\("
-          (when (not (string= "" escape))
+          (unless (string= "" escape)
             (concat escape escape "\\|"      ; two escapes OR
                     escape delimiter "\\|")) ; escaped delimiter
           "[^" delimiter "]"
@@ -905,7 +906,7 @@ Or just a single column:
   `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\(\\<"
               (regexp-opt (shx--all-commands 'without-prefix))
               "\\>\\).*\\'")                          1 'font-lock-keyword-face))
-  "Some additional syntax highlighting for the shx minor mode."
+  "Syntax highlighting for the shx minor mode (e.g. of builtin commands)."
   :type '(alist :key-type (choice regexp function)))
 
 ;;;###autoload
@@ -929,8 +930,7 @@ See the function `shx-mode' for details."
   (interactive)
   (let ((name (or name (generate-new-buffer-name "*shx*")))
         (default-directory (or directory default-directory)))
-    ;; switch-to-buffer first -- shell uses pop-to-buffer
-    ;; which is unpredictable! :(
+    ;; `switch-to-buffer' first (`shell' uses the unpredictable `pop-to-buffer')
     (switch-to-buffer name)
     (shell name)
     ;; shx might already be active due to shx-global-mode:
