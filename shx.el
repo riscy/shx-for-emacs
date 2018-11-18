@@ -125,7 +125,7 @@ or, set the terminal to canonical mode with 'stty -icanon'."
   "The length at which output lines are considered too long.
 Setting this to 1024 can lead to enormous performance gains, but
 sacrifices the soundness of markup and trigger matching."
-  :link '(function-link shx--break-long-lines-maybe)
+  :link '(function-link shx--break-long-line-maybe)
   :type 'integer)
 
 (defvar shx-cmd-prefix "shx-cmd-"
@@ -298,7 +298,7 @@ This function overrides `comint-input-sender'."
   "Break the current line if it's longer than `shx-max-output'."
   (when (> (current-column) shx-max-output)
     (or (re-search-backward "\\s-" (- (point) shx-max-output) t) (backward-char))
-    (insert "\n")
+    (insert-char ?\n)
     (goto-char (point-max))))
 
 
