@@ -109,7 +109,8 @@
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
-(defcustom shx-kept-commands '(())
+(defcustom shx-kept-commands
+  '(("List all kept commands" . ":kept *"))
   "Shell commands of the form (description . command)."
   :link '(function-link shx-cmd-kept)
   :link '(function-link shx-cmd-keep)
@@ -440,8 +441,8 @@ not nil, then insert the command into the current buffer."
   (dolist (command shx-kept-commands nil)
     (when (string-match (or regexp ".") (concat (car command) (cdr command)))
       (when insert-kept-command
-        (shx-insert 'font-lock-doc-face (car command) 'default ": "
-                    'comint-highlight-input command (cdr command) "\n"))
+        (shx-insert 'font-lock-constant-face (car command) ": "
+                    'font-lock-string-face command (cdr command) "\n"))
       (ring-insert comint-input-ring (cdr command)))))
 
 
@@ -529,8 +530,8 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 (defun shx--insert-timer (timer-number timer)
   "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
   (shx-insert
-   'font-lock-constant-face (format "%d" timer-number)
-   'font-lock-string-face (format ". %s" (shx--format-timer-string timer))
+   'font-lock-constant-face (format "%d. " timer-number)
+   'font-lock-string-face (format "%s" (shx--format-timer-string timer))
    (when (aref timer 4) (format "\s(pulse: %d)" (aref timer 4)))))
 
 (defun shx--format-timer-string (timer)
