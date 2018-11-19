@@ -773,7 +773,7 @@ That list can be added to using `shx-cmd-keep'."
   (if (string-empty-p regexp)
       (shx-insert 'error "kept <regexp>\n")
     (shx--restore-kept-commands regexp t)
-    (shx--hint "M-x customize-variable shx-kept-commands <RET> edits this list")))
+    (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
 (defalias 'shx-cmd-k #'shx-cmd-kept)
 
 (defun shx-cmd-man (topic)
