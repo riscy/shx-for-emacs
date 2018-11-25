@@ -34,8 +34,8 @@
   - *Display graphics and plots* in the shell with a simple markup
     language (e.g. ~<view image.png>~)
   - *Add event-driven and timed behaviors* to any shell session
-  - *Open any filename or URL* by arrowing up to it and pressing ~<enter>~
-  - *Yank any line to the prompt* by arrowing up to it and pressing ~C-<enter>~
+  - *Open any filename or URL* by arrowing up to it and pressing ~RET~
+  - *Yank any line to the prompt* by arrowing up to it and pressing ~C-RET~
   - *Check the time a command was run* by mousing over its prompt
 
   shx makes it easy to add new shell commands written in elisp.  Some are
@@ -52,9 +52,9 @@
   and ~comint-kill-input~, and improves compatibility with ~evil-mode~ by
   anticipating when to switch to ~insert~ mode.
 
-  Use ~M-x shx <return>~ to quickly start a new ~shell~ session with ~shx~ enabled.
+  Use ~M-x shx RET~ to quickly start a new ~shell~ session with ~shx~ enabled.
 
-  /This version is tested with Emacs 26.1/  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
+  /This version is tested with Emacs 26.1/.  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
 * Install
 *** From MELPA
     ~M-x package-install RET shx RET~ to install shx from [[https://melpa.org/][MELPA]].
@@ -66,7 +66,7 @@
     #+end_src
 * Setup
 *** Quick-start
-    Type ~M-x shx <return>~.  Try out the following commands:
+    Type ~M-x shx RET~.  Try out the following commands:
 
     1. ~:e ~/.bashrc~ to edit your .bashrc file (for example)
     2. ~:man ls~ to display the man page for ~ls~
@@ -205,7 +205,7 @@
 
     These are for displaying inline graphics and plots in the shell buffer.  You
     can control how much vertical space an inline image occupies by customizing
-    the ~shx-imgsize~ variable.  Note ~convert~ (i.e., ImageMagick) and
+    the ~shx-img-height~ variable.  Note ~convert~ (i.e. ImageMagick) and
     ~gnuplot~ need to be installed.  If the binaries are installed but these
     commands aren't working, customize the ~shx-path-to-convert~ and
     ~shx-path-to-gnuplot~ variables to point to the binaries.
