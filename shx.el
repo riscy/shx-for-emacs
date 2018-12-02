@@ -159,9 +159,6 @@ sacrifices the soundness of markup and trigger matching."
 
 (defvar-local shx-urls nil "Local record of URLs seen.")
 
-(defvar-local shx--old-prompt-read-only nil
-  "Whether the prompt was read-only before shx-mode was enabled.")
-
 (defvar-local shx--old-undo-disabled nil
   "Whether undo was disabled before shx-mode was enabled.")
 
@@ -644,10 +641,8 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   (display-buffer shx-buffer))
 
 (defun shx-cmd-clear (_args)
-  "(SAFE) Clear the buffer.
-Fails if there are read-only elements such as a prompt -
-therefore ensure `comint-prompt-read-only' is nil."
-  (erase-buffer))
+  "(SAFE) Clear the buffer."
+  (comint-clear-buffer))
 
 (defun shx-cmd-date (_args)
   "(SAFE) Show the date."
@@ -943,8 +938,6 @@ See the function `shx-mode' for details."
   (when (derived-mode-p 'shell-mode)
     (font-lock-add-keywords nil shx-shell-mode-font-locks))
   (font-lock-add-keywords nil shx-font-locks)
-  (setq-local shx--old-prompt-read-only comint-prompt-read-only)
-  (setq-local comint-prompt-read-only nil)
   (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
   (when shx-disable-undo (buffer-disable-undo))
   ;; do this one with a delay because spacemacs tries to set this variable too:
@@ -958,7 +951,6 @@ See the function `shx-mode' for details."
   (when (derived-mode-p 'shell-mode)
     (font-lock-remove-keywords nil shx-shell-mode-font-locks))
   (font-lock-remove-keywords nil shx-font-locks)
-  (setq-local comint-prompt-read-only shx--old-prompt-read-only)
   (unless shx--old-undo-disabled (buffer-enable-undo))
   (setq comint-input-sender 'comint-simple-send)
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
