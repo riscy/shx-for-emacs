@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 1.0.0
+;; Version: 1.1.0
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -27,8 +27,6 @@
 ;; functions which plug into Emacs (e.g. use :e <filename> to edit a file).
 ;;
 ;; See <https://github.com/riscy/shx-for-emacs/blob/master/README.org> for more.
-;;
-;; This version tested with Emacs 25.2.1
 
 ;;; Manual install:
 
@@ -160,7 +158,7 @@ sacrifices the soundness of markup and trigger matching."
 (defvar-local shx-urls nil "Local record of URLs seen.")
 
 (defvar-local shx--old-undo-disabled nil
-  "Whether undo was disabled before shx-mode was enabled.")
+  "Whether undo was disabled before `shx-mode' was enabled.")
 
 (defvar-local shx--process-command nil
   "The command that was likely used to start the process.")
@@ -447,7 +445,7 @@ not nil, then insert the command into the current buffer."
 
 (defun shx-magic-insert ()
   "Insert the key pressed or dynamically change the input.
-`comint-magic-space' completes substitutions like '!!' and
+`comint-magic-space' completes substitutions like '!!', '!*', or
 '^pattern^replacement', and if the prompt is a colon, SPC and q
 are sent straight through to the process to handle paging."
   (interactive)
@@ -660,7 +658,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
     (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
 
 (defun shx-cmd-edit (file)
-  "(SAFE) open FILE in the current window.
+  "(SAFE) Open FILE in the current window.
 \nExamples:\n
   :e directory/to/file
 \nOr edit a remote file using `tramp':\n
@@ -960,7 +958,7 @@ See the function `shx-mode' for details."
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
 
-;; advise some comint-mode functions -- but only within shx-mode
+;; advise some comint-mode functions -- but only within `shx-mode'
 
 (defun shx-show-output (&rest _args)
   "Recenter window so that as much output as possible is shown.

@@ -295,6 +295,7 @@
   - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
   - [[https://www.booleanworld.com/customizing-coloring-bash-prompt/][Creating dynamic bash prompts]]
   - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the ~kept~ and ~keep~ commands
+  - [[https://terminalsare.sexy/]["Terminals Are Sexy"]] (portal)
 
   And if running a ~dumb~ terminal in Emacs isn't for you, here are some
   alternatives:
