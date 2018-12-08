@@ -517,9 +517,8 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                    "set term png transparent truecolor;"
                    "set border lw 3 lc rgb \""
                    (color-lighten-name (face-attribute 'default :foreground) 5)
-                   "\"; set out \"" img-name "\"; "
-                   plot-command " \""
-                   (shx--escape-filename filename) "\" "
+                   "\"; set out \"" img-name "\";"
+                   plot-command " \"" (shx--escape-filename filename) "\" "
                    line-style))))
     (when (zerop status) (shx-insert-image img-name))))
 
@@ -556,7 +555,7 @@ REPEAT-INTERVAL specifies delays between repetitions."
 
 (defun shx--auto (process command)
   "Send PROCESS a COMMAND.
-\(Makes the `shx-insert-timer-list' listing easier to parse.\)"
+\(Makes the `shx-insert-timer-list' listing easier to parse.)"
   (process-send-string process (concat command "\n")))
 
 
@@ -565,7 +564,7 @@ REPEAT-INTERVAL specifies delays between repetitions."
 (defun shx-cmd-delay (args)
   "Run a command after a specific delay.
 ARGS are <delay in seconds> <command>.
-Cancel a delayed command with :stop \(`shx-cmd-stop'\).
+Cancel a delayed command with :stop (`shx-cmd-stop').
 \nExample:\n
   :delay 10 echo Ten seconds are up!"
   (cond
