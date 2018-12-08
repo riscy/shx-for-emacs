@@ -1,4 +1,4 @@
-;;; shx.el --- "Extras" for the (comint-mode) shell
+;;; shx.el --- "Extras" for the (comint-mode) shell -*- lexical-binding: t -*-
 
 ;; Authors: Chris Rayner (dchrisrayner @ gmail)
 ;; Created: May 23 2011
