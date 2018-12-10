@@ -73,6 +73,13 @@ Example:
 
 ;; tests!
 
+(defun shx-test-unit-all-commands ()
+  (shx-test-assert
+   "shx--all-commands lists user command functions"
+     (and (listp (shx--all-commands))
+          (member "shx-cmd-delay" (shx--all-commands))
+          (not (member "shx-cmd-prefix" (shx--all-commands))))))
+
 (defun shx-test-unit-escape-filename ()
   "Test filename escaping."
   (shx-test-assert
