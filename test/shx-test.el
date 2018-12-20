@@ -80,13 +80,6 @@ Example:
           (member "shx-cmd-delay" (shx--all-commands))
           (not (member "shx-cmd-prefix" (shx--all-commands))))))
 
-(defun shx-test-unit-escape-filename ()
-  "Test filename escaping."
-  (shx-test-assert
-   "shx--escape-filename escapes dangerous dangerous characters"
-   (string-suffix-p "a\\ filename\\`delete\\`"
-    (shx--escape-filename "a filename`delete`"))))
-
 (defun shx-test-unit-quote-regexp ()
   "Test pattern matching on delimited regexps like strings."
   (shx-test-assert

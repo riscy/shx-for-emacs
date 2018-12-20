@@ -336,11 +336,6 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
             (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
           (all-completions shx-cmd-prefix obarray 'functionp)))
 
-(defun shx--escape-filename (filename)
-  "Escape FILENAME to mitigate injection attacks."
-  (replace-regexp-in-string ; modeled on Ruby's "Shellwords"
-   "\\([^A-Za-z0-9_\-.,:\/@\n]\\)" "\\\\\\1" (expand-file-name filename)))
-
 (defun shx--hint (text)
   "Show a hint containing TEXT."
   (when shx-show-hints (message (concat "Hint: " text))))
@@ -515,7 +510,7 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                    "set border lw 3 lc rgb \""
                    (color-lighten-name (face-attribute 'default :foreground) 5)
                    "\"; set out \"" img-name "\";"
-                   plot-command " \"" (shx--escape-filename filename) "\" "
+                   plot-command " \"" (shell-quote-argument filename) "\" "
                    line-style))))
     (when (zerop status) (shx-insert-image img-name))))
 
