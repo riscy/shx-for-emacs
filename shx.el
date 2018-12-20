@@ -25,8 +25,6 @@
 ;; shx ("shell-extras") extends comint-mode: it parses markup in the output
 ;; stream, enabling plots and graphics to be embedded, and adds command-line
 ;; functions which plug into Emacs (e.g. use :e <filename> to edit a file).
-;;
-;; See <https://github.com/riscy/shx-for-emacs/blob/master/README.org> for more.
 
 ;;; Manual install:
 
@@ -35,10 +33,9 @@
 ;; 2. Add this line to your .emacs:
 ;;    (require 'shx)
 ;;
-;; Type M-x shx RET to create a new shell session using shx.  If you like shx,
-;; you can enable shx in every comint-mode buffer with (shx-global-mode 1).
-;;
-;; Use M-x customize-group RET shx RET to see customization options.
+;; Type M-x shx RET to create a new shell session using shx.
+;; Type M-x customize-group RET shx RET to see customization options.
+;; You can enable shx in every comint-mode buffer with (shx-global-mode 1).
 
 ;;; Code:
 
@@ -62,7 +59,7 @@
   :link '(url-link :tag "GitHub" "https://github.com/riscy/shx-for-emacs"))
 
 (defcustom shx-disable-undo nil
-  "Whether to disable undo in shx buffers."
+  "Whether to automatically disable undo in shx buffers."
   :type 'boolean)
 
 (defcustom shx-path-to-convert "convert"

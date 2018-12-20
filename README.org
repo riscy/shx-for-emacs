@@ -26,51 +26,51 @@
 - [[#related][Related]]
 
 * Description
-  /shx/ or "shell-extras" extends comint-mode in Emacs (e.g. ~M-x shell~).
+  /shx/ or "shell-extras" extends comint-mode in Emacs (e.g. =M-x shell=).
 
   It's compatible with any underlying REPL (zsh, bash, psql, ipython, etc.).
 
   It parses the output stream in a few useful ways:
   - *Display graphics and plots* in the shell with a simple markup
-    language (e.g. ~<view image.png>~)
+    language (e.g. =<view image.png>=)
   - *Add event-driven and timed behaviors* to any shell session
-  - *Open any filename or URL* by arrowing up to it and pressing ~RET~
-  - *Yank any line to the prompt* by arrowing up to it and pressing ~C-RET~
+  - *Open any filename or URL* by arrowing up to it and pressing =RET=
+  - *Yank any line to the prompt* by arrowing up to it and pressing =C-RET=
   - *Check the time a command was run* by mousing over its prompt
 
   shx makes it easy to add new shell commands written in elisp.  Some are
   already built in:
-  - ~:clear~ clears the buffer (like ~clear~ or ~Cmd-K~ on macOS)
-  - ~:e filename.txt~ opens a file for editing
-  - ~:ssh user@host:port~ starts a remote shell session using tramp
-  - ~:view image_file.png~ embeds an image in the shell
-  - ~:plotline data_file.txt~ embeds a line plot
+  - =:clear= clears the buffer (like =clear= or =Command-K= on macOS)
+  - =:e filename.txt= opens a file for editing
+  - =:ssh user@host:port= starts a remote shell session using tramp
+  - =:view image_file.png= embeds an image in the shell
+  - =:plotline data_file.txt= embeds a line plot
   - etc.
 
-  It also extends ~shell-mode~'s syntax highlighting, recenters and highlights
+  It also extends =shell-mode='s syntax highlighting, recenters and highlights
   content for better viewing when you run commands like ~comint-previous-prompt~
-  and ~comint-kill-input~, and improves compatibility with ~evil-mode~ by
-  anticipating when to switch to ~insert~ mode.
+  and ~comint-kill-input~, and improves compatibility with =evil-mode= by
+  anticipating when to switch to insert mode.
 
-  Use ~M-x shx RET~ to quickly start a new ~shell~ session with ~shx~ enabled.
+  Use =M-x shx RET= to start a new =shell= session with =shx-mode= enabled.
 
   /This version is tested with Emacs 26.1/.  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
 * Install
 *** From MELPA
-    ~M-x package-install RET shx RET~ to install shx from [[https://melpa.org/][MELPA]].
+    =M-x package-install RET shx RET= to install =shx= from [[https://melpa.org/][MELPA]].
 *** Manually
-    Add the following to your ~.emacs~:
+    Add the following to your =.emacs=:
     #+begin_src elisp
     (add-to-list 'load-path "~/path/to/shx/") ; add shx.el's directory to the load-path
     (require 'shx)                            ; load shell-extras
     #+end_src
 * Setup
 *** Quick-start
-    Type ~M-x shx RET~.  Try out the following commands:
+    Type =M-x shx RET=.  Try out the following commands:
 
-    1. ~:e ~/.bashrc~ to edit your .bashrc file (for example)
-    2. ~:man ls~ to display the man page for ~ls~
-    3. ~:help~ to a start a completing read for other shx commands
+    1. =:e ~/.bashrc= to edit your =.bashrc= (for example)
+    2. =:man ls= to display the man page for =ls=
+    3. =:help= to a start a completing read for other =shx= commands
 
 *** Enable automatically
     If you like shx-mode, you can enable it everywhere:
@@ -79,15 +79,15 @@
     (shx-global-mode 1)  ; toggle shx-mode on globally
     #+end_src
 
-    Now shx will run automatically in any ~comint-mode~ buffer.  If you don't want
-    shx to run in every comint-mode buffer, you can use ~M-x shx-mode~ on a
+    Now shx will run automatically in any =comint-mode= buffer.  If you don't want
+    shx to run in every comint-mode buffer, you can use =M-x shx-mode= on a
     case-by-case basis, or just add hooks to the mode in question, for example:
 
     #+begin_src elisp
     (add-hook 'inferior-python-mode-hook #'shx-mode)
     #+end_src
 *** Customize
-    Use ~M-x customize-group RET shx RET~ to see shx's many customization options.
+    Use =M-x customize-group RET shx RET= to see shx's many customization options.
     Here's an example customization using ~setq~:
     #+begin_src elisp
     (setq
@@ -107,12 +107,12 @@
 * Key bindings
   | Key binding | Description                                                              |
   |-------------+--------------------------------------------------------------------------|
-  | ~C-RET~     | If the cursor is not on the prompt, paste the current line to the input  |
-  | ~RET~       | If the cursor is on a filename or a URL, try to open it                  |
-  | ~SPC~       | If the prompt is ~:~, send ~SPC~ straight through to the process         |
-  | ~q~         | If the prompt is ~:~, send ~q~ straight through to the process           |
+  | =C-RET=     | If the cursor is not on the prompt, paste the current line to the input  |
+  | =RET=       | If the cursor is on a filename or a URL, try to open it                  |
+  | =SPC=       | If the prompt is =:=, send =SPC= straight through to the process         |
+  | =q=         | If the prompt is =:=, send =q= straight through to the process           |
 
-  Note the prompt will be ~:~ when reading through the output of ~less~ or a ~man~ page
+  Note the prompt will be =:= when reading through the output of =less= or a =man= page
   if you run the following:
   #+begin_src elisp
   (setenv "LESS" "--dumb --prompt=s")
@@ -121,26 +121,26 @@
   shx's markup can enhance basic command-line applications and drive other
   events.
 
-  If the output ever contains ~<view mountains.png>~ on a line by itself, then a
-  scaled rendering of ~mountains.png~ will be inlined within the text in the
-  shell.  This works because ~view~ is a shx command.  shx will execute any
+  If the output ever contains =<view mountains.png>= on a line by itself, then a
+  scaled rendering of =mountains.png= will be inlined within the text in the
+  shell.  This works because =view= is a shx command.  shx will execute any
   (safe) shx command that appears with the following syntax:
   #+begin_src xml
   <command arg1 arg2 ...>
   #+end_src
-  where ~command~ is a shx command and ~arg1 ... argn~ is a space-separated
+  where =command= is a shx command and =arg1 ... argn= is a space-separated
   list of arguments.  Arguments don't need to be surrounded by quotes -- the
   command will figure out how to parse them.
 
-  You can use this markup to create a barplot (~:plotbar~) after collecting some
-  stats, or generate an ~:alert~ when a task is finished, and so forth.
+  You can use this markup to create a barplot (=:plotbar=) after collecting some
+  stats, or generate an =:alert= when a task is finished, and so forth.
 * Extra shell commands
-  shx's 'extra' commands are invoked by typing a ~:~ followed by the command's
-  name.  (You can change the ~:~ prefix by customizing the ~shx-leader~
+  shx's 'extra' commands are invoked by typing a =:= followed by the command's
+  name.  (You can change the =:= prefix by customizing the ~shx-leader~
   variable.)  These commands are written in elisp and so can access all of
-  Emacs' facilities.  Type ~:help~ to see a complete listing of shx commands.
+  Emacs' facilities.  Type =:help= to see a complete listing of shx commands.
 
-  One command I use frequently is the ~:edit~ (shorthand ~:e~) command:
+  One command I use frequently is the =:edit= (shorthand =:e=) command:
   #+begin_src bash
   # edit the .emacs file:
   :edit ~/.emacs
@@ -159,7 +159,7 @@
   #+end_src
   (To see an environment variable's value, use ~(getenv "<var>")~.)
 
-  I also use the ~:kept~ and ~:keep~ commands frequently:
+  I also use the =:kept= and =:keep= commands frequently:
   #+begin_src bash
   # write a complicated command:
   wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
@@ -171,51 +171,51 @@
   :kept pip
   #+end_src
 
-  Because these commands are written in elisp, shx gives ~M-x shell~ a lot of
-  the same advantages as ~eshell~.  You can even evaluate elisp code directly in
-  the buffer (see ~:help eval~).
+  Because these commands are written in elisp, shx gives =M-x shell= a lot of
+  the same advantages as =eshell=.  You can even evaluate elisp code directly in
+  the buffer (see =:help eval=).
 
 *** General commands
     | Command              | Description                                           |
     |----------------------+-------------------------------------------------------|
-    | ~:alert~             | Reveal the buffer with an alert.  Useful for markup   |
-    | ~:clear~             | Clear the buffer                                      |
-    | ~:date~              | Show the date (even when the process is blocked)      |
-    | ~:diff file1 file2~  | Launch an Emacs diff between two files                |
-    | ~:edit file~         | Edit a file.  Shortcut: ~:e <file>~                   |
-    | ~:eval (elisp-sexp)~ | Evaluate some elisp code.  Example: ~:eval (pwd)~     |
-    | ~:find <filename>~   | Run a fuzzy-find for <filename>                       |
-    | ~:goto-url <url>~    | Completing-read for a URL                             |
-    | ~:header New header~ | Change the current ~header-line-format~               |
-    | ~:kept regexp~       | Show a list of your 'kept' commands matching regexp   |
-    | ~:keep~              | Add the previous command to the list of kept commands |
-    | ~:man topic~         | Invoke the Emacs man page browser on a topic          |
-    | ~:ssh host~          | Open another shell on the specified host              |
+    | =:alert=             | Reveal the buffer with an alert.  Useful for markup   |
+    | =:clear=             | Clear the buffer                                      |
+    | =:date=              | Show the date (even when the process is blocked)      |
+    | =:diff file1 file2=  | Launch an Emacs diff between two files                |
+    | =:edit file=         | Edit a file.  Shortcut: =:e <file>=                   |
+    | =:eval (elisp-sexp)= | Evaluate some elisp code.  Example: =:eval (pwd)=     |
+    | =:find <filename>=   | Run a fuzzy-find for <filename>                       |
+    | =:goto-url <url>=    | Completing-read for a URL                             |
+    | =:header New header= | Change the current ~header-line-format~               |
+    | =:kept regexp=       | Show a list of your 'kept' commands matching regexp   |
+    | =:keep=              | Add the previous command to the list of kept commands |
+    | =:man topic=         | Invoke the Emacs man page browser on a topic          |
+    | =:ssh host=          | Open another shell on the specified host              |
 
-    There are more than this -- type ~:help~ for a listing of all user commands.
+    There are more than this -- type =:help= for a listing of all user commands.
 *** Graphical commands
     | Command                      | Description            |
     |------------------------------+------------------------|
-    | ~:view image_file.jpg~       | Display an image       |
-    | ~:plotbar data_file.txt~     | Display a bar plot     |
-    | ~:plotline data_file.txt~    | Display a line plot    |
-    | ~:plotmatrix data_file.txt~  | Display a heatmap      |
-    | ~:plotscatter data_file.txt~ | Display a scatter plot |
-    | ~:plot3d data_file.txt~      | Display a 3D plot      |
+    | =:view image_file.jpg=       | Display an image       |
+    | =:plotbar data_file.txt=     | Display a bar plot     |
+    | =:plotline data_file.txt=    | Display a line plot    |
+    | =:plotmatrix data_file.txt=  | Display a heatmap      |
+    | =:plotscatter data_file.txt= | Display a scatter plot |
+    | =:plot3d data_file.txt=      | Display a 3D plot      |
 
     These are for displaying inline graphics and plots in the shell buffer.  You
     can control how much vertical space an inline image occupies by customizing
-    the ~shx-img-height~ variable.  Note ~convert~ (i.e. ImageMagick) and
-    ~gnuplot~ need to be installed.  If the binaries are installed but these
+    the ~shx-img-height~ variable.  Note =convert= (i.e. ImageMagick) and
+    =gnuplot= need to be installed.  If the binaries are installed but these
     commands aren't working, customize the ~shx-path-to-convert~ and
     ~shx-path-to-gnuplot~ variables to point to the binaries.
 *** Asynchronous commands
     | Command                           | Description                                       |
     |-----------------------------------+---------------------------------------------------|
-    | ~:delay <sec> <command>~          | Run a shell command after a specific delay        |
-    | ~:pulse <sec> <command>~          | Repeat a shell command forever with a given delay |
-    | ~:repeat <count> <sec> <command>~ | Repeat a shell command ~<count>~ times            |
-    | ~:stop <num>~                     | Cancel a repeating or delayed command             |
+    | =:delay <sec> <command>=          | Run a shell command after a specific delay        |
+    | =:pulse <sec> <command>=          | Repeat a shell command forever with a given delay |
+    | =:repeat <count> <sec> <command>= | Repeat a shell command =<count>= times            |
+    | =:stop <num>=                     | Cancel a repeating or delayed command             |
 
     Use these to delay, pulse, or repeat a command a specific number of times.
     Unfortunately these only support your typical shell commands, and not shx's
@@ -231,10 +231,10 @@
     #+end_src
 *** Adding new commands
     New shx commands are written by defining single-argument elisp functions
-    named ~shx-cmd-COMMAND-NAME~, where ~COMMAND-NAME~ is what the user would
+    named ~shx-cmd-COMMAND-NAME~, where =COMMAND-NAME= is what the user would
     type to invoke it.
 ***** Example: a command to rename the buffer
-    If you evaluate the following (or add it to your ~.emacs~),
+    If you evaluate the following (or add it to your =.emacs=),
     #+begin_src elisp
     (defun shx-cmd-rename (name)
       "(SAFE) Rename the current buffer to NAME."
@@ -243,12 +243,12 @@
         (shx-insert "Renaming buffer to " name "\n")
         (shx--hint "Emacs won't save buffers starting with *")))
     #+end_src
-    then each shx buffer will immediately have access to the ~:rename~ command.
+    then each shx buffer will immediately have access to the =:rename= command.
     When it's invoked, shx will also display a hint about buffer names.
 
     Note the importance of defining a docstring.  This documents the
-    command so that typing ~:help name~ will give the user information on what
-    the command does.  Further, since the docstring begins with ~(SAFE)~,
+    command so that typing =:help name= will give the user information on what
+    the command does.  Further, since the docstring begins with =(SAFE)=,
     it becomes part of shx's markup language.  So in this case if:
     #+begin_src xml
     <name A new name for the buffer>
@@ -266,7 +266,7 @@
           (shx-insert "invoking ediff...\n")
           (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
       #+end_src
-      Note that ~files~ is supplied as a string, but it's immediately parsed
+      Note that =files= is supplied as a string, but it's immediately parsed
       into a list of strings using ~shx-tokenize~.  Helpfully, this function is
       able to parse various styles of quoting and escaping, for example the string
       #+begin_src elisp
@@ -284,20 +284,20 @@
         (shx-insert "Browsing " 'font-lock-keyword-face url)
         (browse-url url))
       #+end_src
-      then each shx buffer will have access to the ~:browse~ command.
+      then each shx buffer will have access to the =:browse= command.
 
-      Note the docstring does not specify that this command is ~SAFE~.
-      This means ~<browse url>~ will not become part of shx's markup.  That
+      Note the docstring does not specify that this command is =SAFE=.
+      This means =<browse url>= will not become part of shx's markup.  That
       makes sense in this case, since you wouldn't want to give a process the
       power to open arbitrary URLs without prompting.
 * Related
   If you're here, these might be interesting:
   - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
   - [[https://www.booleanworld.com/customizing-coloring-bash-prompt/][Creating dynamic bash prompts]]
-  - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the ~kept~ and ~keep~ commands
+  - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the =kept= and =keep= commands
   - [[https://terminalsare.sexy/]["Terminals Are Sexy"]] (portal)
 
-  And if running a ~dumb~ terminal in Emacs isn't for you, here are some
+  And if running a =dumb= terminal in Emacs isn't for you, here are some
   alternatives:
   - [[https://leanpub.com/the-tao-of-tmux/read][The Tao of tmux]], re: working in the terminal with tmux
   - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh configuration
