@@ -338,7 +338,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
-  (when shx-show-hints (message (concat "Hint: " text))))
+  (when shx-show-hints (message (concat "shx hint: " text))))
 
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
@@ -682,10 +682,11 @@ may take a while and unfortunately blocks Emacs in the meantime.
   (if (equal file "")
       (shx-insert 'error "find <prefix>\n")
     (let* ((fuzzy-file (mapconcat 'char-to-string (string-to-list file) "*"))
-           (command (format "find . \-iname '%s*'" fuzzy-file))
+           (command (format "find . -iname '%s*'" fuzzy-file))
            (output (shell-command-to-string command)))
       (if (equal "" output)
           (shx-insert 'error "No matches for \"" file "\"\n")
+        (shx--hint (concat "finding under " default-directory))
         (apply #'shx-insert-filenames
                (split-string (string-remove-suffix "\n" output) "\n"))
         (insert "\n")))))
