@@ -956,13 +956,13 @@ See the function `shx-mode' for details."
 (defun shx-show-output (&rest _args)
   "Recenter window so that as much output as possible is shown.
 This function only works when the shx minor mode is active."
-  (when shx-mode
-    ;; `recenter'ing errors when this isn't the active buffer:
-    (ignore-errors (comint-show-maximum-output))))
+  (and shx-mode shx-comint-advise
+       ;; `recenter'ing errors when this isn't the active buffer:
+       (ignore-errors (comint-show-maximum-output))))
 
 (defun shx-flash-prompt (&rest _args)
   "Flash the text on the line with the highlight face."
-  (when (> shx-flash-prompt-time 0)
+  (when (and shx-comint-advise (> shx-flash-prompt-time 0))
     (setq-local shx-prompt-overlay (make-overlay (point) (point-at-eol)))
     (overlay-put shx-prompt-overlay 'face 'highlight)
     (sit-for shx-flash-prompt-time)
@@ -971,12 +971,13 @@ This function only works when the shx minor mode is active."
 (defun shx-snap-to-top (&rest _args)
   "Recenter window so the current line is at the top.
 This function only works when the shx minor mode is active."
-  (when shx-mode (recenter-top-bottom 0)))
+  (and shx-mode shx-comint-advise (recenter-top-bottom 0)))
 
 (defun shx-switch-to-insert (&rest _args)
   "Switch to insert-mode (when applicable).
 This function only works when the shx minor mode is active."
   (and shx-mode
+       shx-comint-advise
        (featurep 'evil-vars)
        (not (equal evil-state 'insert))
        (featurep 'evil-states)
