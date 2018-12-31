@@ -76,9 +76,9 @@ Example:
 (defun shx-test-unit-all-commands ()
   (shx-test-assert
    "shx--all-commands lists user command functions"
-     (and (listp (shx--all-commands))
-          (member "shx-cmd-delay" (shx--all-commands))
-          (not (member "shx-cmd-prefix" (shx--all-commands))))))
+   (and (listp (shx--all-commands))
+        (member "shx-cmd-delay" (shx--all-commands))
+        (not (member "shx-cmd-prefix" (shx--all-commands))))))
 
 (defun shx-test-unit-quote-regexp ()
   "Test pattern matching on delimited regexps like strings."
@@ -199,7 +199,7 @@ Example:
     (goto-char (point-max))
     (backward-char 1)
     (shx-test-assert "shx-insert propertizes the output"
-                   (eq (field-at-pos (point)) 'output))))
+                     (eq (field-at-pos (point)) 'output))))
 
 (defun shx-test-unit-cmd-syntax-regexps ()
   "Test shx-cmd-syntax regexps."

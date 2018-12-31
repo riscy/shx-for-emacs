@@ -1,5 +1,5 @@
-;; Script to run unit tests at the command line:
-;;    `emacs -q --script ./path/to/script.el`
+;; To run unit tests from the project root:
+;;    `emacs -q --script ./test/script.el`
 
 (add-to-list 'load-path ".")
 (add-to-list 'load-path "test")
