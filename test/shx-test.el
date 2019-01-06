@@ -74,6 +74,7 @@ Example:
 ;; tests!
 
 (defun shx-test-unit-all-commands ()
+  "Test that shx--all-commands function will only return shx commands."
   (shx-test-assert
    "shx--all-commands lists user command functions"
    (and (listp (shx--all-commands))
