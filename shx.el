@@ -219,8 +219,10 @@ This function overrides `comint-input-sender'."
 (defun shx--verify-process-exists ()
   "If no process is associated with the buffer, try to restart the process."
   (unless (get-buffer-process (current-buffer))
-    (shx-insert 'font-lock-doc-face "Restarting " shx--process-command)
-    (comint-exec (current-buffer) (buffer-name) shx--process-command nil nil)))
+    (when (yes-or-no-p (format "Restart %s?" shx--process-command))
+      (shx-insert 'font-lock-doc-face "Restarting " shx--process-command)
+      (comint-exec
+       (current-buffer) (buffer-name) shx--process-command nil nil))))
 
 (defun shx--timestamp-prompt ()
   "Add a mouseover timestamp to the last prompt."
