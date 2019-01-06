@@ -7,6 +7,9 @@
 (require 'shx)
 (require 'shx-test)
 
+;; verify that shx.el compiles
+(byte-compile-file "shx.el")
+
 ;; only the headless unit tests can be run in script mode
 (dolist (test (all-completions "shx-test-unit" obarray 'functionp))
   (funcall (intern test)))
