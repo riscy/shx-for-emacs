@@ -255,11 +255,7 @@ This function overrides `comint-input-sender'."
                   `(help-echo "shx: this markup was unsafe/undefined")))
                 (t (replace-match "")   ; hide the markup
                    (funcall command args)
-                   (set-buffer originating-buffer)
-                   ;; some shx commands might add an extra newline:
-                   (and (zerop (current-column))
-                        (/= (point) 1)
-                        (delete-char 1)))))))))
+                   (set-buffer originating-buffer))))))))
 
 (defun shx--parse-output-for-triggers ()
   "Look for triggers since `comint-last-output' (e.g. URLs)."
