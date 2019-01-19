@@ -890,6 +890,12 @@ Or just a single column:
     (,(shx--match-last-line
        (regexp-opt '("~" ">" "<" "&" "|" ";")))       0 'font-lock-keyword-face)
     ("\\(\\<git\\>\\) .*\\'"                          1 'font-lock-constant-face)
+    ("\\(\\<ssh\\>\\) .*\\'"                          1 'font-lock-constant-face)
+    ("\\(\\<make\\>\\) .*\\'"                         1 'font-lock-constant-face)
+    ("\\(\\<gzip\\>\\) .*\\'"                         1 'font-lock-constant-face)
+    ("\\(\\<ls\\>\\) .*\\'"                           1 'font-lock-constant-face)
+    ("\\(\\<mv\\>\\) .*\\'"                           1 'font-lock-warning-face)
+    ("\\(\\<rmdir\\>\\) .*\\'"                        1 'font-lock-warning-face)
     ("\\(\\<rm\\>\\) .*\\'"                           1 'font-lock-warning-face))
   "Some additional syntax highlighting for `shell-mode' only."
   :type '(alist :key-type (choice regexp function)))
