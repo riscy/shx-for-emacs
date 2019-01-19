@@ -182,8 +182,8 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
   (interactive)
   (if (shx-point-on-input-p)
       (shx-send-input)
-    (let ((line (buffer-substring-no-properties
-                 (point-at-bol) (point-at-eol))))
+    (let ((line (string-trim (buffer-substring-no-properties
+                              (point-at-bol) (point-at-eol)))))
       (goto-char (point-max))
       (insert line))))
 
