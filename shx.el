@@ -238,9 +238,16 @@ This function overrides `comint-input-sender'."
 
 (defun shx-parse-output-hook (&optional _output)
   "Hook to parse the output stream."
+  (shx--propertize-output-with-cwd)
   (shx--parse-output-for-markup)
   (shx--break-long-line-maybe)
   (when shx-triggers (shx--parse-output-for-triggers)))
+
+(defun shx--propertize-output-with-cwd (&optional _output)
+  "Propertize recent output with current working directory."
+  (let ((inhibit-read-only t))
+    (add-text-properties comint-last-output-start (point)
+                         `(shx-cwd ,default-directory))))
 
 (defun shx--parse-output-for-markup ()
   "Look for markup since `comint-last-output'."
@@ -967,7 +974,7 @@ See the function `shx-mode' for details."
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
 
-;; advise some comint-mode functions -- but only within `shx-mode'
+;; advice to change the behavior of some functions within`shx-mode'
 
 (defun shx-show-output (&rest _args)
   "Recenter window so that as much output as possible is shown.
@@ -999,6 +1006,14 @@ This function only works when the shx minor mode is active."
        (featurep 'evil-states)
        (evil-insert-state)))
 
+(defun shx--with-shx-cwd-as-default-directory (func &rest args)
+  "Call FUNC with ARGS using the `shx-cwd' property as `default-directory'."
+  (let ((default-directory
+          (or (get-text-property (point) 'shx-cwd) default-directory)))
+    (apply func args)))
+
+(advice-add #'find-file-at-point :around #'shx--with-shx-cwd-as-default-directory)
+(advice-add #'ffap-at-mouse :around #'shx--with-shx-cwd-as-default-directory)
 (when shx-comint-advise
   (advice-add #'comint-kill-input :before #'shx-switch-to-insert)
   (advice-add #'comint-send-input :after #'shx-switch-to-insert)
