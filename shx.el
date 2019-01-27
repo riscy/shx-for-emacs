@@ -479,7 +479,7 @@ are sent straight through to the process to handle paging."
   "Insert a list of the Emacs timers currently in effect."
   (let ((sorted-timer-list (shx--get-timer-list)))
     (dotimes (timer-number (length sorted-timer-list))
-      (shx--insert-timer (+ 1 timer-number) (nth timer-number sorted-timer-list))
+      (shx--insert-timer (1+ timer-number) (nth timer-number sorted-timer-list))
       (shx-insert "\n"))
     (shx-insert "Active timers: " 'font-lock-constant-face
                 (format "%d\n" (length sorted-timer-list)))))
