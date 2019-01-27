@@ -195,7 +195,7 @@ In normal circumstances this input is additionally filtered by
   (shx--verify-process-exists)
   (if (>= (length (shx--current-input)) shx-max-input)
       (message "Input line exceeds `shx-max-input'.")
-    (shx--timestamp-prompt)
+    (shx--propertize-prompt)
     (comint-send-input nil t)))
 
 (defun shx-filter-input (process input)
@@ -224,30 +224,23 @@ This function overrides `comint-input-sender'."
       (comint-exec
        (current-buffer) (buffer-name) shx--process-command nil nil))))
 
-(defun shx--timestamp-prompt ()
+(defun shx--propertize-prompt ()
   "Add a mouseover timestamp to the last prompt."
   (let ((inhibit-read-only t)
         (inhibit-field-text-motion t))
     (add-text-properties
      (point-at-bol)
      (process-mark (get-buffer-process (current-buffer)))
-     `(help-echo ,(format-time-string "At %X")))))
+     `(help-echo ,(format-time-string "At %X") shx-cwd ,default-directory))))
 
 
 ;;; output
 
 (defun shx-parse-output-hook (&optional _output)
   "Hook to parse the output stream."
-  (shx--propertize-output-with-cwd)
   (shx--parse-output-for-markup)
   (shx--break-long-line-maybe)
   (when shx-triggers (shx--parse-output-for-triggers)))
-
-(defun shx--propertize-output-with-cwd (&optional _output)
-  "Propertize recent output with current working directory."
-  (let ((inhibit-read-only t))
-    (add-text-properties comint-last-output-start (point)
-                         `(shx-cwd ,default-directory))))
 
 (defun shx--parse-output-for-markup ()
   "Look for markup since `comint-last-output'."
@@ -1006,14 +999,17 @@ This function only works when the shx minor mode is active."
        (featurep 'evil-states)
        (evil-insert-state)))
 
-(defun shx--with-shx-cwd-as-default-directory (func &rest args)
+(defun shx--with-shx-cwd (func &rest args)
   "Call FUNC with ARGS using the `shx-cwd' property as `default-directory'."
-  (let ((default-directory
-          (or (get-text-property (point) 'shx-cwd) default-directory)))
+  (let* ((shx-comint-advise nil)
+         (inhibit-field-text-motion t)
+         (shx-cwd (save-excursion (comint-previous-prompt 1)
+                                  (get-text-property (point-at-bol) 'shx-cwd)))
+         (default-directory (or shx-cwd default-directory)))
     (apply func args)))
 
-(advice-add #'find-file-at-point :around #'shx--with-shx-cwd-as-default-directory)
-(advice-add #'ffap-at-mouse :around #'shx--with-shx-cwd-as-default-directory)
+(advice-add #'find-file-at-point :around #'shx--with-shx-cwd)
+(advice-add #'ffap-at-mouse :around #'shx--with-shx-cwd)
 (when shx-comint-advise
   (advice-add #'comint-kill-input :before #'shx-switch-to-insert)
   (advice-add #'comint-send-input :after #'shx-switch-to-insert)
