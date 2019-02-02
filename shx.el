@@ -526,16 +526,6 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                                        (string-remove-suffix "))" str))))
     (concat "[" output "]")))
 
-(defun shx--complete-git ()
-  "Complete the names of branches when writing git commands."
-  (when (string-prefix-p "git " (shx--current-input))
-    (list (save-excursion (forward-word -1) (point)) (point)
-          (cons "checkout "
-                (split-string-and-unquote
-                 (shell-command-to-string
-                  "git for-each-ref --format '%(refname:short)' refs/heads")
-                 "\n")))))
-
 
 ;;; asynch functions
 
@@ -941,8 +931,7 @@ See the function `shx-mode' for details."
               (ignore-errors (car (process-command
                                    (get-buffer-process shx-buffer)))))
   (when (derived-mode-p 'shell-mode)
-    (font-lock-add-keywords nil shx-shell-mode-font-locks)
-    (add-to-list 'completion-at-point-functions #'shx--complete-git))
+    (font-lock-add-keywords nil shx-shell-mode-font-locks))
   (font-lock-add-keywords nil shx-font-locks)
   (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
   (when shx-disable-undo (buffer-disable-undo))
@@ -955,8 +944,7 @@ See the function `shx-mode' for details."
 (defun shx--deactivate ()
   "Remove font-locks and hooks, and restore variable defaults."
   (when (derived-mode-p 'shell-mode)
-    (font-lock-remove-keywords nil shx-shell-mode-font-locks)
-    (delete #'shx--complete-git completion-at-point-functions))
+    (font-lock-remove-keywords nil shx-shell-mode-font-locks))
   (font-lock-remove-keywords nil shx-font-locks)
   (unless shx--old-undo-disabled (buffer-enable-undo))
   (setq comint-input-sender 'comint-simple-send)
