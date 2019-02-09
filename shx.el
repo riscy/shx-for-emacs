@@ -275,7 +275,9 @@ This function overrides `comint-input-sender'."
 
 (defun shx--goto-last-input-or-output ()
   "Go to the beginning of the next event from the process."
-  (goto-char (max comint-last-output-start comint-last-input-end))
+  (goto-char (if (marker-position comint-last-output-start)
+                 (max comint-last-output-start comint-last-input-end)
+               comint-last-input-end))
   (forward-line 0))
 
 (defun shx--search-forward (pattern)
