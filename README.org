@@ -293,9 +293,12 @@
 * Related
   If you're here, these might be interesting:
   - [[https://www.masteringemacs.org/article/shell-comint-secrets-history-commands][Shell & Comint Secrets: History commands]]
+  - [[https://www.masteringemacs.org/article/pcomplete-context-sensitive-completion-emacs][PComplete: Context-Sensitive Completion in Emacs]]
+  - [[https://dev.to/_darrenburns/10-tools-to-power-up-your-command-line-4id4][10 tools to power up your command line]]
   - [[https://www.booleanworld.com/customizing-coloring-bash-prompt/][Creating dynamic bash prompts]]
   - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the =kept= and =keep= commands
   - [[https://terminalsare.sexy/]["Terminals Are Sexy"]] (portal)
+  - [[https://github.com/riscy/command_line_lint][Command-Line Lint]], another project I maintain
 
   And if running a =dumb= terminal in Emacs isn't for you, here are some
   alternatives:
