@@ -138,7 +138,7 @@ sacrifices the soundness of markup and trigger matching."
     (when shx-use-magic-insert
       (define-key keymap " " #'shx-magic-insert)
       (define-key keymap "q" #'shx-magic-insert))
-    (define-key keymap (kbd "<return>") #'shx-send-input-or-open-thing)
+    (define-key keymap (kbd "RET") #'shx-send-input-or-open-thing)
     (define-key keymap (kbd "C-<return>") #'shx-send-input-or-copy-line)
     keymap)
   "Keymap for shx.")
