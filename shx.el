@@ -243,7 +243,7 @@ This function overrides `comint-input-sender'."
   (when shx-triggers (shx--parse-output-for-triggers)))
 
 (defun shx--parse-output-for-markup ()
-  "Look for markup since `comint-last-output'."
+  "Look for markup in the latest output from the process."
   (save-excursion
     (shx--goto-last-input-or-output)
     (let ((originating-buffer shx-buffer))
@@ -260,7 +260,7 @@ This function overrides `comint-input-sender'."
                    (set-buffer originating-buffer))))))))
 
 (defun shx--parse-output-for-triggers ()
-  "Look for triggers since `comint-last-output' (e.g. URLs)."
+  "Look for triggers in the latest output from the process (e.g. URLs)."
   (dolist (trigger shx-triggers nil)
     (save-excursion
       (shx--goto-last-input-or-output)
@@ -274,7 +274,7 @@ This function overrides `comint-input-sender'."
           (set-buffer originating-buffer))))))
 
 (defun shx--goto-last-input-or-output ()
-  "Go to the beginning of the next event from the process."
+  "Go to the beginning of the latest output from the process."
   (goto-char (if (marker-position comint-last-output-start)
                  (max comint-last-output-start comint-last-input-end)
                comint-last-input-end))
