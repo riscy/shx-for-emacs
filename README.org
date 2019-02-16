@@ -34,7 +34,8 @@
   - *Display graphics and plots* in the shell with a simple markup
     language (e.g. =<view image.png>=)
   - *Add event-driven and timed behaviors* to any shell session
-  - *Open any filename or URL* by arrowing up to it and pressing =RET=
+  - *Open any filename or URL* by arrowing up to it and pressing =RET= (shx will
+    even try to guess the correct directory)
   - *Yank any line to the prompt* by arrowing up to it and pressing =C-RET=
   - *Check the time a command was run* by mousing over its prompt
 
