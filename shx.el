@@ -194,11 +194,11 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (shx--verify-process-exists)
-  (if (>= (length (shx--current-input)) shx-max-input)
-      (message "Input line exceeds `shx-max-input'.")
-    (shx--propertize-prompt)
-    (comint-send-input nil t)))
+  (cond ((shx--restart-process) nil)
+        ((>= (length (shx--current-input)) shx-max-input)
+         (message "Input line exceeds `shx-max-input'."))
+        (t (shx--propertize-prompt)
+           (comint-send-input nil t))))
 
 (defun shx-filter-input (process input)
   "Before sending to PROCESS, filter the INPUT.
@@ -218,16 +218,15 @@ This function overrides `comint-input-sender'."
       ;; send a blank to fetch a new prompt
       (comint-send-string process "\n"))))
 
-(defun shx--verify-process-exists ()
-  "If no process is associated with the buffer, try to restart the process."
-  (unless (get-buffer-process (current-buffer))
-    (when (y-or-n-p (format "Restart %s? " shx--process-command))
-      (shx-insert 'font-lock-doc-face "Restarting " shx--process-command)
-      (comint-exec
-       (current-buffer) (buffer-name) shx--process-command nil nil))))
+(defun shx--restart-process ()
+  "Try to restart the process if necessary; return non-nil if restart occurs."
+  (and
+   (not (get-buffer-process (current-buffer)))
+   (y-or-n-p (format "Restart %s? " shx--process-command))
+   (comint-exec (current-buffer) (buffer-name) shx--process-command nil nil)))
 
 (defun shx--propertize-prompt ()
-  "Add a mouseover timestamp to the last prompt."
+  "Add a mouseover timestamp and `default-directory' info to the last prompt."
   (let ((inhibit-read-only t)
         (inhibit-field-text-motion t))
     (add-text-properties
