@@ -800,10 +800,19 @@ commands like :pwd and :edit will work correctly.
     (shx-insert "Connecting to " 'font-lock-doc-face host 'default "\n")
     (let* ((host (replace-regexp-in-string ":" "#" host))
            (default-directory
-             (if (eq tramp-syntax 'default)
-                 (concat "/ssh:" host ":~")
-               (concat "/" host ":~"))))
-      (shx--asynch-funcall #'shx (list nil default-directory)))))
+            (if (eq tramp-syntax 'default)
+                (concat "/ssh:" host ":~")
+              (concat "/" host ":~")))
+           (bufname (buffer-name (current-buffer))))
+      (shx--asynch-funcall #'shx (list nil default-directory))
+      (shx--asynch-funcall
+       (lambda (bufname)
+         (when (and (get-buffer bufname)
+                    (get-buffer "*shx*"))
+           (kill-buffer bufname)
+           (with-current-buffer "*shx*"
+             (rename-buffer bufname))))
+       (list bufname) 0.6))))
 
 (defun shx-cmd-sedit (file)
   "Open local FILE using sudo (i.e. as super-user).
