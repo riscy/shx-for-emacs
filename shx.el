@@ -159,9 +159,6 @@ sacrifices the soundness of markup and trigger matching."
 (defvar-local shx--old-undo-disabled nil
   "Whether undo was disabled before `shx-mode' was enabled.")
 
-(defvar-local shx--process-command nil
-  "The command that was likely used to start the process.")
-
 
 ;;; input
 
@@ -194,7 +191,11 @@ This can help in running `ibuffer-do-eval' on multiple buffers."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (cond ((shx--restart-process) nil)
+  (cond ((not (comint-check-proc shx-buffer))
+         ;; no process?  restart shell in a safe directory:
+         (when (file-remote-p default-directory)
+           (setq default-directory (getenv "HOME")))
+         (shx--restart-shell))
         ((>= (length (shx--current-input)) shx-max-input)
          (message "Input line exceeds `shx-max-input'."))
         (t (shx--propertize-prompt)
@@ -216,14 +217,7 @@ This function overrides `comint-input-sender'."
         ;; advance the process mark to trick comint-mode
         (set-marker (process-mark process) (point)))
       ;; send a blank to fetch a new prompt
-      (comint-send-string process "\n"))))
-
-(defun shx--restart-process ()
-  "Try to restart the process if necessary; return non-nil if restart occurs."
-  (and
-   (not (get-buffer-process (current-buffer)))
-   (y-or-n-p (format "Restart %s? " shx--process-command))
-   (comint-exec (current-buffer) (buffer-name) shx--process-command nil nil)))
+      (when (process-live-p process) (comint-send-string process "\n")))))
 
 (defun shx--propertize-prompt ()
   "Add a mouseover timestamp and `default-directory' info to the last prompt."
@@ -387,6 +381,13 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
   (add-text-properties
    (match-beginning 0) (match-end 0)
    `(keymap ,shx-click-file mouse-face link font-lock-face font-lock-doc-face)))
+
+(defun shx--restart-shell ()
+  "Guess the shell command and use `comint-exec' to restart."
+  ;; guess which shell command to use per Emacs convention:
+  (let ((cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+    (shx-insert 'font-lock-doc-face cmd " at " default-directory 'default "\n")
+    (comint-exec (current-buffer) (buffer-name) cmd nil nil)))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
@@ -939,9 +940,6 @@ See the function `shx-mode' for details."
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
   (setq-local shx-buffer (current-buffer))
-  (setq-local shx--process-command
-              (ignore-errors (car (process-command
-                                   (get-buffer-process shx-buffer)))))
   (when (derived-mode-p 'shell-mode)
     (font-lock-add-keywords nil shx-shell-mode-font-locks))
   (font-lock-add-keywords nil shx-font-locks)
