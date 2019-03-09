@@ -793,27 +793,18 @@ See `Man-notify-method' for what happens when the page is ready."
 (defun shx-cmd-ssh (host)
   "Open a shell on HOST using tramp.
 \nThis way you benefit from the remote host's completions, and
-commands like :pwd and :edit will work correctly.
+commands like :pwd and :edit will work correctly.  Use :ssh on
+its own to point the process back at the local filesystem.
 \nExample:\n
-  :ssh username@hostname:port"
-  (if (equal host "")
-      (shx-insert 'error "ssh host\n")
-    (shx-insert "Connecting to " 'font-lock-doc-face host 'default "\n")
-    (let* ((host (replace-regexp-in-string ":" "#" host))
-           (default-directory
-            (if (eq tramp-syntax 'default)
-                (concat "/ssh:" host ":~")
-              (concat "/" host ":~")))
-           (bufname (buffer-name (current-buffer))))
-      (shx--asynch-funcall #'shx (list nil default-directory))
-      (shx--asynch-funcall
-       (lambda (bufname)
-         (when (and (get-buffer bufname)
-                    (get-buffer "*shx*"))
-           (kill-buffer bufname)
-           (with-current-buffer "*shx*"
-             (rename-buffer bufname))))
-       (list bufname) 0.6))))
+  :ssh username@hostname:port
+  :ssh"
+  (let ((host (substring-no-properties
+               (replace-regexp-in-string ":" "#" host))))
+    (setq default-directory
+          (cond ((string= "" host) (getenv "HOME"))
+                ((eq tramp-syntax 'default) (concat "/ssh:" host ":~"))
+                (t (concat "/" host "~:"))))
+    (shx--restart-shell)))
 
 (defun shx-cmd-sedit (file)
   "Open local FILE using sudo (i.e. as super-user).
