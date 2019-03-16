@@ -248,11 +248,11 @@
     When it's invoked, shx will also display a hint about buffer names.
 
     Note the importance of defining a docstring.  This documents the
-    command so that typing =:help name= will give the user information on what
+    command so that typing =:help rename= will give the user information on what
     the command does.  Further, since the docstring begins with =(SAFE)=,
     it becomes part of shx's markup language.  So in this case if:
     #+begin_src xml
-    <name A new name for the buffer>
+    <rename A new name for the buffer>
     #+end_src
     appears on a line by itself in the output, the buffer will try to
     automatically rename itself.
@@ -269,14 +269,10 @@
       #+end_src
       Note that =files= is supplied as a string, but it's immediately parsed
       into a list of strings using ~shx-tokenize~.  Helpfully, this function is
-      able to parse various styles of quoting and escaping, for example the string
-      #+begin_src elisp
-      "'file one' file\\ two"
-      #+end_src
-      turns into the list
-      #+begin_src elisp
-      ("file one" "file two")
-      #+end_src
+      able to parse various styles of quoting and escaping, for example
+      `(shx-tokenize "'file one' file\\ two")`
+      evaluates to
+      `("file one" "file two")`.
 ***** Example: a command to browse URLs
       If you execute the following,
       #+begin_src elisp
@@ -300,12 +296,12 @@
   - [[https://github.com/Orkohunter/keep][The Keep Utility]] inspired the =kept= and =keep= commands
   - [[https://terminalsare.sexy/]["Terminals Are Sexy"]] (portal)
   - [[https://github.com/riscy/command_line_lint][Command-Line Lint]], another project I maintain
+  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh configuration
+  - [[https://github.com/Bash-it/bash-it][bash-it]], a community driven bash configuration
 
   And if running a =dumb= terminal in Emacs isn't for you, here are some
   alternatives:
   - [[https://leanpub.com/the-tao-of-tmux/read][The Tao of tmux]], re: working in the terminal with tmux
-  - [[http://ohmyz.sh/][oh my zsh]], a community-driven zsh configuration
-  - [[https://github.com/Bash-it/bash-it][bash-it]], a community driven bash configuration
   - [[https://github.com/zsh-users/zsh-syntax-highlighting][zsh-syntax-highlighting]]
   - [[https://hackernoon.com/macbook-my-command-line-utilities-f8a121c3b019#.clz934ly3][Shell configuration tips]] from Vitaly Belman
   - [[http://www.iterm2.com/documentation-shell-integration.html][Shell integration]] for iTerm2 on macOS
