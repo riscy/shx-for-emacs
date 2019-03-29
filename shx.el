@@ -212,7 +212,8 @@ This function overrides `comint-input-sender'."
         (comint-simple-send process input)
       (condition-case-unless-debug error-descriptor
           (funcall shx-cmd (substitute-env-vars (match-string 2 input)))
-        (error (shx-insert 'error (error-message-string error-descriptor) "\n")))
+        (error (shx-insert 'error (error-message-string error-descriptor)
+                           'default "\n")))
       (with-current-buffer (process-buffer process)
         ;; advance the process mark to trick comint-mode
         (set-marker (process-mark process) (point)))
@@ -432,7 +433,7 @@ not nil, then insert the command into the current buffer."
     (when (string-match (or regexp ".") (concat (car command) (cdr command)))
       (when insert-kept-command
         (shx-insert 'font-lock-constant-face (car command) ": "
-                    'font-lock-string-face command (cdr command) "\n"))
+                    'font-lock-string-face command (cdr command) 'default "\n"))
       (ring-insert comint-input-ring (cdr command)))))
 
 
@@ -617,7 +618,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
          (< timer-number (length shx-timer-list))
          (let ((timer (nth timer-number shx-timer-list)))
            (shx-insert "Stopped " 'font-lock-string-face
-                       (shx--format-timer-string timer) "\n")
+                       (shx--format-timer-string timer) 'default "\n")
            (cancel-timer timer))))
   (shx-insert-timer-list))
 
@@ -646,7 +647,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   :diff file1.txt \"file 2.csv\""
   (setq files (shx-tokenize files))
   (if (/= (length files) 2)
-      (shx-insert 'error "diff <file1> <file2>\n")
+      (shx-insert 'error "diff <file1> <file2>" 'default "\n")
     (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
                 " and " 'font-lock-doc-face (cadr files) 'default "\n")
     (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
@@ -682,12 +683,12 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :f prefix
   :f *suffix"
   (if (equal file "")
-      (shx-insert 'error "find <prefix>\n")
+      (shx-insert 'error "find <prefix>" 'default "\n")
     (let* ((fuzzy-file (mapconcat 'char-to-string (string-to-list file) "*"))
            (command (format "find . -iname '%s*'" fuzzy-file))
            (output (shell-command-to-string command)))
       (if (equal "" output)
-          (shx-insert 'error "No matches for \"" file "\"\n")
+          (shx-insert 'error "No matches for \"" file "\"" 'default "\n")
         (shx--hint (concat "finding under " default-directory))
         (apply #'shx-insert-filenames
                (split-string (string-remove-suffix "\n" output) "\n"))
@@ -699,7 +700,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :pipe make
   :pipe git repack -a -d --depth=250 --window=250"
   (if (equal command "")
-      (shx-insert 'error "pipe <command>\n")
+      (shx-insert 'error "pipe <command>" 'default "\n")
     (let ((compilation-buffer-name-function
            (lambda (_mode) "*shx-pipe*")))
       (shx-insert "Piping "
@@ -746,7 +747,7 @@ This enables it to be accessed later using `shx-cmd-kept'."
   (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
          (desc (read-string (format "'%s'\nDescription: " command))))
     (if (string-empty-p desc)
-        (shx-insert 'error "Description is required\n")
+        (shx-insert 'error "Description is required" 'default "\n")
       (add-to-list 'shx-kept-commands `(,desc . ,command))
       (customize-save-variable 'shx-kept-commands shx-kept-commands)
       (shx-insert "Keeping as " 'font-lock-doc-face desc "\n")
@@ -759,7 +760,7 @@ access via \\[comint-previous-input] and \\[comint-next-input].\n
 The list containing all of these commands is `shx-kept-commands'.
 That list can be added to using `shx-cmd-keep'."
   (if (string-empty-p regexp)
-      (shx-insert 'error "kept <regexp>\n")
+      (shx-insert 'error "kept <regexp>" 'default "\n")
     (shx--restore-kept-commands regexp t)
     (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
 (defalias 'shx-cmd-k #'shx-cmd-kept)
