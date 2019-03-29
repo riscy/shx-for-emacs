@@ -96,7 +96,7 @@
       shx-max-output 1024
       ;; prevent input longer than macOS's typeahead buffer from going through
       shx-max-input 1024
-      ;; prefer inlined images to have a height of 250 pixels
+      ;; prefer inlined images and plots to have a height of 250 pixels
       shx-img-height 250
       ;; don't show any incidental hint messages about how to use shx
       shx-show-hints nil

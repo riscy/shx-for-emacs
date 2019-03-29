@@ -93,6 +93,7 @@
 
 (defcustom shx-flash-prompt-time 0.25
   "Length of time (in seconds) the prompt flashes, when so advised."
+  :link '(function-link shx-flash-prompt)
   :type 'float)
 
 (defcustom shx-show-hints t
@@ -120,7 +121,7 @@ or, set the terminal to canonical mode with 'stty -icanon'."
 (defcustom shx-max-output most-positive-fixnum
   "The length at which an output line is long enough to be broken.
 Setting this to 1024 can lead to enormous performance gains, but
-sacrifices the soundness of markup and trigger matching."
+sacrifices the soundness of shx's markup and trigger matching."
   :link '(function-link shx--break-long-line-maybe)
   :type 'integer)
 
@@ -957,7 +958,7 @@ See the function `shx-mode' for details."
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
 
-;; advice to change the behavior of some functions within`shx-mode'
+;; advice to change the behavior of some functions within `shx-mode'
 
 (defun shx-show-output (&rest _args)
   "Recenter window so that as much output as possible is shown.
