@@ -131,7 +131,7 @@ sacrifices the soundness of shx's markup and trigger matching."
 (defvar shx-cmd-syntax "\\([^[:space:]]+\\)[[:space:]]*\\(.*[^[:space:]]?\\)"
   "Regex for recognizing shx commands in input or markup.")
 
-(defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">$")
+(defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">\n")
   "Regex for recognizing shx commands in markup.")
 
 (defvar shx-mode-map
