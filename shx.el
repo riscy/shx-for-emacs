@@ -1,4 +1,4 @@
-;;; shx.el --- "Extras" for the (comint-mode) shell -*- lexical-binding: t -*-
+;;; shx.el --- Extras for the comint-mode shell -*- lexical-binding: t -*-
 
 ;; Authors: Chris Rayner (dchrisrayner@gmail.com)
 ;; Created: May 23 2011
@@ -47,7 +47,7 @@
 ;; Compiler pacifier
 (defvar evil-state)
 (defvar tramp-syntax)
-(declare-function evil-insert-state "evil-states")
+(declare-function evil-insert-state "ext:evil-states.el" nil t)
 
 
 ;;; customization options and other variables

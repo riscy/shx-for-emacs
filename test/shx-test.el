@@ -73,6 +73,12 @@ Example:
 
 ;; tests!
 
+(defun shx-test-unit-declare-function ()
+  "Test that calls to `declare-function' are correct."
+  (shx-test-assert
+   "declare-function instances are correct"
+  (not (check-declare-file (symbol-file 'shx-mode)))))
+
 (defun shx-test-unit-all-commands ()
   "Test that shx--all-commands function will only return shx commands."
   (shx-test-assert
