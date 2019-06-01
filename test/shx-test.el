@@ -73,6 +73,11 @@ Example:
 
 ;; tests!
 
+(defun shx-test-unit-checkdoc ()
+  "Run `checkdoc' tests against the shx.el file."
+  (checkdoc-file (symbol-file 'shx-mode))
+  (shx-test-assert "checkdoc runs cleanly" (null (get-buffer "*Warnings*"))))
+
 (defun shx-test-unit-declare-function ()
   "Test that calls to `declare-function' are correct."
   (shx-test-assert
