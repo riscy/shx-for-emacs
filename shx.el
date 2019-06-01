@@ -386,10 +386,21 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 
 (defun shx--restart-shell ()
   "Guess the shell command and use `comint-exec' to restart."
-  ;; guess which shell command to use per Emacs convention:
-  (let ((cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+  (let ((cmd (shx--validate-shell-file-name)))
     (shx-insert 'font-lock-doc-face cmd " at " default-directory 'default "\n")
     (comint-exec (current-buffer) (buffer-name) cmd nil nil)))
+
+(defun shx--validate-shell-file-name ()
+  "Guess which shell command to run, even if on a remote host or container.
+If the answer turns out to be tricky, store it in `explicit-shell-file-name'."
+  (let ((remote-id (or (file-remote-p default-directory) ""))
+        ;; guess which shell command to run per `shell' convention:
+        (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+    (cond ((file-exists-p (concat remote-id cmd)) cmd)
+          (t (set (make-local-variable 'explicit-shell-file-name)
+                  (if (file-exists-p (concat remote-id "/bin/sh"))
+                      "/bin/sh"  ; /bin/sh _usually_ exists...
+                    (read-file-name "Shell: " nil "/bin/sh")))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
@@ -658,7 +669,8 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 \nExamples:\n
   :e directory/to/file
 \nOr edit a remote file using `tramp':\n
-  :e /user@server#port:directory/to/file"
+  :e /ssh:user@server#port:directory/to/file
+  :e /docker:02fbc948e009:/directory/to/file"
   (setq file (car (shx-tokenize file)))
   (if (or (string= "" file) (not file))
       (shx-insert 'error "Couldn't parse filename" 'default "\n")
@@ -926,6 +938,7 @@ See the function `shx-mode' for details."
         (default-directory (or directory default-directory)))
     ;; `switch-to-buffer' first (`shell' uses the unpredictable `pop-to-buffer')
     (switch-to-buffer name)
+    (shx--validate-shell-file-name)
     (shell name)
     ;; shx might already be active due to shx-global-mode:
     (unless shx-mode (shx-mode))))

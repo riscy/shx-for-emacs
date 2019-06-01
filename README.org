@@ -146,8 +146,11 @@
   # edit the .emacs file:
   :edit ~/.emacs
 
-  # use tramp to edit the .emacs file on a remote host:
-  :e /remote-host.com:~/.emacs
+  # use tramp to edit .emacs on a remote host through ssh:
+  :e /ssh:remote-host.com:~/.emacs
+
+  # use tramp to edit .bashrc on a running docker container:
+  :e /docker:02fbc948e009:~/.bashrc
 
   # edit a local file as root
   :sedit /etc/passwd
