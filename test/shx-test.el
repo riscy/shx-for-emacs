@@ -74,18 +74,18 @@ Example:
 ;; tests!
 
 (defun shx-test-unit-checkdoc ()
-  "Run `checkdoc' tests against the shx.el file."
+  "Run `checkdoc' against the shx.el file."
   (checkdoc-file (symbol-file 'shx-mode))
   (shx-test-assert "checkdoc runs cleanly" (null (get-buffer "*Warnings*"))))
 
 (defun shx-test-unit-declare-function ()
-  "Test that calls to `declare-function' are correct."
+  "Test `declare-function'."
   (shx-test-assert
    "declare-function instances are correct"
-  (not (check-declare-file (symbol-file 'shx-mode)))))
+   (not (check-declare-file (symbol-file 'shx-mode)))))
 
 (defun shx-test-unit-all-commands ()
-  "Test that shx--all-commands function will only return shx commands."
+  "Test that `shx--all-commands' will only return shx commands."
   (shx-test-assert
    "shx--all-commands lists user command functions"
    (and (listp (shx--all-commands))
@@ -113,7 +113,7 @@ Example:
                    (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
 
 (defun shx-test-unit-get-user-cmd ()
-  "Test the shx--get-user-cmd function."
+  "Test `shx--get-user-cmd'."
   (shx-test-assert "shx--get-user-cmd returns nil for empty string"
                    (null (shx--get-user-cmd "")))
   (shx-test-assert "shx--get-user-cmd returns command with correct prefix"
@@ -128,14 +128,14 @@ Example:
                      (string-equal (shx--validate-shell-file-name) "/bin/sh"))))
 
 (defun shx-test-unit-replace-from-list ()
-  "Test the shx--replace-from-list function."
+  "Test `shx--replace-from-list'."
   (shx-test-assert "shx--replace-from-list acts sequentially"
                    (string= "a" (shx--replace-from-list '(("aa" "b") ("b" "a")) "aa")))
   (shx-test-assert "shx--replace-from-list performs the correct replacements"
                    (string= "24" (shx--replace-from-list '(("1" "2") ("3" "4")) "13"))))
 
 (defun shx-test-integration-magic-insert ()
-  "Test magic insert."
+  "Test `shx-magic-insert'."
   (let ((previous-input (comint-previous-input-string 0)))
     (insert "^" previous-input "^^")
     (shx-magic-insert)
@@ -214,7 +214,7 @@ Example:
                    (string= (shx--current-input) "")))
 
 (defun shx-test-integration-output-handling ()
-  "Test shx-insert."
+  "Test `shx-insert'."
   (save-excursion
     (goto-char (point-max))
     (backward-char 1)
@@ -222,7 +222,7 @@ Example:
                      (eq (field-at-pos (point)) 'output))))
 
 (defun shx-test-unit-cmd-syntax-regexps ()
-  "Test shx-cmd-syntax regexps."
+  "Test `shx-cmd-syntax' regexps."
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":help ok")
   (shx-test-assert "shx-cmd-syntax recognizes command with arguments"
                    (and (string= (match-string 1 ":help ok") "help")
