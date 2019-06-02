@@ -124,7 +124,7 @@ Example:
   (shx-test-assert "shx--validate-shell-file-name finds the default shell"
                    (not (string-empty-p (shx--validate-shell-file-name))))
   (shx-test-assert "shx--validate-shell-file-name recovers a fallback shell"
-                   (let ((explicit-shell-file-name "/non-existent/shell"))
+                   (let ((shell-file-name "/non-existent/shell"))
                      (string-equal (shx--validate-shell-file-name) "/bin/sh"))))
 
 (defun shx-test-unit-replace-from-list ()
