@@ -381,6 +381,8 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
   "Guess the shell command and use `comint-exec' to restart."
   (let ((cmd (shx--validate-shell-file-name)))
     (shx-insert 'font-lock-doc-face cmd " at " default-directory 'default "\n")
+    ;; manually align comint-file-name-prefix with the default-directory:
+    (setq-local comint-file-name-prefix (or (file-remote-p default-directory) ""))
     (comint-exec (current-buffer) (buffer-name) cmd nil nil)))
 
 (defun shx--validate-shell-file-name ()
