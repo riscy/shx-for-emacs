@@ -209,10 +209,13 @@
 
     These are for displaying inline graphics and plots in the shell buffer.  You
     can control how much vertical space an inline image occupies by customizing
-    the ~shx-img-height~ variable.  Note =convert= (i.e. ImageMagick) and
-    =gnuplot= need to be installed.  If the binaries are installed but these
-    commands aren't working, customize the ~shx-path-to-convert~ and
-    ~shx-path-to-gnuplot~ variables to point to the binaries.
+    the ~shx-img-height~ variable.
+
+    Note =convert= (i.e. ImageMagick) and =gnuplot= need to be installed.  If
+    the binaries are installed but these commands aren't working, customize the
+    ~shx-path-to-convert~ and ~shx-path-to-gnuplot~ variables to point to the
+    binaries.  Also note these graphical commands aren't yet compatible with
+    shells launched on remote hosts (e.g. over ssh or in a Docker container).
 *** Asynchronous commands
     | Command                           | Description                                       |
     |-----------------------------------+---------------------------------------------------|
