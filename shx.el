@@ -59,7 +59,7 @@
   "Path to ImageMagick's convert binary."
   :type 'string)
 
-(defcustom shx-mode-lighter "shx"
+(defcustom shx-mode-lighter " shx"
   "Lighter for the shx minor mode."
   :type 'string)
 
@@ -400,10 +400,10 @@ If the answer turns out to be tricky, store it in `explicit-shell-file-name'."
         ;; guess which shell command to run per `shell' convention:
         (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
-          (t (set (make-local-variable 'explicit-shell-file-name)
-                  (if (file-exists-p (concat remote-id "/bin/sh"))
-                      "/bin/sh"  ; /bin/sh _usually_ exists...
-                    (read-file-name "Shell: " nil "/bin/sh")))))))
+          (t (setq-local explicit-shell-file-name
+                         (if (file-exists-p (concat remote-id "/bin/sh"))
+                             "/bin/sh"  ; /bin/sh _usually_ exists...
+                           (read-file-name "Shell: " nil "/bin/sh")))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
