@@ -18,7 +18,7 @@
 ;; A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License along with
-;; this file.  If not, see <http://www.gnu.org/licenses/>.
+;; this file.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
