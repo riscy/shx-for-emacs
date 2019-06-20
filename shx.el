@@ -319,6 +319,14 @@ This is robust to various styles of quoting and escaping."
             (shx--replace-from-list '(("" "'") ("" " ") ("" "\"")) token))
           (ignore-errors (split-string-and-unquote str))))
 
+(defun shx-tokenize-filenames (str)
+  "Turn STR into a list of filenames, or nil if parsing fails.
+If any path is absolute, prepend `comint-file-name-prefix' to it."
+  (mapcar (lambda (filename)
+            (cond ((not (file-name-absolute-p filename)) filename)
+                   (t (concat comint-file-name-prefix filename))))
+          (shx-tokenize str)))
+
 (defun shx--all-commands (&optional without-prefix)
   "Return a list of all shx commands.
 With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
@@ -652,7 +660,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   "(SAFE) Launch an Emacs `ediff' between FILES.
 \nExample:\n
   :diff file1.txt \"file 2.csv\""
-  (setq files (shx-tokenize files))
+  (setq files (shx-tokenize-filenames files))
   (if (/= (length files) 2)
       (shx-insert 'error "diff <file1> <file2>" 'default "\n")
     (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
@@ -666,7 +674,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 \nOr edit a remote file using `tramp':\n
   :e /ssh:user@server#port:directory/to/file
   :e /docker:02fbc948e009:/directory/to/file"
-  (setq file (car (shx-tokenize file)))
+  (setq file (car (shx-tokenize-filenames file)))
   (if (or (string= "" file) (not file))
       (shx-insert 'error "Couldn't parse filename" 'default "\n")
     (shx-insert "Editing " 'font-lock-doc-face file 'default "\n")
@@ -787,7 +795,7 @@ See `Man-notify-method' for what happens when the page is ready."
 \nExamples:\n
   :oedit directory/to/file
   :oedit /username@server:~/directory/to/file"
-  (setq file (car (shx-tokenize file)))
+  (setq file (car (shx-tokenize-filenames file)))
   (if (or (string= "" file) (not file))
       (shx-insert 'error "Couldn't parse filename" 'default "\n")
     (shx-insert "Editing " 'font-lock-doc-face file 'default "\n")
@@ -830,7 +838,7 @@ its own to point the process back at the local filesystem.
   \"Topic 1\" YHEIGHT1
   \"Topic 2\" YHEIGHT2
   \"Topic 3\" YHEIGHT3"
-  (shx-insert-plot (car (shx-tokenize filename))
+  (shx-insert-plot (car (shx-tokenize-filenames filename))
                    (concat "set boxwidth 1.5 relative;"
                            "set style data histograms;"
                            "set xtic rotate by -40 scale 0 font \",10\";"
@@ -843,7 +851,7 @@ its own to point the process back at the local filesystem.
   "(SAFE) Show heatmap of FILENAME.
 \nFor example, \":plotmatrix file.dat\" where file.dat contains:\n
   1.5   2    3\n  4     5    6\n  7     8    9.5"
-  (shx-insert-plot (car (shx-tokenize filename))
+  (shx-insert-plot (car (shx-tokenize-filenames filename))
                    (concat "set view map; unset xtics; unset ytics;"
                            "unset title; set colorbox; set palette defined"
                            "(0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\","
@@ -857,14 +865,14 @@ its own to point the process back at the local filesystem.
   1 2\n  2 4\n  4 8\n
 Or just a single column:
   1\n  2\n  3\n  5"
-  (shx-insert-plot (car (shx-tokenize filename))
+  (shx-insert-plot (car (shx-tokenize-filenames filename))
                    "plot" "w l lw 1 notitle"))
 
 (defun shx-cmd-plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
 Read about gnuplot's expectations of the data here:
 http://www.gnuplotting.org/tag/pm3d/"
-  (shx-insert-plot (car (shx-tokenize filename))
+  (shx-insert-plot (car (shx-tokenize-filenames filename))
                    "unset tics;set view 4, 20, 1.4, 1;splot"
                    "w pm3d notitle"))
 
@@ -874,13 +882,13 @@ http://www.gnuplotting.org/tag/pm3d/"
   1 2\n  2 4\n  4 8\n
 Or just a single column:
   1\n  2\n  3\n  5"
-  (shx-insert-plot (car (shx-tokenize filename))
+  (shx-insert-plot (car (shx-tokenize-filenames filename))
                    "plot" "w p ps 2 pt 7 notitle"))
 (defalias 'shx-cmd-plot #'shx-cmd-plotscatter)
 
 (defun shx-cmd-view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
-  (shx-insert-image (car (shx-tokenize filename))))
+  (shx-insert-image (car (shx-tokenize-filenames filename))))
 
 
 ;;; loading

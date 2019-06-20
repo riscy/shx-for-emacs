@@ -173,6 +173,14 @@ Example:
                    (equal '("~/././~/.spacemacs")
                           (shx-tokenize "~/././~/.spacemacs"))))
 
+(defun shx-test-unit-tokenize-filenames ()
+  "Test filename tokenization."
+  (shx-test-assert
+   "shx-tokenize-filenames works with relative and absolute paths."
+   (let ((comint-file-name-prefix "/docker:123:"))
+     (equal '("test" "/docker:123:~/test" "/docker:123:/test")
+            (shx-tokenize-filenames "test ~/test /test")))))
+
 (defun shx-test-integration-point-predicates ()
   "Test some predicate functions on the point."
   (shx-test-assert "shx-point-on-input-p works at point-max."
