@@ -38,7 +38,7 @@
 ;; Compiler pacifier
 (defvar evil-state)
 (defvar tramp-syntax)
-(declare-function evil-insert-state "ext:evil-states.el" nil t)
+(declare-function evil-insert-state "ext:evil-states.el" (&optional arg) t)
 
 
 ;;; customization options and other variables
@@ -370,7 +370,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 (defun shx--get-user-cmd (cmd-prefix)
   "Return user command prefixed by CMD-PREFIX, or nil."
   (let* ((prefix (format "%s%s" shx-cmd-prefix (downcase cmd-prefix)))
-         (completion (try-completion prefix obarray 'functionp)))
+         (completion (try-completion prefix obarray #'functionp)))
     (when completion
       (let ((user-cmd (intern (if (eq completion t) prefix completion))))
         (when (functionp user-cmd) user-cmd)))))
@@ -483,7 +483,7 @@ are sent straight through to the process to handle paging."
 
 (defun shx-insert (&rest args)
   "Insert ARGS as an output field, combined using `shx-cat'."
-  (insert (propertize (apply 'shx-cat args) 'field 'output)))
+  (insert (propertize (apply #'shx-cat args) 'field 'output)))
 
 (defun shx-insert-filenames (&rest files)
   "Insert FILES, propertized to be clickable."
@@ -663,7 +663,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
       (shx-insert 'error "diff <file1> <file2>" 'default "\n")
     (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
                 " and " 'font-lock-doc-face (cadr files) 'default "\n")
-    (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
+    (shx--asynch-funcall #'ediff (mapcar #'expand-file-name files))))
 
 (defun shx-cmd-edit (file)
   "(SAFE) Open FILE in the current window.
@@ -1006,12 +1006,15 @@ This function only works when the shx minor mode is active."
 
 (defun shx--with-shx-cwd (func &rest args)
   "Call FUNC with ARGS using the `shx-cwd' property as `default-directory'."
-  (let* ((shx-comint-advise nil)
-         (inhibit-field-text-motion t)
-         (shx-cwd (save-excursion (comint-previous-prompt 1)
-                                  (get-text-property (point-at-bol) 'shx-cwd)))
-         (default-directory (or shx-cwd default-directory)))
-    (apply func args)))
+  (if (not shx-mode)
+      (apply func args)
+    (let* ((shx-comint-advise nil)
+           (inhibit-field-text-motion t)
+           (shx-cwd (save-excursion
+                      (comint-previous-prompt 1)
+                      (get-text-property (point-at-bol) 'shx-cwd)))
+           (default-directory (or shx-cwd default-directory)))
+      (apply func args))))
 
 (advice-add #'find-file-at-point :around #'shx--with-shx-cwd)
 (advice-add #'ffap-at-mouse :around #'shx--with-shx-cwd)
