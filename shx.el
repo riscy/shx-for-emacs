@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 1.1.1
+;; Version: 1.1.2
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free Software
