@@ -138,7 +138,7 @@ sacrifices the soundness of shx's markup and trigger matching."
   "Keymap for shx.")
 
 (defvar shx-click-file (let ((keymap (make-sparse-keymap)))
-                         (define-key keymap [mouse-1] 'ffap-at-mouse)
+                         (define-key keymap [mouse-1] #'ffap-at-mouse)
                          keymap)
   "Keymap for capturing mouse clicks on files/URLs.")
 
@@ -330,7 +330,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
   (mapcar (lambda (cmd)
             (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
-          (all-completions shx-cmd-prefix obarray 'functionp)))
+          (all-completions shx-cmd-prefix obarray #'functionp)))
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
@@ -558,7 +558,7 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 If BUFFER is nil, process in the current buffer.  Optional
 REPEAT-INTERVAL specifies delays between repetitions."
   (let* ((process (get-buffer-process (buffer-name buffer)))
-         (funcall `(lambda () ,(cons 'shx--auto (list process input)))))
+         (funcall `(lambda () ,(cons #'shx--auto (list process input)))))
     (run-at-time delay repeat-interval funcall)))
 
 (defun shx--auto (process command)
@@ -698,7 +698,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :f *suffix"
   (if (equal file "")
       (shx-insert 'error "find <prefix>" 'default "\n")
-    (let* ((fuzzy-file (mapconcat 'char-to-string (string-to-list file) "*"))
+    (let* ((fuzzy-file (mapconcat #'char-to-string (string-to-list file) "*"))
            (command (format "find . -iname '%s*'" fuzzy-file))
            (output (shell-command-to-string command)))
       (if (equal "" output)
