@@ -271,7 +271,7 @@
         (if (not (eq (length files) 2))
             (shx-insert 'error "diff <file1> <file2>\n")
           (shx-insert "invoking ediff...\n")
-          (shx--asynch-funcall #'ediff (mapcar 'expand-file-name files))))
+          (shx--asynch-funcall #'ediff (mapcar #'expand-file-name files))))
       #+end_src
       Note that =files= is supplied as a string, but it's immediately parsed
       into a list of strings using ~shx-tokenize~.  Helpfully, this function is

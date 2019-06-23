@@ -7,8 +7,6 @@
 ;; Package-Requires: ((emacs "24.4"))
 ;; Version: 1.1.1
 
-;; This file is NOT part of GNU Emacs.
-
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free Software
 ;; Foundation; either version 3, or (at your option) any later version.
@@ -324,7 +322,7 @@ This is robust to various styles of quoting and escaping."
 If any path is absolute, prepend `comint-file-name-prefix' to it."
   (mapcar (lambda (filename)
             (cond ((not (file-name-absolute-p filename)) filename)
-                   (t (concat comint-file-name-prefix filename))))
+                  (t (concat comint-file-name-prefix filename))))
           (shx-tokenize str)))
 
 (defun shx--all-commands (&optional without-prefix)
@@ -589,7 +587,7 @@ Cancel a delayed command with :stop (`shx-cmd-stop').
 
 (defun shx-cmd-pulse (args)
   "Repeat a shell command indefinitely with a given delay.
-ARGS are <deley in seconds> <command>.
+ARGS are a string of the form '<delay in seconds> <command>'.
 Cancel a pulsing command with :stop (`shx-cmd-stop').
 \nExample:\n
   :pulse 10 date"
