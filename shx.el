@@ -2,7 +2,7 @@
 
 ;; Authors: Chris Rayner (dchrisrayner@gmail.com)
 ;; Created: May 23 2011
-;; Keywords: processes, tools
+;; Keywords: processes, tools, comint
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
 ;; Version: 1.1.2
@@ -816,6 +816,16 @@ its own to point the process back at the local filesystem.
     (setq default-directory
           (cond ((string= "" host) (getenv "HOME"))
                 ((eq tramp-syntax 'default) (concat "/ssh:" host ":~"))
+                (t (concat "/" host "~:"))))
+    (shx--restart-shell)))
+
+(defun shx-cmd-docker (container-id)
+  "Open a shell Docker process with CONTAINER-ID."
+  (let ((host (substring-no-properties
+               (replace-regexp-in-string ":" "#" container-id))))
+    (setq default-directory
+          (cond ((string= "" host) (getenv "HOME"))
+                ((eq tramp-syntax 'default) (format "/ssh:%s:~" host))
                 (t (concat "/" host "~:"))))
     (shx--restart-shell)))
 
