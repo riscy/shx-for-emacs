@@ -392,16 +392,14 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
     (comint-exec (current-buffer) (buffer-name) cmd nil nil)))
 
 (defun shx--validate-shell-file-name ()
-  "Guess which shell command to run, even if on a remote host or container.
-If the answer turns out to be tricky, store it in `explicit-shell-file-name'."
+  "Guess which shell command to run, even if on a remote host or container."
   (let ((remote-id (or (file-remote-p default-directory) ""))
         ;; guess which shell command to run per `shell' convention:
         (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
-          (t (setq-local explicit-shell-file-name
-                         (if (file-exists-p (concat remote-id "/bin/sh"))
-                             "/bin/sh"  ; /bin/sh _usually_ exists...
-                           (file-local-name (read-file-name "Shell: "))))))))
+          (t (if (file-exists-p (concat remote-id "/bin/sh"))
+                 "/bin/sh"  ; /bin/sh _usually_ exists...
+               (file-local-name (read-file-name "Shell: ")))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
