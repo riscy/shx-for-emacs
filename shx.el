@@ -937,7 +937,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (if shx-mode (shx--activate) (shx--deactivate)))
 
 ;;;###autoload
-(define-globalized-minor-mode shx-global-mode shx-mode shx--turn-on :require 'shx)
+(define-globalized-minor-mode shx-global-mode shx-mode shx--global-on :require 'shx)
 
 (defun shx (&optional name directory)
   "Create a new shx-enhanced shell session.
@@ -976,8 +976,8 @@ See the function `shx-mode' for details."
   (setq comint-input-sender 'comint-simple-send)
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
 
-(defun shx--turn-on ()
-  "Call the function `shx-mode' if appropriate."
+(defun shx--global-on ()
+  "Call the function `shx-mode' if appropriate for the buffer."
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
 
