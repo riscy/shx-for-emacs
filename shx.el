@@ -887,6 +887,7 @@ Or just a single column:
 (defun shx-cmd-view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
   (shx-insert-image (car (shx-tokenize-filenames filename))))
+(defalias 'shx-cmd-imgcat #'shx-cmd-view)
 
 
 ;;; loading
