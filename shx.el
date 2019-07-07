@@ -933,23 +933,6 @@ comint-mode in general.  Use `shx-global-mode' to enable
   :keymap shx-mode-map
   (if shx-mode (shx--activate) (shx--deactivate)))
 
-;;;###autoload
-(define-globalized-minor-mode shx-global-mode shx-mode shx--global-on :require 'shx)
-
-(defun shx (&optional name directory)
-  "Create a new shx-enhanced shell session.
-The new buffer is called NAME and uses DIRECTORY as its `default-directory'.
-See the function `shx-mode' for details."
-  (interactive)
-  (let ((name (or name (generate-new-buffer-name "*shx*")))
-        (default-directory (or directory default-directory)))
-    ;; `switch-to-buffer' first (`shell' uses the unpredictable `pop-to-buffer')
-    (switch-to-buffer name)
-    (shx--validate-shell-file-name)
-    (shell name)
-    ;; shx might already be active due to shx-global-mode:
-    (unless shx-mode (shx-mode))))
-
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
   (setq-local shx-buffer (current-buffer))
@@ -973,9 +956,26 @@ See the function `shx-mode' for details."
   (setq comint-input-sender 'comint-simple-send)
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
 
+;;;###autoload
+(define-globalized-minor-mode shx-global-mode shx-mode shx--global-on :require 'shx)
+
 (defun shx--global-on ()
   "Call the function `shx-mode' if appropriate for the buffer."
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
+
+(defun shx (&optional name directory)
+  "Create a new shx-enhanced shell session.
+The new buffer is called NAME and uses DIRECTORY as its `default-directory'.
+See the function `shx-mode' for details."
+  (interactive)
+  (let ((name (or name (generate-new-buffer-name "*shx*")))
+        (default-directory (or directory default-directory)))
+    ;; `switch-to-buffer' first (`shell' uses the unpredictable `pop-to-buffer')
+    (switch-to-buffer name)
+    (shx--validate-shell-file-name)
+    (shell name)
+    ;; shx might already be active due to shx-global-mode:
+    (unless shx-mode (shx-mode))))
 
 
 ;; advice to change the behavior of some functions within `shx-mode'
