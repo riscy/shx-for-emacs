@@ -334,7 +334,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
-  (when shx-show-hints (message (concat "shx hint: " text))))
+  (when shx-show-hints (message "Hint: %s" text)))
 
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
@@ -638,10 +638,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 
 (defun shx-cmd-alert (string)
   "(SAFE) Show the `shx-buffer' in the other window with STRING."
-  (message (format "From %s at %s: '%s'\n"
-                   shx-buffer
-                   (format-time-string "%X")
-                   string))
+  (message "From %s at %s: '%s'" shx-buffer (format-time-string "%X") string)
   (display-buffer shx-buffer))
 
 (defun shx-cmd-clear (_args)
