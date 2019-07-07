@@ -96,8 +96,7 @@
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
-(defcustom shx-kept-commands
-  '(("List all kept commands" . ":kept *"))
+(defcustom shx-kept-commands nil
   "Shell commands of the form (description . command)."
   :link '(function-link shx-cmd-kept)
   :link '(function-link shx-cmd-keep)
@@ -436,16 +435,15 @@ In particular whether \"(SAFE)\" prepends COMMAND's docstring."
     (setq str (replace-regexp-in-string (car pattern) (cadr pattern) str)))
   str)
 
-(defun shx--restore-kept-commands (&optional regexp insert-kept-command)
+(defun shx--reveal-kept-commands (&optional regexp insert-kept-command)
   "Add commands from `shx-kept-commands' into `comint-input-ring'.
 REGEXP filters which commands to add.  If INSERT-KEPT-COMMAND is
 not nil, then insert the command into the current buffer."
   (dolist (command shx-kept-commands nil)
     (when (string-match (or regexp ".") (concat (car command) (cdr command)))
-      (when insert-kept-command
-        (shx-insert 'font-lock-constant-face (car command) ": "
-                    'font-lock-string-face command (cdr command) 'default "\n"))
-      (ring-insert comint-input-ring (cdr command)))))
+      (when insert-kept-command (ring-insert comint-input-ring (cdr command)))
+      (shx-insert 'font-lock-constant-face (car command) ": "
+                  'font-lock-string-face command (cdr command) 'default "\n"))))
 
 
 ;;; sending/inserting
@@ -769,10 +767,11 @@ Each matching command is appended to the input history, enabling
 access via \\[comint-previous-input] and \\[comint-next-input].\n
 The list containing all of these commands is `shx-kept-commands'.
 That list can be added to using `shx-cmd-keep'."
-  (if (string-empty-p regexp)
-      (shx-insert 'error "kept <regexp>" 'default "\n")
-    (shx--restore-kept-commands regexp t)
-    (shx--hint "M-x customize-variable shx-kept-commands edits this list")))
+  (cond ((string-empty-p regexp)
+         (shx--reveal-kept-commands ".*" nil)
+         (shx--hint "M-x customize-variable shx-kept-commands edits this list"))
+        (t (shx--reveal-kept-commands regexp t)
+           (shx--hint "Commands have been appended to session history"))))
 (defalias 'shx-cmd-k #'shx-cmd-kept)
 
 (defun shx-cmd-man (topic)
