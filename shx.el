@@ -32,6 +32,7 @@
 
 (require 'color)
 (require 'comint)
+(require 'files)
 (require 'shell)
 (require 'subr-x)
 
