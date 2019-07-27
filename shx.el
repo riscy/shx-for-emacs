@@ -935,17 +935,18 @@ comint-mode in general.  Use `shx-global-mode' to enable
 
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
-  (setq-local shx-buffer (current-buffer))
-  (when (derived-mode-p 'shell-mode)
-    (font-lock-add-keywords nil shx-shell-mode-font-locks))
-  (font-lock-add-keywords nil shx-font-locks)
-  (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
-  (when shx-disable-undo (buffer-disable-undo))
-  ;; do this one with a delay because spacemacs tries to set this variable too:
-  (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
-  (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
-  (unless (derived-mode-p 'comint-mode)
-    (message "WARNING: shx is incompatible with `%s'" major-mode)))
+  (if (not (derived-mode-p 'comint-mode))
+      (error "WARNING: shx is incompatible with `%s'" major-mode)
+    (when (derived-mode-p 'shell-mode)
+      (font-lock-add-keywords nil shx-shell-mode-font-locks))
+    (font-lock-add-keywords nil shx-font-locks)
+    (setq-local shx-buffer (current-buffer))
+    (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
+    (when shx-disable-undo (buffer-disable-undo))
+    ;; do this one with a delay because spacemacs tries to set this variable too:
+    (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
+    (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
+    (shx--advise)))
 
 (defun shx--deactivate ()
   "Remove font-locks and hooks, and restore variable defaults."
@@ -1022,17 +1023,32 @@ This function only works when the shx minor mode is active."
            (default-directory (or shx-cwd default-directory)))
       (apply func args))))
 
-(advice-add #'find-file-at-point :around #'shx--with-shx-cwd)
-(advice-add #'ffap-at-mouse :around #'shx--with-shx-cwd)
-(when shx-comint-advise
-  (advice-add #'comint-kill-input :before #'shx-switch-to-insert)
-  (advice-add #'comint-send-input :after #'shx-switch-to-insert)
-  (advice-add #'comint-history-isearch-backward-regexp :before #'shx-show-output)
-  (advice-add #'comint-kill-input :before #'shx-show-output)
-  (advice-add #'comint-send-eof :before #'shx-show-output)
-  ;; NOTE: comint-next-prompt is called by comint-previous prompt too
-  (advice-add #'comint-next-prompt :after #'shx-snap-to-top)
-  (advice-add #'comint-next-prompt :after #'shx-flash-prompt))
+(defun shx--advise ()
+  "Advise a number of functions with shx enhancements."
+  (advice-add #'find-file-at-point :around #'shx--with-shx-cwd)
+  (advice-add #'ffap-at-mouse :around #'shx--with-shx-cwd)
+  (when shx-comint-advise
+    (advice-add #'comint-kill-input :before #'shx-switch-to-insert)
+    (advice-add #'comint-send-input :after #'shx-switch-to-insert)
+    (advice-add #'comint-history-isearch-backward-regexp :before #'shx-show-output)
+    (advice-add #'comint-kill-input :before #'shx-show-output)
+    (advice-add #'comint-send-eof :before #'shx-show-output)
+    ;; NOTE: comint-next-prompt is called by comint-previous prompt too
+    (advice-add #'comint-next-prompt :after #'shx-snap-to-top)
+    (advice-add #'comint-next-prompt :after #'shx-flash-prompt)))
+
+(defun shx-unload-function ()
+  "Pre-cleanup when `unload-feature' is called."
+  (advice-remove #'find-file-at-point #'shx--with-shx-cwd)
+  (advice-remove #'ffap-at-mouse #'shx--with-shx-cwd)
+  (advice-remove #'comint-kill-input #'shx-switch-to-insert)
+  (advice-remove #'comint-send-input #'shx-switch-to-insert)
+  (advice-remove #'comint-history-isearch-backward-regexp #'shx-show-output)
+  (advice-remove #'comint-kill-input #'shx-show-output)
+  (advice-remove #'comint-send-eof #'shx-show-output)
+  (advice-remove #'comint-next-prompt #'shx-snap-to-top)
+  (advice-remove #'comint-next-prompt #'shx-flash-prompt)
+  nil)
 
 (provide 'shx)
 ;;; shx.el ends here
