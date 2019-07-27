@@ -678,9 +678,9 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   :eval (format \"%d\" (+ 1 2))
   :eval (* 2 (+ 3 5))"
   (let ((originating-buffer (current-buffer))
-        (output (format "%s\n" (eval (car (read-from-string sexp))))))
+        (output (prin1-to-string (eval (car (read-from-string sexp))))))
     (with-current-buffer originating-buffer
-      (shx-insert 'font-lock-constant-face "=> " output))))
+      (shx-insert 'font-lock-constant-face "=> " output "\n"))))
 
 (defun shx-cmd-find (file)
   "Run fuzzy find for FILE.
