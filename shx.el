@@ -297,6 +297,13 @@ This function overrides `comint-input-sender'."
                                    (shx--all-commands) nil t prefix)))
         (describe-function (intern comp))))))
 
+(defun shx--all-commands (&optional without-prefix)
+  "Return a list of all shx commands.
+With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
+  (mapcar (lambda (cmd)
+            (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
+          (all-completions shx-cmd-prefix obarray #'functionp)))
+
 (defun shx-point-on-input-p ()
   "Check if point is on the input region."
   (or (eq (point) (point-max))
@@ -316,6 +323,12 @@ This is robust to various styles of quoting and escaping."
             (shx--replace-from-list '(("" "'") ("" " ") ("" "\"")) token))
           (ignore-errors (split-string-and-unquote str))))
 
+(defun shx--replace-from-list (patterns str)
+  "Replace multiple PATTERNS in STR -- in the supplied order."
+  (dolist (pattern patterns nil)
+    (setq str (replace-regexp-in-string (car pattern) (cadr pattern) str)))
+  str)
+
 (defun shx-tokenize-filenames (str)
   "Turn STR into a list of filenames, or nil if parsing fails.
 If any path is absolute, prepend `comint-file-name-prefix' to it."
@@ -323,13 +336,6 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
             (cond ((not (file-name-absolute-p filename)) filename)
                   (t (concat comint-file-name-prefix filename))))
           (shx-tokenize str)))
-
-(defun shx--all-commands (&optional without-prefix)
-  "Return a list of all shx commands.
-With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
-  (mapcar (lambda (cmd)
-            (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
-          (all-completions shx-cmd-prefix obarray #'functionp)))
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
@@ -428,12 +434,6 @@ MAX-LENGTH is the length of the longest match (default 300)."
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (let ((doc (documentation command)))
     (ignore-errors (string-prefix-p "(SAFE)" doc))))
-
-(defun shx--replace-from-list (patterns str)
-  "Replace multiple PATTERNS in STR -- in the supplied order."
-  (dolist (pattern patterns nil)
-    (setq str (replace-regexp-in-string (car pattern) (cadr pattern) str)))
-  str)
 
 (defun shx--reveal-kept-commands (&optional regexp insert-kept-command)
   "Add commands from `shx-kept-commands' into `comint-input-ring'.
