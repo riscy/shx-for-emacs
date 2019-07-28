@@ -405,7 +405,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
           (t (if (file-exists-p (concat remote-id "/bin/sh"))
                  "/bin/sh"  ; /bin/sh _usually_ exists...
-               (file-local-name (read-file-name "Shell: ")))))))
+               (file-remote-p (read-file-name "Shell: ") 'localname))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
