@@ -642,7 +642,8 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
 
 (defun shx-cmd-clear (_args)
   "(SAFE) Clear the buffer."
-  (comint-clear-buffer))
+  ;; this is `comint-clear-buffer' from Emacs >= 25 :
+  (let ((comint-buffer-maximum-size 0)) (comint-truncate-buffer)))
 
 (defun shx-cmd-date (_args)
   "(SAFE) Show the date."
