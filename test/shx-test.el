@@ -75,8 +75,16 @@ Example:
 
 (defun shx-test-unit-checkdoc ()
   "Run `checkdoc' against the shx.el file."
+  (ignore-errors (kill-buffer "*Warnings*"))
   (checkdoc-file (symbol-file 'shx-mode))
   (shx-test-assert "checkdoc runs cleanly" (null (get-buffer "*Warnings*"))))
+
+(defun shx-test-unit-byte-compile ()
+  (ignore-errors (kill-buffer "*Compile-Log*"))
+  (byte-compile-file (symbol-file 'shx-mode))
+  (shx-test-assert "byte-compilation runs cleanly"
+                   (with-current-buffer (get-buffer-create "*Compile-Log*")
+                     (<= (- (point-max) (point)) 3))))
 
 (defun shx-test-unit-declare-function ()
   "Test `declare-function'."
