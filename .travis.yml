@@ -10,4 +10,5 @@ install:
   - echo `dpkg -L emacs25-nox`
 
 script:
+  - emacs -Q --script ./test/script.el
   - emacs25 -Q --script ./test/script.el

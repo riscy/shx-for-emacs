@@ -76,21 +76,24 @@ Example:
 (defun shx-test-unit-checkdoc ()
   "Run `checkdoc' against the shx.el file."
   (ignore-errors (kill-buffer "*Warnings*"))
-  (checkdoc-file (symbol-file 'shx-mode))
-  (shx-test-assert "checkdoc runs cleanly" (null (get-buffer "*Warnings*"))))
+  (let ((file (replace-regexp-in-string ".elc$" ".el" (symbol-file 'shx-mode))))
+    (if (fboundp 'checkdoc-file) (checkdoc-file file))
+    (shx-test-assert "shx.el passes checkdoc" (null (get-buffer "*Warnings*")))))
 
 (defun shx-test-unit-byte-compile ()
+  "Test byte-compilation against the shx.el file."
   (ignore-errors (kill-buffer "*Compile-Log*"))
-  (byte-compile-file (symbol-file 'shx-mode))
-  (shx-test-assert "byte-compilation runs cleanly"
-                   (with-current-buffer (get-buffer-create "*Compile-Log*")
-                     (<= (- (point-max) (point)) 3))))
+  (let ((file (replace-regexp-in-string ".elc$" ".el" (symbol-file 'shx-mode))))
+    (byte-compile-file file)
+    (shx-test-assert "shx.el passes byte-compilation"
+                     (with-current-buffer (get-buffer-create "*Compile-Log*")
+                       (<= (- (point-max) (point)) 3)))))
 
 (defun shx-test-unit-declare-function ()
   "Test `declare-function'."
-  (shx-test-assert
-   "declare-function instances are correct"
-   (not (check-declare-file (symbol-file 'shx-mode)))))
+  (let ((file (replace-regexp-in-string ".elc$" ".el" (symbol-file 'shx-mode))))
+    (shx-test-assert "shx-el passes check-declare-file"
+                     (not (check-declare-file file)))))
 
 (defun shx-test-unit-all-commands ()
   "Test that `shx--all-commands' will only return shx commands."
