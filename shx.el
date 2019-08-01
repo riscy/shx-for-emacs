@@ -197,8 +197,7 @@ This function overrides `comint-input-sender'."
         (comint-simple-send process input)
       (condition-case-unless-debug error-descriptor
           (funcall shx-cmd (substitute-env-vars (match-string 2 input)))
-        (error (shx-insert 'error (error-message-string error-descriptor)
-                           'default "\n")))
+        (error (shx-insert 'error (error-message-string error-descriptor) "\n")))
       (with-current-buffer (process-buffer process)
         ;; advance the process mark to trick comint-mode
         (set-marker (process-mark process) (point)))
@@ -385,7 +384,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 (defun shx--restart-shell ()
   "Guess the shell command and use `comint-exec' to restart."
   (let ((cmd (shx--validate-shell-file-name)))
-    (shx-insert 'font-lock-doc-face cmd " at " default-directory 'default "\n")
+    (shx-insert 'font-lock-doc-face cmd " at " default-directory "\n")
     ;; manually align comint-file-name-prefix with the default-directory:
     (setq-local comint-file-name-prefix (or (file-remote-p default-directory) ""))
     (comint-exec (current-buffer) (buffer-name) cmd nil nil)))
@@ -437,7 +436,7 @@ not nil, then insert the command into the current buffer."
     (when (string-match (or regexp ".") (concat (car command) (cdr command)))
       (when insert-kept-command (ring-insert comint-input-ring (cdr command)))
       (shx-insert 'font-lock-constant-face (car command) ": "
-                  'font-lock-string-face command (cdr command) 'default "\n"))))
+                  'font-lock-string-face command (cdr command) "\n"))))
 
 
 ;;; sending/inserting
@@ -466,7 +465,8 @@ are sent straight through to the process to handle paging."
         (face nil))
     (dolist (arg args nil)
       (cond ((stringp arg)
-             (setq string (concat string (propertize arg 'font-lock-face face))))
+             (setq string (concat string (propertize arg 'font-lock-face face
+                                                     'rear-nonsticky t))))
             ((facep arg)
              (setq face arg))))
     string))
@@ -621,7 +621,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
          (< timer-number (length shx-timer-list))
          (let ((timer (nth timer-number shx-timer-list)))
            (shx-insert "Stopped " 'font-lock-string-face
-                       (shx--format-timer-string timer) 'default "\n")
+                       (shx--format-timer-string timer) "\n")
            (cancel-timer timer))))
   (shx-insert-timer-list))
 
@@ -648,9 +648,9 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   :diff file1.txt \"file 2.csv\""
   (setq files (shx-tokenize-filenames files))
   (if (/= (length files) 2)
-      (shx-insert 'error "diff <file1> <file2>" 'default "\n")
+      (shx-insert 'error "diff <file1> <file2>" "\n")
     (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
-                " and " 'font-lock-doc-face (cadr files) 'default "\n")
+                " and " 'font-lock-doc-face (cadr files) "\n")
     (shx--asynch-funcall #'ediff (mapcar #'expand-file-name files))))
 
 (defun shx-cmd-edit (file)
@@ -662,8 +662,8 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   :e /docker:02fbc948e009:/directory/to/file"
   (setq file (car (shx-tokenize-filenames file)))
   (if (or (string= "" file) (not file))
-      (shx-insert 'error "Couldn't parse filename" 'default "\n")
-    (shx-insert "Editing " 'font-lock-doc-face file 'default "\n")
+      (shx-insert 'error "Couldn't parse filename" "\n")
+    (shx-insert "Editing " 'font-lock-doc-face file "\n")
     (shx--asynch-funcall #'find-file (list (expand-file-name file) t))))
 (defalias 'shx-cmd-e #'shx-cmd-edit)
 
@@ -685,12 +685,12 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :f prefix
   :f *suffix"
   (if (equal file "")
-      (shx-insert 'error "find <prefix>" 'default "\n")
+      (shx-insert 'error "find <prefix>" "\n")
     (let* ((fuzzy-file (mapconcat #'char-to-string (string-to-list file) "*"))
            (command (format "find . -iname '%s*'" fuzzy-file))
            (output (shell-command-to-string command)))
       (if (equal "" output)
-          (shx-insert 'error "No matches for \"" file "\"" 'default "\n")
+          (shx-insert 'error "No matches for \"" file "\"" "\n")
         (shx--hint (concat "finding under " default-directory))
         (apply #'shx-insert-filenames
                (split-string (string-remove-suffix "\n" output) "\n"))
@@ -702,7 +702,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :pipe make
   :pipe git repack -a -d --depth=250 --window=250"
   (if (equal command "")
-      (shx-insert 'error "pipe <command>" 'default "\n")
+      (shx-insert 'error "pipe <command>" "\n")
     (switch-to-buffer-other-window "*shx-pipe*")
     (let ((compilation-buffer-name-function
            (lambda (_mode) "*shx-pipe*")))
@@ -750,7 +750,7 @@ This enables it to be accessed later using `shx-cmd-kept'."
   (let* ((command (substring-no-properties (ring-ref comint-input-ring 1)))
          (desc (read-string (format "'%s'\nDescription: " command))))
     (if (string-empty-p desc)
-        (shx-insert 'error "Description is required" 'default "\n")
+        (shx-insert 'error "Description is required" "\n")
       (add-to-list 'shx-kept-commands `(,desc . ,command))
       (customize-save-variable 'shx-kept-commands shx-kept-commands)
       (shx-insert "Keeping as " 'font-lock-doc-face desc "\n")
@@ -785,8 +785,8 @@ See `Man-notify-method' for what happens when the page is ready."
   :oedit /username@server:~/directory/to/file"
   (setq file (car (shx-tokenize-filenames file)))
   (if (or (string= "" file) (not file))
-      (shx-insert 'error "Couldn't parse filename" 'default "\n")
-    (shx-insert "Editing " 'font-lock-doc-face file 'default "\n")
+      (shx-insert 'error "Couldn't parse filename" "\n")
+    (shx-insert "Editing " 'font-lock-doc-face file "\n")
     (find-file-other-window (expand-file-name file))))
 
 (defun shx-cmd-pwd (_args)
