@@ -154,13 +154,6 @@ sacrifices the soundness of shx's markup and trigger matching."
 
 ;;; input
 
-(defun shx-send (command)
-  "Insert and send COMMAND as if the user had done so.
-This can help in running `ibuffer-do-eval' on multiple buffers."
-  (comint-kill-input)
-  (insert command)
-  (shx-send-input))
-
 (defun shx-send-input-or-open-thing ()
   "Open thing at point, or send input if no identifiable thing."
   (interactive)
