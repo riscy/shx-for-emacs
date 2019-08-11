@@ -187,6 +187,8 @@ In normal circumstances this input is additionally filtered by
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
 This function overrides `comint-input-sender'."
+  (and shell-dirtrackp (string-prefix-p "z " input)
+       (shx--asynch-funcall #'shell-resync-dirs))
   (let* ((regexp (concat "^" shx-leader shx-cmd-syntax))
          (match (string-match regexp (string-trim-left input)))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
