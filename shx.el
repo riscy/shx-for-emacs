@@ -145,6 +145,9 @@ sacrifices the soundness of shx's markup and trigger matching."
 (defvar-local shx--old-undo-disabled nil
   "Whether undo was disabled before `shx-mode' was enabled.")
 
+(defvar-local shx--asynch-point nil)
+(defvar-local shx--asynch-calling-buffer nil)
+
 
 ;;; input
 
@@ -537,6 +540,38 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                `(lambda ()
                   (with-current-buffer ,shx-buffer ,(cons function args)))))
 
+(defun shx--asynch-run (command)
+  "Run shell COMMAND asynchronously; bring the results over when done."
+  (if (get-buffer-process " *shx-asynch*")
+      (shx-insert 'error "shx asynch was busy" 'default "\n")
+    (let* ((shx-buffer_ shx-buffer)
+           (output-buffer (get-buffer-create " *shx-asynch*")))
+      (setq-local shx--asynch-point (point))
+      (shx-insert 'font-lock-doc-face "Fetching..." 'default "\n")
+      (save-window-excursion (async-shell-command command output-buffer))
+      (set-buffer output-buffer)
+      (setq-local shx--asynch-calling-buffer shx-buffer_)
+      (let ((process (get-buffer-process output-buffer)))
+        (set-process-sentinel process #'shx--asynch-sentinel)))))
+
+(defun shx--asynch-sentinel (process _signal)
+  "Sentinel for when PROCESS terminates."
+  (when (memq (process-status process) '(exit signal))
+    (set-buffer (process-buffer process))
+    (let* ((out (buffer-substring (point-min) (point-max))))
+      (set-buffer shx--asynch-calling-buffer)
+      (when (>= shx--asynch-point (point-max))
+        (setq shx--asynch-point 0))
+      (save-excursion
+        (goto-char shx--asynch-point)
+        (let ((inhibit-read-only t))
+          (shx-insert 'font-lock-doc-face
+                      (if (string= "" out) "No output\n" out))
+          ;; FIXME: this is modifying the clipboard, use delete-region
+          ;; (point-at-bol) (point-at-eol)?
+          (unless (= 0 shx--asynch-point) (kill-line 1)))))))
+
+
 (defun shx--delay-input (delay input &optional buffer repeat-interval)
   "After DELAY, process INPUT in the BUFFER.
 If BUFFER is nil, process in the current buffer.  Optional
@@ -617,7 +652,9 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
            (shx-insert "Stopped " 'font-lock-string-face
                        (shx--format-timer-string timer) "\n")
            (cancel-timer timer))))
-  (shx-insert-timer-list))
+  (shx-insert-timer-list)
+  (shx-insert "Asynch process " 'font-lock-constant-face
+              (if (get-buffer-process " *shx-asynch*") "yes" "no") "\n"))
 
 
 ;;; general user commands
@@ -680,15 +717,10 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :f *suffix"
   (if (equal file "")
       (shx-insert 'error "find <prefix>" "\n")
-    (let* ((fuzzy-file (mapconcat #'char-to-string (string-to-list file) "*"))
-           (command (format "find . -iname '%s*'" fuzzy-file))
-           (output (shell-command-to-string command)))
-      (if (equal "" output)
-          (shx-insert 'error "No matches for \"" file "\"" "\n")
-        (shx--hint (concat "finding under " default-directory))
-        (apply #'shx-insert-filenames
-               (split-string (string-remove-suffix "\n" output) "\n"))
-        (insert "\n")))))
+    (shx--asynch-run
+     (format "find %s -iname '%s*'"
+             (string-remove-suffix "/" default-directory)
+             (mapconcat #'char-to-string (string-to-list file) "*")))))
 
 (defun shx-cmd-pipe (command)
   "Pipe the output of COMMAND to a compilation buffer.
