@@ -968,6 +968,8 @@ comint-mode in general.  Use `shx-global-mode' to enable
     (when shx-disable-undo (buffer-disable-undo))
     ;; do this one with a delay because spacemacs tries to set this variable too:
     (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
+    (make-local-variable 'comint-output-filter-functions)
+    (make-local-variable 'comint-input-filter-functions)
     (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
     (shx--advise)))
 
@@ -1002,7 +1004,7 @@ See the function `shx-mode' for details."
     (unless shx-mode (shx-mode))))
 
 
-;; advice to change the behavior of some functions within `shx-mode'
+;;; advice to change the behavior of some functions within `shx-mode'
 
 (defun shx-show-output (&rest _args)
   "Recenter window so that as much output as possible is shown.
