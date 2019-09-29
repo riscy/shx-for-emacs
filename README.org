@@ -92,6 +92,8 @@
     Here's an example customization using ~setq~:
     #+begin_src elisp
     (setq
+      ;; resync the shell's default-directory with Emacs on "z" commands:
+      shx-directory-tracker-regexp "^z "
       ;; vastly improve display performance by breaking up long output lines
       shx-max-output 1024
       ;; prevent input longer than macOS's typeahead buffer from going through

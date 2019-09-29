@@ -91,6 +91,11 @@
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
+(defcustom shx-directory-tracker-regexp nil
+  "Input regexp that triggers the `shell-resync-dirs' command."
+  :link '(function-link shx--directory-tracker)
+  :type '(choice regexp nil))
+
 (defcustom shx-kept-commands nil
   "Shell commands of the form (description . command)."
   :link '(function-link shx-cmd-kept)
@@ -187,8 +192,6 @@ In normal circumstances this input is additionally filtered by
   "Before sending to PROCESS, filter the INPUT.
 That means, if INPUT is a shx-command, do that command instead.
 This function overrides `comint-input-sender'."
-  (and shell-dirtrackp (string-prefix-p "z " input)
-       (shx--asynch-funcall #'shell-resync-dirs))
   (let* ((regexp (concat "^" shx-leader shx-cmd-syntax))
          (match (string-match regexp (string-trim-left input)))
          (shx-cmd (and match (shx--get-user-cmd (match-string 1 input)))))
@@ -202,6 +205,14 @@ This function overrides `comint-input-sender'."
         (set-marker (process-mark process) (point)))
       ;; send a blank to fetch a new prompt
       (when (process-live-p process) (comint-send-string process "\n")))))
+
+(defun shx--directory-tracker (input)
+  "Check INPUT for prefixes that require a call to `shell-resync-dirs'.
+This is similar to `shell-mode's `shell-directory-tracker'.  Adjust the
+behavior of this function by modifying `shx-directory-tracker-regexp'."
+  (and shell-dirtrackp shx-directory-tracker-regexp
+       (string-match shx-directory-tracker-regexp input 0)
+       (shx--asynch-funcall #'shell-resync-dirs)))
 
 (defun shx--propertize-prompt ()
   "Add a mouseover timestamp and `default-directory' info to the last prompt."
@@ -969,6 +980,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
     (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
     (make-local-variable 'comint-output-filter-functions)
     (make-local-variable 'comint-input-filter-functions)
+    (add-hook 'comint-input-filter-functions #'shx--directory-tracker nil t)
     (add-hook 'comint-output-filter-functions #'shx-parse-output-hook nil t)
     (shx--advise)))
 
@@ -979,6 +991,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (font-lock-remove-keywords nil shx-font-locks)
   (unless shx--old-undo-disabled (buffer-enable-undo))
   (setq comint-input-sender 'comint-simple-send)
+  (remove-hook 'comint-input-filter-functions #'shx--directory-tracker t)
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
 
 ;;;###autoload
