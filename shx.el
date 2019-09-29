@@ -545,11 +545,11 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 (defun shx--asynch-run (command)
   "Run shell COMMAND asynchronously; bring the results over when done."
   (if (get-buffer-process " *shx-asynch*")
-      (shx-insert 'error "shx asynch was busy" 'default "\n")
+      (shx-insert 'error "shx asynch was busy\n")
     (let* ((shx-buffer_ shx-buffer)
            (output-buffer (get-buffer-create " *shx-asynch*")))
       (setq-local shx--asynch-point (point))
-      (shx-insert 'font-lock-doc-face "Fetching..." 'default "\n")
+      (shx-insert 'font-lock-doc-face "Running...\n")
       (save-window-excursion (async-shell-command command output-buffer))
       (set-buffer output-buffer)
       (setq-local shx--asynch-calling-buffer shx-buffer_)
@@ -569,10 +569,9 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
         (let ((inhibit-read-only t))
           (shx-insert 'font-lock-doc-face
                       (if (string= "" out) "No output\n" out))
-          ;; FIXME: this is modifying the clipboard, use delete-region
-          ;; (point-at-bol) (point-at-eol)?
-          (unless (= 0 shx--asynch-point) (kill-line 1)))))))
-
+          (unless (= 0 shx--asynch-point)
+            (delete-region (point-at-bol)
+                           (min (point-max) (1+ (point-at-eol))))))))))
 
 (defun shx--delay-input (delay input &optional buffer repeat-interval)
   "After DELAY, process INPUT in the BUFFER.
