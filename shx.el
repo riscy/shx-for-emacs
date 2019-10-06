@@ -485,14 +485,6 @@ are sent straight through to the process to handle paging."
   "Insert ARGS as an output field, combined using `shx-cat'."
   (insert (propertize (apply #'shx-cat args) 'field 'output)))
 
-(defun shx-insert-filenames (&rest files)
-  "Insert FILES, propertized to be clickable."
-  (shx-insert 'font-lock-doc-face
-              (mapconcat
-               (lambda (file)
-                 (propertize file 'keymap shx-click-file 'mouse-face 'link))
-               files "\n")))
-
 (defun shx-insert-timer-list ()
   "Insert a list of the Emacs timers currently in effect."
   (let ((sorted-timer-list (shx--get-timer-list)))
@@ -554,21 +546,24 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
                   (with-current-buffer ,shx-buffer ,(cons function args)))))
 
 (defun shx--asynch-run (command)
-  "Run shell COMMAND asynchronously; bring the results over when done."
-  (if (get-buffer-process " *shx-asynch*")
-      (shx-insert 'error "shx asynch was busy\n")
-    (let* ((shx-buffer_ shx-buffer)
-           (output-buffer (get-buffer-create " *shx-asynch*")))
-      (setq-local shx--asynch-point (point))
-      (shx-insert 'font-lock-doc-face "Running...\n")
-      (save-window-excursion (async-shell-command command output-buffer))
-      (set-buffer output-buffer)
-      (setq-local shx--asynch-calling-buffer shx-buffer_)
-      (let ((process (get-buffer-process output-buffer)))
-        (set-process-sentinel process #'shx--asynch-sentinel)))))
+  "Run shell COMMAND asynchronously; bring the results over when done.
+If a process is already running in the shx-asynch buffer, kill it."
+  (when (get-buffer-process "*shx-asynch*")
+    (kill-process (get-buffer-process "*shx-asynch*"))
+    (while (get-buffer-process "*shx-asynch*") (sleep-for 0.01)))
+  (setq-local shx--asynch-point (point))
+  (shx-insert 'font-lock-builtin-face "Wait..." 'default "\n")
+  (let ((output-buffer (get-buffer-create "*shx-asynch*"))
+        (shx-buffer_ shx-buffer))
+    (save-window-excursion (async-shell-command command output-buffer))
+    (set-buffer output-buffer)
+    (setq-local shx--asynch-calling-buffer shx-buffer_)
+    (let ((process (get-buffer-process output-buffer)))
+      (set-process-sentinel process #'shx--asynch-sentinel)
+      (set-process-query-on-exit-flag process nil))))
 
-(defun shx--asynch-sentinel (process _signal)
-  "Sentinel for when PROCESS terminates."
+(defun shx--asynch-sentinel (process signal)
+  "Sentinel called when PROCESS sees SIGNAL."
   (when (memq (process-status process) '(exit signal))
     (set-buffer (process-buffer process))
     (let* ((out (buffer-substring (point-min) (point-max))))
@@ -578,8 +573,7 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
       (save-excursion
         (goto-char shx--asynch-point)
         (let ((inhibit-read-only t))
-          (shx-insert 'font-lock-doc-face
-                      (if (string= "" out) "No output\n" out))
+          (shx-insert out 'font-lock-builtin-face (capitalize signal))
           (unless (= 0 shx--asynch-point)
             (delete-region (point-at-bol)
                            (min (point-max) (1+ (point-at-eol))))))))))
@@ -664,9 +658,7 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
            (shx-insert "Stopped " 'font-lock-string-face
                        (shx--format-timer-string timer) "\n")
            (cancel-timer timer))))
-  (shx-insert-timer-list)
-  (shx-insert "Asynch process " 'font-lock-constant-face
-              (if (get-buffer-process " *shx-asynch*") "yes" "no") "\n"))
+  (shx-insert-timer-list))
 
 
 ;;; general user commands
@@ -730,8 +722,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   (if (equal file "")
       (shx-insert 'error "find <prefix>" "\n")
     (shx--asynch-run
-     (format "find %s -iname '%s*'"
-             (string-remove-suffix "/" default-directory)
+     (format "find . -iname '%s*'"
              (mapconcat #'char-to-string (string-to-list file) "*")))))
 
 (defun shx-cmd-pipe (command)
