@@ -303,12 +303,14 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
 (defun shx--all-commands (&optional without-prefix)
   "Return a list of all shx commands.
 With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
+  (declare (side-effect-free t))
   (mapcar (lambda (cmd)
             (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
           (all-completions shx-cmd-prefix obarray #'functionp)))
 
 (defun shx-point-on-input-p ()
   "Check if point is on the input region."
+  (declare (side-effect-free t))
   (or (eq (point) (point-max))
       (let ((process (get-buffer-process (current-buffer))))
         (and process (>= (point-marker) (process-mark process))))))
@@ -316,6 +318,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 (defun shx-tokenize (str)
   "Turn STR into a list of tokens, or nil if parsing fails.
 This is robust to various styles of quoting and escaping."
+  (declare (side-effect-free t))
   (setq str (shx--replace-from-list
              ;; protect escaped single/double quotes and spaces:
              '(("\\\\'" "") ("\\\\ " "") ("\\\\\"" "")
@@ -328,6 +331,7 @@ This is robust to various styles of quoting and escaping."
 
 (defun shx--replace-from-list (patterns str)
   "Replace multiple PATTERNS in STR -- in the supplied order."
+  (declare (side-effect-free t))
   (dolist (pattern patterns nil)
     (setq str (replace-regexp-in-string (car pattern) (cadr pattern) str)))
   str)
@@ -335,6 +339,7 @@ This is robust to various styles of quoting and escaping."
 (defun shx-tokenize-filenames (str)
   "Turn STR into a list of filenames, or nil if parsing fails.
 If any path is absolute, prepend `comint-file-name-prefix' to it."
+  (declare (side-effect-free t))
   (mapcar (lambda (filename)
             (cond ((not (file-name-absolute-p filename)) filename)
                   (t (concat comint-file-name-prefix filename))))
@@ -346,6 +351,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
+  (declare (side-effect-free t))
   (cond ((get-buffer-process (current-buffer))
          (save-excursion
            (goto-char (point-max))
@@ -357,11 +363,13 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 
 (defun shx--current-input ()
   "Return what's written after the prompt."
+  (declare (side-effect-free t))
   (buffer-substring (process-mark (get-buffer-process (current-buffer)))
                     (point-at-eol)))
 
 (defun shx--get-timer-list ()
   "Get the list of resident timers."
+  (declare (side-effect-free t))
   (let ((timer-list-1 (mapcar
                        (lambda (timer) (when (shx--timer-by-shx-p timer) timer))
                        timer-list)))
@@ -373,10 +381,12 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 
 (defun shx--timer-by-shx-p (timer)
   "Return t if TIMER was created by shx."
+  (declare (side-effect-free t))
   (string-prefix-p "(lambda nil (shx--auto" (format "%s" (aref timer 5))))
 
 (defun shx--get-user-cmd (cmd-prefix)
   "Return user command prefixed by CMD-PREFIX, or nil."
+  (declare (side-effect-free t))
   (let* ((prefix (format "%s%s" shx-cmd-prefix (downcase cmd-prefix)))
          (completion (try-completion prefix obarray #'functionp)))
     (when completion
@@ -401,6 +411,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 
 (defun shx--validate-shell-file-name ()
   "Guess which shell command to run, even if on a remote host or container."
+  (declare (side-effect-free t))
   (let ((remote-id (or (file-remote-p default-directory) ""))
         ;; guess which shell command to run per `shell' convention:
         (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
@@ -411,6 +422,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
+  (declare (side-effect-free t))
   `(lambda (bound)
      (let ((inhibit-field-text-motion t))
        (when (eq (point-max) (point-at-eol))
@@ -421,6 +433,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
 ESCAPE is the string that can be used to escape the delimiter
 \(defaults to backslash; ignored when set to the empty string).
 MAX-LENGTH is the length of the longest match (default 300)."
+  (declare (side-effect-free t))
   (setq escape (or escape "\\\\"))
   (concat delimiter
           "\\("
@@ -435,6 +448,7 @@ MAX-LENGTH is the length of the longest match (default 300)."
 (defun shx--safe-as-markup-p (command)
   "Return t if COMMAND is safe to call to generate markup.
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
+  (declare (side-effect-free t))
   (let ((doc (documentation command)))
     (ignore-errors (string-prefix-p "(SAFE)" doc))))
 
@@ -471,6 +485,7 @@ are sent straight through to the process to handle paging."
 
 (defun shx-cat (&rest args)
   "Like `concat' but ARGS can be strings or face names."
+  (declare (side-effect-free t))
   (let ((string "")
         (face nil))
     (dolist (arg args nil)
@@ -531,6 +546,7 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 (defun shx--format-timer-string (timer)
   "Create a human-readable string out of TIMER."
+  (declare (side-effect-free t))
   (let* ((str (format "%s" (aref timer 5)))
          (output (string-remove-prefix "(lambda nil (shx--auto "
                                        (string-remove-suffix "))" str))))
@@ -1001,8 +1017,8 @@ See the function `shx-mode' for details."
         (default-directory (or directory default-directory)))
     ;; `switch-to-buffer' first (`shell' uses the unpredictable `pop-to-buffer')
     (switch-to-buffer name)
-    (shx--validate-shell-file-name)
-    (shell name)
+    (let ((explicit-shell-file-name (shx--validate-shell-file-name)))
+      (shell name))
     ;; shx might already be active due to shx-global-mode:
     (unless shx-mode (shx-mode))))
 
