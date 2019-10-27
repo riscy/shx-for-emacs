@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools, comint, shell, repl
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 1.2.0
+;; Version: 1.3.0
 
 ;; This file is free software; you can redistribute or modify it under the terms
 ;; of the GNU General Public License <https://www.gnu.org/licenses/>, version 3
@@ -1040,11 +1040,6 @@ This function only works when the shx minor mode is active."
     (sit-for shx-flash-prompt-time)
     (delete-overlay shx-prompt-overlay)))
 
-(defun shx-snap-to-top (&rest _args)
-  "Recenter window so the current line is at the top.
-This function only works when the shx minor mode is active."
-  (and shx-mode shx-comint-advise (recenter-top-bottom 0)))
-
 (defun shx-switch-to-insert (&rest _args)
   "Switch to insert-mode (when applicable).
 This function only works when the shx minor mode is active."
@@ -1078,7 +1073,6 @@ This function only works when the shx minor mode is active."
     (advice-add #'comint-kill-input :before #'shx-show-output)
     (advice-add #'comint-send-eof :before #'shx-show-output)
     ;; NOTE: comint-next-prompt is called by comint-previous prompt too
-    (advice-add #'comint-next-prompt :after #'shx-snap-to-top)
     (advice-add #'comint-next-prompt :after #'shx-flash-prompt)))
 
 (defun shx-unload-function ()
@@ -1090,7 +1084,6 @@ This function only works when the shx minor mode is active."
   (advice-remove #'comint-history-isearch-backward-regexp #'shx-show-output)
   (advice-remove #'comint-kill-input #'shx-show-output)
   (advice-remove #'comint-send-eof #'shx-show-output)
-  (advice-remove #'comint-next-prompt #'shx-snap-to-top)
   (advice-remove #'comint-next-prompt #'shx-flash-prompt)
   nil)
 
