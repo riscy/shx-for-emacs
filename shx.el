@@ -1007,6 +1007,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   "Call the function `shx-mode' if appropriate for the buffer."
   (when (derived-mode-p 'comint-mode) (shx-mode +1)))
 
+;;;###autoload
 (defun shx (&optional name directory)
   "Create a new shx-enhanced shell session.
 The new buffer is called NAME and uses DIRECTORY as its `default-directory'.
