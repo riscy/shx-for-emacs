@@ -450,7 +450,7 @@ MAX-LENGTH is the length of the longest match (default 300)."
 In particular whether \"(SAFE)\" prepends COMMAND's docstring."
   (declare (side-effect-free t))
   (let ((doc (documentation command)))
-    (ignore-errors (string-prefix-p "(SAFE)" doc))))
+    (and doc (string-prefix-p "(SAFE)" doc))))
 
 (defun shx--reveal-kept-commands (&optional regexp insert-kept-command)
   "Add commands from `shx-kept-commands' into `comint-input-ring'.

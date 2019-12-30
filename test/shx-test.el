@@ -119,9 +119,11 @@ Example:
 (defun shx-test-unit-safe-as-markup ()
   "Test recognition of safe functions."
   (shx-test-assert "shx--safe-as-markup-p recognizes unsafe command"
-                   (not (shx--safe-as-markup-p (intern "shx-cmd-eval"))))
+                   (not (shx--safe-as-markup-p #'shx-cmd-eval)))
   (shx-test-assert "shx--safe-as-markup-p recognizes a safe command"
-                   (shx--safe-as-markup-p (intern "shx-cmd-stop"))))
+                   (shx--safe-as-markup-p #'shx-cmd-stop))
+  (shx-test-assert "shx--safe-as-markup-p handles undocumented command"
+                   (not (shx--safe-as-markup-p (lambda () t)))))
 
 (defun shx-test-unit-get-user-cmd ()
   "Test `shx--get-user-cmd'."
