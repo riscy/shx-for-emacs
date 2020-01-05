@@ -24,15 +24,13 @@
 
 ;;; Code:
 
-(require 'color)
 (require 'comint)
 (require 'files)
 (require 'shell)
 (require 'subr-x)
-
-;; Compiler pacifier
 (defvar evil-state)
 (defvar tramp-syntax)
+(declare-function color-lighten-name "ext:color.el" (name percent))
 (declare-function evil-insert-state "ext:evil-states.el" (&optional arg) t)
 
 
@@ -42,7 +40,8 @@
   "Extras for the (comint-mode) shell."
   :prefix "shx-"
   :group 'comint
-  :link '(url-link :tag "GitHub" "https://github.com/riscy/shx-for-emacs"))
+  :link '(url-link :tag "URL" "https://github.com/riscy/shx-for-emacs")
+  :link '(emacs-commentary-link :tag "Commentary" "shx.el"))
 
 (defcustom shx-disable-undo nil
   "Whether to automatically disable undo in shx buffers."
@@ -468,7 +467,7 @@ not nil, then insert the command into the current buffer."
 (defun shx-magic-insert ()
   "Insert the key pressed or dynamically change the input.
 `comint-magic-space' completes substitutions like '!!', '!*', or
-'^pattern^replacement', and if the prompt is a colon, SPC and q
+'^pattern^replacement' and, if the prompt is a colon, SPC and q
 are sent straight through to the process to handle paging."
   (interactive)
   (let ((on-input (shx-point-on-input-p)))
@@ -525,6 +524,7 @@ are sent straight through to the process to handle paging."
   "Prepare a plot of the data in FILENAME.
 Use a gnuplot specific PLOT-COMMAND (for example 'plot') and
 LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
+  (require 'color)
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
          (status (call-process
                   shx-path-to-gnuplot nil t nil "-e"
