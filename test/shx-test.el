@@ -22,8 +22,7 @@
 
 ;;; Commentary:
 
-;; A handful of tests for shx.  Coverage isn't great yet.
-;; To run on a comint session with shx active type :test
+;; Tests for shx.  To run in a comint session with shx active use :test
 
 ;;; Code:
 
