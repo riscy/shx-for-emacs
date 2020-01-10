@@ -186,7 +186,7 @@ In normal circumstances this input is additionally filtered by
         ((>= (length (shx--current-input)) shx-max-input)
          (message "Input line exceeds `shx-max-input'."))
         (t (shx--propertize-prompt)
-           (comint-send-input nil t))))
+           (comint-send-input))))
 
 (defun shx-filter-input (process input)
   "Before sending to PROCESS, filter the INPUT.
