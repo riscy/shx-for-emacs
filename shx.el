@@ -393,12 +393,12 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
         (when (functionp user-cmd) user-cmd)))))
 
 (defun shx--parse-url ()
-  "Add a matched URL to `shx-urls' and make it clickable."
+  "Add a matched URL to `shx-urls' and apply `shx-click-file'."
   (let ((url (match-string-no-properties 0)))
     (unless (string= url (car shx-urls)) (push url shx-urls)))
   (add-text-properties
    (match-beginning 0) (match-end 0)
-   `(keymap ,shx-click-file mouse-face link font-lock-face font-lock-doc-face)))
+   `(keymap ,shx-click-file mouse-face highlight font-lock-face link)))
 
 (defun shx--restart-shell ()
   "Guess the shell command and use `comint-exec' to restart."
