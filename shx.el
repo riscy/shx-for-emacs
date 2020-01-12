@@ -5,7 +5,7 @@
 ;; Keywords: processes, tools, comint, shell, repl
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 1.3.0
+;; Version: 1.3.1
 
 ;; This file is free software; you can redistribute or modify it under the terms
 ;; of the GNU General Public License <https://www.gnu.org/licenses/>, version 3
