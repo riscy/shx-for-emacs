@@ -178,9 +178,6 @@ In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
   (cond ((not (comint-check-proc shx-buffer))
-         ;; no process?  restart shell in a safe directory:
-         (when (file-remote-p default-directory)
-           (setq default-directory (getenv "HOME")))
          (shx--restart-shell))
         ((>= (length (shx--current-input)) shx-max-input)
          (message "Input line exceeds `shx-max-input'."))
@@ -400,13 +397,23 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
    (match-beginning 0) (match-end 0)
    `(keymap ,shx-click-file mouse-face highlight font-lock-face link)))
 
-(defun shx--restart-shell ()
-  "Guess the shell command and use `comint-exec' to restart."
-  (let ((cmd (shx--validate-shell-file-name)))
-    (shx-insert 'font-lock-doc-face cmd " at " default-directory "\n")
-    ;; manually align comint-file-name-prefix with the default-directory:
-    (setq-local comint-file-name-prefix (or (file-remote-p default-directory) ""))
-    (comint-exec (current-buffer) (buffer-name) cmd nil nil)))
+(defun shx--restart-shell (&optional new-directory)
+  "Guess the shell command and use `comint-exec' to restart.
+If optional NEW-DIRECTORY is set, use that for `default-directory'."
+  ;; This can be tricky, so be proactive about telling the user what's going on
+  (let ((default-directory (or new-directory default-directory)))
+    (when (file-remote-p default-directory)
+      (message "Restarting shell at %s (C-g to stop)" default-directory))
+    (let ((cmd (shx--validate-shell-file-name)))
+      (shx-insert 'font-lock-doc-face "\n" cmd " at " default-directory "\n")
+      ;; manually align comint-file-name-prefix with the default-directory:
+      (setq-local comint-file-name-prefix (or (file-remote-p default-directory) ""))
+      (comint-exec (current-buffer) (buffer-name) cmd nil nil))
+    (when (file-remote-p default-directory)
+      (shx--hint
+       (format "You can return to the localhost with '%sssh'" shx-leader))))
+  ;; if all that was successful, commit to the new default directory:
+  (when new-directory (setq default-directory new-directory)))
 
 (defun shx--validate-shell-file-name ()
   "Guess which shell command to run, even if on a remote host or container."
@@ -415,9 +422,8 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
         ;; guess which shell command to run per `shell' convention:
         (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
-          (t (if (file-exists-p (concat remote-id "/bin/sh"))
-                 "/bin/sh"  ; /bin/sh _usually_ exists...
-               (file-remote-p (read-file-name "Shell: ") 'localname))))))
+          ((file-exists-p (concat remote-id "/bin/sh")) "/bin/sh")
+          (t (file-remote-p (read-file-name "Shell: " 'localname))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
@@ -849,21 +855,21 @@ its own to point the process back at the local filesystem.
   :ssh"
   (let ((host (substring-no-properties
                (replace-regexp-in-string ":" "#" host))))
-    (setq default-directory
-          (cond ((string= "" host) (getenv "HOME"))
-                ((eq tramp-syntax 'default) (concat "/ssh:" host ":~"))
-                (t (concat "/" host "~:"))))
-    (shx--restart-shell)))
+    (shx--restart-shell
+     (cond ((string= "" host) (getenv "HOME"))
+           ((eq tramp-syntax 'default) (format "/ssh:%s:~" host))
+           (t (concat "/" host "~:"))))))
 
 (defun shx-cmd-docker (container-id)
-  "Open a shell Docker process with CONTAINER-ID."
-  (let ((host (substring-no-properties
-               (replace-regexp-in-string ":" "#" container-id))))
-    (setq default-directory
-          (cond ((string= "" host) (getenv "HOME"))
-                ((eq tramp-syntax 'default) (format "/ssh:%s:~" host))
-                (t (concat "/" host "~:"))))
-    (shx--restart-shell)))
+  "Open a shell in a Docker container with CONTAINER-ID."
+  (if (not (require 'docker-tramp nil t))
+      (shx-insert 'error "Install the 'docker-tramp' package first\n")
+    (let ((host (substring-no-properties
+                 (replace-regexp-in-string ":" "#" container-id))))
+      (shx--restart-shell
+       (cond ((string= "" host) (getenv "HOME"))
+             ((eq tramp-syntax 'default) (format "/docker:%s:~" host))
+             (t (concat "/" host "~:")))))))
 
 (defun shx-cmd-sedit (file)
   "Open local FILE using sudo (i.e. as super-user).

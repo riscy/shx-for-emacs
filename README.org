@@ -196,7 +196,7 @@
     | =:kept regexp=       | Show a list of your 'kept' commands matching regexp   |
     | =:keep=              | Add the previous command to the list of kept commands |
     | =:man topic=         | Invoke the Emacs man page browser on a topic          |
-    | =:ssh host=          | Open another shell on the specified host              |
+    | =:ssh <host>=        | Restart the shell on the specified host               |
 
     There are more than this -- type =:help= for a listing of all user commands.
 *** Graphical commands
