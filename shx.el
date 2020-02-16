@@ -422,8 +422,7 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
         ;; guess which shell command to run per `shell' convention:
         (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
-          ((file-exists-p (concat remote-id "/bin/sh")) "/bin/sh")
-          (t (file-remote-p (read-file-name "Shell: " 'localname))))))
+          (t (read-file-name "Shell: " nil nil t (concat remote-id "/bin/sh"))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
