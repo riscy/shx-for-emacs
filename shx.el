@@ -180,7 +180,7 @@ In normal circumstances this input is additionally filtered by
   (cond ((not (comint-check-proc shx-buffer))
          (shx--restart-shell))
         ((>= (length (shx--current-input)) shx-max-input)
-         (message "Input line exceeds `shx-max-input'."))
+         (user-error "Input line exceeds `shx-max-input'"))
         (t (shx--propertize-prompt)
            (comint-send-input))))
 
@@ -217,7 +217,7 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
     (add-text-properties
      (point-at-bol)
      (process-mark (get-buffer-process (current-buffer)))
-     `(help-echo ,(format-time-string "At %X") shx-cwd ,default-directory))))
+     `(help-echo ,(format-time-string "%X") shx-cwd ,default-directory))))
 
 
 ;;; output
@@ -355,7 +355,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it."
              (buffer-substring-no-properties
               (point-at-bol)
               (process-mark (get-buffer-process (current-buffer)))))))
-        (t (message "There is no process.") "")))
+        (t (user-error "There is no process") "")))
 
 (defun shx--current-input ()
   "Return what's written after the prompt."
