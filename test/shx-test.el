@@ -124,6 +124,12 @@ Example:
   (shx-test-assert "shx--safe-as-markup-p handles undocumented command"
                    (not (shx--safe-as-markup-p (lambda () t)))))
 
+(defun shx-test-unit-shell-quote-no-quotation-marks ()
+  "Test `shx--shell-quote-no-quotation-marks'."
+  (shx-test-assert
+   "shx--shell-quote-no-quotation-marks escapes string"
+   (string= (shx--shell-quote-no-quotation-marks "test\"test") "test\\\"test")))
+
 (defun shx-test-unit-get-user-cmd ()
   "Test `shx--get-user-cmd'."
   (shx-test-assert "shx--get-user-cmd returns nil for empty string"
