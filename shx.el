@@ -314,7 +314,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
 (defun shx-tokenize (str)
   "Turn STR into a list of tokens, or nil if parsing fails.
 This is robust to various styles of quoting and escaping."
-  (declare (side-effect-free t))
+  (declare (side-effect-free t) (pure t))
   (setq str (shx--replace-from-list
              ;; protect escaped single/double quotes and spaces:
              '(("\\\\'" "") ("\\\\ " "") ("\\\\\"" "")
@@ -327,7 +327,7 @@ This is robust to various styles of quoting and escaping."
 
 (defun shx--replace-from-list (patterns str)
   "Replace multiple PATTERNS in STR -- in the supplied order."
-  (declare (side-effect-free t))
+  (declare (side-effect-free t) (pure t))
   (dolist (pattern patterns nil)
     (setq str (replace-regexp-in-string (car pattern) (cadr pattern) str)))
   str)
