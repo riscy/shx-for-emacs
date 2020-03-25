@@ -2,15 +2,11 @@
 
 ;; Authors: Chris Rayner (dchrisrayner@gmail.com)
 ;; Created: May 23 2011
-;; Keywords: processes, tools, comint, shell, repl
+;; Keywords: terminals, processes, tools, comint, shell, repl
 ;; URL: https://github.com/riscy/shx-for-emacs
+;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Package-Requires: ((emacs "24.4"))
 ;; Version: 1.3.1
-
-;; This file is free software; you can redistribute or modify it under the terms
-;; of the GNU General Public License <https://www.gnu.org/licenses/>, version 3
-;; or any later version.  This software comes with with NO WARRANTY, not even
-;; the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ;;; Commentary:
 
