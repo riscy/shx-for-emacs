@@ -26,7 +26,6 @@
 (require 'subr-x)
 (defvar evil-state)
 (defvar tramp-syntax)
-(declare-function color-lighten-name "ext:color.el" (name percent))
 (declare-function evil-insert-state "ext:evil-states.el" (&optional arg) t)
 
 
