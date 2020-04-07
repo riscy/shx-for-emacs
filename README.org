@@ -98,6 +98,8 @@
       shx-max-output 1024
       ;; prevent input longer than macOS's typeahead buffer from going through
       shx-max-input 1024
+      ;; prefer "/bin/sh" when opening a shell on Docker containers
+      shx-customized-shell-commands '(("/docker:.*" . "/bin/sh"))
       ;; prefer inlined images and plots to have a height of 250 pixels
       shx-img-height 250
       ;; don't show any incidental hint messages about how to use shx
@@ -164,6 +166,20 @@
   :e $HOME/.emacs.d
   #+end_src
   (To see an environment variable's value, use ~(getenv "<var>")~.)
+
+  The =:ssh= and =:docker= commands are popular for opening "remote" shells:
+  #+begin_src bash
+  # open a shell on a remote host:
+  :ssh user@remote-host.com
+
+  # connect to a running docker container
+  :docker 8a8335d63ff3
+
+  # reopen the shell on the localhost:
+  :ssh
+  #+end_src
+  Thanks to input from [[https://github.com/p3r7][Jordan Besly]], you can customize the default interpreter
+  for each "remote" by customizing ~shx-customized-shell-commands~.
 
   I also use the =:kept= and =:keep= commands frequently:
   #+begin_src bash

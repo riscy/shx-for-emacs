@@ -137,10 +137,10 @@ Example:
   (shx-test-assert "shx--get-user-cmd returns command with correct prefix"
                    (eq (shx--get-user-cmd "test-al") 'shx-cmd-test-all)))
 
-(defun shx-test-unit-validate-shell-file-name ()
-  "Test `shx--validate-shell-file-name'."
-  (shx-test-assert "shx--validate-shell-file-name finds the default shell"
-                   (not (string-empty-p (shx--validate-shell-file-name)))))
+(defun shx-test-unit-shell-command ()
+  "Test `shx--shell-command'."
+  (shx-test-assert "shx--shell-command finds the default shell"
+                   (not (string-empty-p (shx--shell-command)))))
 
 (defun shx-test-unit-replace-from-list ()
   "Test `shx--replace-from-list'."

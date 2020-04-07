@@ -85,6 +85,12 @@
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
+(defcustom shx-customized-shell-commands '()
+  "Map from hostnames/remote identifiers to preferred shells/interpreters.
+Example: ((\"my-host\\.ca\" . \"/bin/zsh\") (\"^/docker:.*\" . \"/bin/sh\"))"
+  :link '(function-link shx--customized-shell-command)
+  :type '(alist :key-type regexp :value-type string))
+
 (defcustom shx-directory-tracker-regexp nil
   "Input regexp that triggers the `shell-resync-dirs' command."
   :link '(function-link shx--directory-tracker)
@@ -399,7 +405,7 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
   (let ((default-directory (or new-directory default-directory)))
     (when (file-remote-p default-directory)
       (message "Restarting shell at %s (C-g to stop)" default-directory))
-    (let ((cmd (shx--validate-shell-file-name)))
+    (let ((cmd (shx--shell-command)))
       (shx-insert 'font-lock-doc-face "\n" cmd " at " default-directory "\n")
       ;; manually align comint-file-name-prefix with the default-directory:
       (setq-local comint-file-name-prefix (or (file-remote-p default-directory) ""))
@@ -410,14 +416,30 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
   ;; if all that was successful, commit to the new default directory:
   (when new-directory (setq default-directory new-directory)))
 
-(defun shx--validate-shell-file-name ()
-  "Guess which shell command to run, even if on a remote host or container."
+(defun shx--shell-command ()
+  "Get the shell command, even if on a remote host or container."
   (declare (side-effect-free t))
-  (let ((remote-id (or (file-remote-p default-directory) ""))
-        ;; guess which shell command to run per `shell' convention:
-        (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+  (let* ((remote-id (or (file-remote-p default-directory) ""))
+         ;; guess which shell command to run per `shell' convention:
+         (cmd (or explicit-shell-file-name
+                  (shx--customized-shell-command remote-id)
+                  (getenv "ESHELL")
+                  shell-file-name)))
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
-          (t (read-file-name "Shell: " nil nil t (concat remote-id "/bin/sh"))))))
+          (t (completing-read "Shell command: " nil)))))
+
+(defun shx--customized-shell-command (host &optional options)
+  "Return user's preferred interpreter for HOST, or nil.
+If OPTIONS is nil, choose from among `shx-customized-shell-commands'."
+  (declare (side-effect-free t))
+  (setq options (or options shx-customized-shell-commands))
+  (when options
+    (let ((regexp (caar options))
+          (interpreter (cdar options))
+          (host (or host "localhost")))
+      (cond
+       ((string-match regexp host) interpreter)
+       ((cdr options) (shx--customized-shell-command host (cdr options)))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
@@ -1019,7 +1041,7 @@ See the function `shx-mode' for details."
         (default-directory (or directory default-directory)))
     ;; `switch-to-buffer' first (`shell' uses the unpredictable `pop-to-buffer')
     (switch-to-buffer name)
-    (let ((explicit-shell-file-name (shx--validate-shell-file-name)))
+    (let ((explicit-shell-file-name (shx--shell-command)))
       (shell name))
     ;; shx might already be active due to shx-global-mode:
     (unless shx-mode (shx-mode))))
