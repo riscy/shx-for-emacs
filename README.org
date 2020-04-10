@@ -11,6 +11,7 @@
 - [[#description][Description]]
 - [[#install][Install]]
     - [[#from-melpa][From MELPA]]
+    - [[#from-gnu-guix][From GNU Guix]]
     - [[#manually][Manually]]
 - [[#setup][Setup]]
     - [[#quick-start][Quick-start]]

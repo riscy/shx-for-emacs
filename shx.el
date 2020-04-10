@@ -268,7 +268,8 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
   (forward-line 0))
 
 (defun shx--search-forward (pattern)
-  "Search forward from the current point for PATTERN."
+  "Search forward from the current point for PATTERN.
+But don't search the last line, which may be incomplete."
   (when (< (point-at-eol) (point-max))
     (re-search-forward pattern nil t)))
 
@@ -299,7 +300,11 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
 
 (defun shx--all-commands (&optional without-prefix)
   "Return a list of all shx commands.
-With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each."
+With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each.
+>> (member \"shx-cmd-delay\" (shx--all-commands))
+=> (\"shx-cmd-delay\") ; i.e., not nil
+>> (not (member \"shx-cmd-prefix\" (shx--all-commands)))
+=> t"
   (declare (side-effect-free t))
   (mapcar (lambda (cmd)
             (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
@@ -335,7 +340,9 @@ This is robust to various styles of quoting and escaping."
 
 (defun shx-tokenize-filenames (str)
   "Turn STR into a list of filenames, or nil if parsing fails.
-If any path is absolute, prepend `comint-file-name-prefix' to it."
+If any path is absolute, prepend `comint-file-name-prefix' to it.
+>> (shx-tokenize \"'first' 'second token' /third\")
+=> (\"first\" \"second token\" \"/third\")"
   (declare (side-effect-free t))
   (mapcar (lambda (filename)
             (cond ((not (file-name-absolute-p filename)) filename)

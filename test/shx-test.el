@@ -94,14 +94,6 @@ Example:
     (shx-test-assert "shx-el passes check-declare-file"
                      (not (check-declare-file file)))))
 
-(defun shx-test-unit-all-commands ()
-  "Test that `shx--all-commands' will only return shx commands."
-  (shx-test-assert
-   "shx--all-commands lists user command functions"
-   (and (listp (shx--all-commands))
-        (member "shx-cmd-delay" (shx--all-commands))
-        (not (member "shx-cmd-prefix" (shx--all-commands))))))
-
 (defun shx-test-unit-quote-regexp ()
   "Test pattern matching on delimited regexps like strings."
   (shx-test-assert
