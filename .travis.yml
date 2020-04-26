@@ -1,14 +1,17 @@
 sudo: required
-
-language: c
-
+language: python
+python: ['3.6']
 install:
   - emacs --version
   - yes '' | sudo add-apt-repository ppa:kelleyk/emacs
   - sudo apt update
   - sudo apt install emacs25-nox
   - echo `dpkg -L emacs25-nox`
-
+  - git clone https://github.com/riscy/melpazoid.git ~/melpazoid
+  - pip install ~/melpazoid
+env:
+  - RECIPE='(shx :repo "riscy/shx-for-emacs" :fetcher github)' EXIST_OK=true
 script:
   - emacs -Q --script ./test/script.el
   - emacs25 -Q --script ./test/script.el
+  - make -C ~/melpazoid
