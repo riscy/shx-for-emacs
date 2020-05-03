@@ -101,8 +101,6 @@
       shx-max-output 1024
       ;; prevent input longer than macOS's typeahead buffer from going through
       shx-max-input 1024
-      ;; prefer "/bin/sh" when opening a shell on Docker containers
-      shx-customized-shell-commands '(("/docker:.*" . "/bin/sh"))
       ;; prefer inlined images and plots to have a height of 250 pixels
       shx-img-height 250
       ;; don't show any incidental hint messages about how to use shx
@@ -181,8 +179,8 @@
   # reopen the shell on the localhost:
   :ssh
   #+end_src
-  Thanks to input from [[https://github.com/p3r7][Jordan Besly]], you can customize the default interpreter
-  for each "remote" by customizing ~shx-customized-shell-commands~.
+  [[https://github.com/p3r7][Jordan Besly]] points out that you can customize the default interpreter
+  for each "remote" [[https://www.gnu.org/software/emacs/manual/html_node/tramp/Remote-processes.html][using ~connection-profile-set-local-variables~]].
 
   I also use the =:kept= and =:keep= commands frequently:
   #+begin_src bash

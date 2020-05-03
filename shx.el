@@ -6,7 +6,7 @@
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 1.4.0
+;; Version: 1.5.0
 
 ;;; Commentary:
 
@@ -84,12 +84,6 @@
   '(("https?://[A-Za-z0-9,./?=&;_-]+[^[:space:].\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
-
-(defcustom shx-customized-shell-commands '()
-  "Map from hostnames/remote identifiers to preferred shells/interpreters.
-Example: ((\"my-host\\.ca\" . \"/bin/zsh\") (\"^/docker:.*\" . \"/bin/sh\"))"
-  :link '(function-link shx--customized-shell-command)
-  :type '(alist :key-type regexp :value-type string))
 
 (defcustom shx-directory-tracker-regexp nil
   "Input regexp that triggers the `shell-resync-dirs' command."
@@ -429,24 +423,10 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
   (let* ((remote-id (or (file-remote-p default-directory) ""))
          ;; guess which shell command to run per `shell' convention:
          (cmd (or explicit-shell-file-name
-                  (shx--customized-shell-command remote-id)
                   (getenv "ESHELL")
                   shell-file-name)))
     (cond ((file-exists-p (concat remote-id cmd)) cmd)
           (t (completing-read "Shell command: " nil)))))
-
-(defun shx--customized-shell-command (host &optional options)
-  "Return user's preferred interpreter for HOST, or nil.
-If OPTIONS is nil, choose from among `shx-customized-shell-commands'."
-  (declare (side-effect-free t))
-  (setq options (or options shx-customized-shell-commands))
-  (when options
-    (let ((regexp (caar options))
-          (interpreter (cdar options))
-          (host (or host "localhost")))
-      (cond
-       ((string-match regexp host) interpreter)
-       ((cdr options) (shx--customized-shell-command host (cdr options)))))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
