@@ -59,6 +59,8 @@
 * Install
 *** From MELPA
     =M-x package-install RET shx RET= to install =shx= from [[https://melpa.org/][MELPA]].
+*** From GNU Guix
+    =guix install emacs-shx= to install =shx= from [[https://guix.gnu.org/][GNU Guix]].
 *** Manually
     Add the following to your =.emacs=:
     #+begin_src elisp
