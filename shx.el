@@ -1032,7 +1032,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
 
 ;;;###autoload
-(define-globalized-minor-mode shx-global-mode shx-mode shx--global-on :require 'shx)
+(define-globalized-minor-mode shx-global-mode shx-mode shx--global-on)
 
 (defun shx--global-on ()
   "Call the function `shx-mode' if appropriate for the buffer."
