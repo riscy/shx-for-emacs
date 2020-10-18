@@ -316,7 +316,7 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each.
   "Check if point is on the input region."
   (declare (side-effect-free t))
   (or
-   (eq (point) (point-max))
+   (eobp)
    (let ((process (get-buffer-process (current-buffer))))
      (and process (>= (point-marker) (process-mark process))))))
 
@@ -454,7 +454,6 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
-  (declare (side-effect-free t))
   `(lambda (bound)
      (let ((inhibit-field-text-motion t))
        (when (eq (point-max) (point-at-eol))
