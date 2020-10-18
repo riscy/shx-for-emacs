@@ -63,9 +63,7 @@
   :link '(function-link shx-magic-insert)
   :type 'boolean)
 
-(defcustom shx-leader ":"
-  "Prefix for calling user commands."
-  :type 'regexp)
+(defcustom shx-leader ":" "Prefix for calling user commands." :type 'regexp)
 
 (defcustom shx-comint-advise t
   "Whether to advise the behavior of a number of `comint-mode' functions."
@@ -109,13 +107,13 @@ sacrifices the soundness of shx's markup and trigger matching."
   :link '(function-link shx--break-long-line-maybe)
   :type 'integer)
 
-(defvar shx-cmd-prefix "shx-cmd-"
-  "Prefix for user-command functions.")
+(defvar shx-cmd-prefix "shx-cmd-" "Prefix for user-command functions.")
 
 (defvar shx-cmd-syntax "\\([^[:space:]]+\\)[[:space:]]*\\(.*[^[:space:]]?\\)"
   "Regex for recognizing shx commands in input or markup.")
 
-(defvar shx-markup-syntax (concat "^<" shx-cmd-syntax ">\n")
+(defvar shx-markup-syntax
+  (concat "^<" shx-cmd-syntax ">\n")
   "Regex for recognizing shx commands in markup.")
 
 (defvar shx-mode-map
@@ -130,9 +128,10 @@ sacrifices the soundness of shx's markup and trigger matching."
     keymap)
   "Keymap for shx.")
 
-(defvar shx-click-file (let ((keymap (make-sparse-keymap)))
-                         (define-key keymap [mouse-1] #'ffap-at-mouse)
-                         keymap)
+(defvar shx-click-file
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap [mouse-1] #'ffap-at-mouse)
+    keymap)
   "Keymap for capturing mouse clicks on files/URLs.")
 
 (defvar-local shx-buffer nil "Local reference to the shx buffer.")
@@ -153,17 +152,16 @@ sacrifices the soundness of shx's markup and trigger matching."
 (defun shx-send-input-or-open-thing ()
   "Open thing at point, or send input if no identifiable thing."
   (interactive)
-  (if (shx-point-on-input-p)
-      (shx-send-input)
-    (find-file-at-point)))
+  (if (shx-point-on-input-p) (shx-send-input) (find-file-at-point)))
 
 (defun shx-send-input-or-copy-line ()
   "Copy current line to prompt, or send input if at the prompt."
   (interactive)
   (if (shx-point-on-input-p)
       (shx-send-input)
-    (let ((line (string-trim (buffer-substring-no-properties
-                              (point-at-bol) (point-at-eol)))))
+    (let ((line
+           (string-trim
+            (buffer-substring-no-properties (point-at-bol) (point-at-eol)))))
       (goto-char (point-max))
       (insert line))))
 
@@ -172,12 +170,12 @@ sacrifices the soundness of shx's markup and trigger matching."
 In normal circumstances this input is additionally filtered by
 `shx-filter-input' via `comint-mode'."
   (interactive)
-  (cond ((not (comint-check-proc shx-buffer))
-         (shx--restart-shell))
-        ((>= (length (shx--current-input)) shx-max-input)
-         (user-error "Input line exceeds `shx-max-input'"))
-        (t (shx--propertize-prompt)
-           (comint-send-input))))
+  (cond
+   ((not (comint-check-proc shx-buffer))
+    (shx--restart-shell))
+   ((>= (length (shx--current-input)) shx-max-input)
+    (user-error "Input line exceeds `shx-max-input'"))
+   (t (shx--propertize-prompt) (comint-send-input))))
 
 (defun shx-filter-input (process input)
   "Before sending to PROCESS, filter the INPUT.
@@ -230,15 +228,19 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
     (let ((originating-buffer shx-buffer))
       (while (shx--search-forward shx-markup-syntax)
         (let ((command (shx--get-user-cmd (match-string 1)))
-              (args    (match-string 2)))
-          (cond ((not command) nil)
-                ((not (shx--safe-as-markup-p command))
-                 (add-text-properties
-                  (point-at-bol) (point-at-eol)
-                  `(help-echo "shx: this markup was unsafe/undefined")))
-                (t (replace-match "")   ; hide the markup
-                   (funcall command args)
-                   (set-buffer originating-buffer))))))))
+              (args (match-string 2)))
+          (cond
+           ((not command)
+            nil)
+           ((not (shx--safe-as-markup-p command))
+            (add-text-properties
+             (point-at-bol)
+             (point-at-eol)
+             `(help-echo "shx: this markup was unsafe/undefined")))
+           (t
+            (replace-match "")   ; hide the markup
+            (funcall command args)
+            (set-buffer originating-buffer))))))))
 
 (defun shx--parse-output-for-triggers ()
   "Look for triggers in the latest output from the process (e.g. URLs)."
@@ -256,9 +258,10 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
 
 (defun shx--goto-last-input-or-output ()
   "Go to the beginning of the latest output from the process."
-  (goto-char (if (marker-position comint-last-output-start)
-                 (max comint-last-output-start comint-last-input-end)
-               comint-last-input-end))
+  (goto-char
+   (if (marker-position comint-last-output-start)
+       (max comint-last-output-start comint-last-input-end)
+     comint-last-input-end))
   (forward-line 0))
 
 (defun shx--search-forward (pattern)
@@ -270,7 +273,9 @@ But don't search the last line, which may be incomplete."
 (defun shx--break-long-line-maybe ()
   "Break the current line if it's longer than `shx-max-output'."
   (when (> (current-column) shx-max-output)
-    (or (re-search-backward "\\s-" (- (point) shx-max-output) t) (backward-char))
+    (or
+     (re-search-backward "\\s-" (- (point) shx-max-output) t)
+     (backward-char))
     (insert-char ?\n)
     (goto-char (point-max))))
 
@@ -288,8 +293,10 @@ But don't search the last line, which may be incomplete."
   (let ((prefix (concat shx-cmd-prefix shx-command)))
     (if (functionp (intern prefix))
         (describe-function (intern prefix))
-      (let ((comp (completing-read "Complete shx command: "
-                                   (shx--all-commands) nil t prefix)))
+      (let ((comp
+             (completing-read "Complete shx command: "
+                              (shx--all-commands)
+                              nil t prefix)))
         (describe-function (intern comp))))))
 
 (defun shx--all-commands (&optional without-prefix)
@@ -300,30 +307,36 @@ With non-nil WITHOUT-PREFIX, strip `shx-cmd-prefix' from each.
 >> (not (member \"shx-cmd-prefix\" (shx--all-commands)))
 => t"
   (declare (side-effect-free t))
-  (mapcar (lambda (cmd)
-            (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
-          (all-completions shx-cmd-prefix obarray #'functionp)))
+  (mapcar
+   (lambda (cmd)
+     (if without-prefix (string-remove-prefix shx-cmd-prefix cmd) cmd))
+   (all-completions shx-cmd-prefix obarray #'functionp)))
 
 (defun shx-point-on-input-p ()
   "Check if point is on the input region."
   (declare (side-effect-free t))
-  (or (eq (point) (point-max))
-      (let ((process (get-buffer-process (current-buffer))))
-        (and process (>= (point-marker) (process-mark process))))))
+  (or
+   (eq (point) (point-max))
+   (let ((process (get-buffer-process (current-buffer))))
+     (and process (>= (point-marker) (process-mark process))))))
 
 (defun shx-tokenize (str)
   "Turn STR into a list of tokens, or nil if parsing fails.
 This is robust to various styles of quoting and escaping."
   (declare (side-effect-free t) (pure t))
-  (setq str (shx--replace-from-list
-             ;; protect escaped single/double quotes and spaces:
-             '(("\\\\'" "") ("\\\\ " "") ("\\\\\"" "")
-               ("'" "\"")               ; prefer double quoting
-               ("\\\\\\(.\\)" "\\1"))   ; remove escape chars
-             str))
-  (mapcar (lambda (token)
-            (shx--replace-from-list '(("" "'") ("" " ") ("" "\"")) token))
-          (ignore-errors (split-string-and-unquote str))))
+  (setq str
+        (shx--replace-from-list
+         ;; protect escaped single/double quotes and spaces:
+         '(("\\\\'" "") ("\\\\ " "") ("\\\\\"" "") ; nofmt
+           ("'" "\"")               ; prefer double quoting
+           ("\\\\\\(.\\)" "\\1"))   ; remove escape chars
+         str))
+  (mapcar
+   (lambda (token)
+     (shx--replace-from-list
+      '(("" "'") ("" " ") ("" "\""))
+      token))
+   (ignore-errors (split-string-and-unquote str))))
 
 (defun shx--replace-from-list (patterns str)
   "Replace multiple PATTERNS in STR -- in the supplied order."
@@ -338,10 +351,13 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
 >> (shx-tokenize \"'first' 'second token' /third\")
 => (\"first\" \"second token\" \"/third\")"
   (declare (side-effect-free t))
-  (mapcar (lambda (filename)
-            (cond ((not (file-name-absolute-p filename)) filename)
-                  (t (concat comint-file-name-prefix filename))))
-          (shx-tokenize str)))
+  (mapcar
+   (lambda (filename)
+     (cond
+      ((not (file-name-absolute-p filename))
+       filename)
+      (t (concat comint-file-name-prefix filename))))
+   (shx-tokenize str)))
 
 (defun shx--hint (text)
   "Show a hint containing TEXT."
@@ -350,37 +366,43 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
   (declare (side-effect-free t))
-  (cond ((get-buffer-process (current-buffer))
-         (save-excursion
-           (goto-char (point-max))
-           (let ((inhibit-field-text-motion t))
-             (buffer-substring-no-properties
-              (point-at-bol)
-              (process-mark (get-buffer-process (current-buffer)))))))
-        (t (user-error "There is no process") "")))
+  (cond
+   ((get-buffer-process (current-buffer))
+    (save-excursion
+      (goto-char (point-max))
+      (let ((inhibit-field-text-motion t))
+        (buffer-substring-no-properties
+         (point-at-bol)
+         (process-mark (get-buffer-process (current-buffer)))))))
+   (t (user-error "There is no process") "")))
 
 (defun shx--current-input ()
   "Return what's written after the prompt."
   (declare (side-effect-free t))
-  (buffer-substring (process-mark (get-buffer-process (current-buffer)))
-                    (point-at-eol)))
+  (buffer-substring
+   (process-mark (get-buffer-process (current-buffer)))
+   (point-at-eol)))
 
 (defun shx--get-timer-list ()
   "Get the list of resident timers."
   (declare (side-effect-free t))
-  (let ((timer-list-1 (mapcar
-                       (lambda (timer) (when (shx--timer-by-shx-p timer) timer))
-                       timer-list)))
+  (let ((timer-list-1
+         (mapcar
+          (lambda (timer) (when (shx--timer-by-shx-p timer) timer))
+          timer-list)))
     ;; sort the timers for consistency
-    (sort (remove nil timer-list-1)
-          (lambda (first-timer second-timer)
-            (string< (format "%s" (aref first-timer 5))
-                     (format "%s" (aref second-timer 5)))))))
+    (sort
+     (remove nil timer-list-1)
+     (lambda (first-timer second-timer)
+       (string<
+        (format "%s" (aref first-timer 5))
+        (format "%s" (aref second-timer 5)))))))
 
 (defun shx--timer-by-shx-p (timer)
   "Return t if TIMER was created by shx."
   (declare (side-effect-free t))
-  (string-prefix-p "(lambda nil (shx--auto" (format "%s" (aref timer 5))))
+  (string-prefix-p "(lambda nil (shx--auto"
+                   (format "%s" (aref timer 5))))
 
 (defun shx--get-user-cmd (cmd-prefix)
   "Return user command prefixed by CMD-PREFIX, or nil."
@@ -396,7 +418,8 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
   (let ((url (match-string-no-properties 0)))
     (unless (string= url (car shx-urls)) (push url shx-urls)))
   (add-text-properties
-   (match-beginning 0) (match-end 0)
+   (match-beginning 0)
+   (match-end 0)
    `(keymap ,shx-click-file mouse-face highlight font-lock-face link)))
 
 (defun shx--restart-shell (&optional new-directory)
@@ -409,7 +432,8 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
     (let ((cmd (shx--shell-command)))
       (shx-insert 'font-lock-doc-face "\n" cmd " at " default-directory "\n")
       ;; manually align comint-file-name-prefix with the default-directory:
-      (setq-local comint-file-name-prefix (or (file-remote-p default-directory) ""))
+      (setq-local comint-file-name-prefix
+                  (or (file-remote-p default-directory) ""))
       (comint-exec (current-buffer) (buffer-name) cmd nil nil))
     (when (file-remote-p default-directory)
       (shx--hint
@@ -422,11 +446,11 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
   (declare (side-effect-free t))
   (let* ((remote-id (or (file-remote-p default-directory) ""))
          ;; guess which shell command to run per `shell' convention:
-         (cmd (or explicit-shell-file-name
-                  (getenv "ESHELL")
-                  shell-file-name)))
-    (cond ((file-exists-p (concat remote-id cmd)) cmd)
-          (t (completing-read "Shell command: " nil)))))
+         (cmd (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+    (cond
+     ((file-exists-p (concat remote-id cmd))
+      cmd)
+     (t (completing-read "Shell command: " nil)))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
@@ -450,7 +474,9 @@ MAX-LENGTH is the length of the longest match (default 300)."
                     escape delimiter "\\|")) ; escaped delimiter
           "[^" delimiter "]"
           "\\)"
-          "\\{0," (format "%d" (or max-length 300)) "\\}"
+          "\\{0,"
+          (format "%d" (or max-length 300))
+          "\\}"
           delimiter))
 
 (defun shx--safe-as-markup-p (command)
@@ -465,10 +491,16 @@ In particular whether \"(SAFE)\" prepends COMMAND's docstring."
 REGEXP filters which commands to add.  If INSERT-KEPT-COMMAND is
 not nil, then insert the command into the current buffer."
   (dolist (command shx-kept-commands nil)
-    (when (string-match (or regexp ".") (concat (car command) (cdr command)))
+    (when (string-match
+           (or regexp ".")
+           (concat (car command) (cdr command)))
       (when insert-kept-command (ring-insert comint-input-ring (cdr command)))
-      (shx-insert 'font-lock-constant-face (car command) ": "
-                  'font-lock-string-face command (cdr command) "\n"))))
+      (shx-insert 'font-lock-constant-face
+                  (car command)
+                  ": "
+                  'font-lock-string-face command
+                  (cdr command)
+                  "\n"))))
 
 
 ;;; sending/inserting
@@ -487,9 +519,7 @@ are sent straight through to the process to handle paging."
           (shx--hint (format "sending '%s'" (this-command-keys)))
           (process-send-string nil (this-command-keys)))
       (unless on-input (goto-char (point-max)))
-      (if shx-use-magic-insert
-          (comint-magic-space 1)
-        (self-insert-command 1)))))
+      (if shx-use-magic-insert (comint-magic-space 1) (self-insert-command 1)))))
 
 (defun shx-cat (&rest args)
   "Like `concat' but ARGS can be strings or face names."
@@ -497,11 +527,13 @@ are sent straight through to the process to handle paging."
   (let ((string "")
         (face nil))
     (dolist (arg args nil)
-      (cond ((stringp arg)
-             (setq string (concat string (propertize arg 'font-lock-face face
-                                                     'rear-nonsticky t))))
-            ((facep arg)
-             (setq face arg))))
+      (cond
+       ((stringp arg)
+        (setq string
+              (concat string
+                      (propertize arg 'font-lock-face face 'rear-nonsticky t))))
+       ((facep arg)
+        (setq face arg))))
     string))
 
 (defun shx-insert (&rest args)
@@ -512,7 +544,9 @@ are sent straight through to the process to handle paging."
   "Insert a list of the Emacs timers currently in effect."
   (let ((sorted-timer-list (shx--get-timer-list)))
     (dotimes (timer-number (length sorted-timer-list))
-      (shx--insert-timer (1+ timer-number) (nth timer-number sorted-timer-list))
+      (shx--insert-timer
+       (1+ timer-number)
+       (nth timer-number sorted-timer-list))
       (shx-insert "\n"))
     (shx-insert "Active timers: " 'font-lock-constant-face
                 (format "%d\n" (length sorted-timer-list)))))
@@ -520,9 +554,13 @@ are sent straight through to the process to handle paging."
 (defun shx-insert-image (filename)
   "Insert image FILENAME into the buffer."
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
-         (status (call-process
-                  shx-path-to-convert nil t nil (expand-file-name filename)
-                  "-resize" (format "x%d>" shx-img-height) img-name)))
+         (status
+          (call-process
+           shx-path-to-convert nil t nil
+           (expand-file-name filename)
+           "-resize"
+           (format "x%d>" shx-img-height)
+           img-name)))
     (when (zerop status)
       (let ((pos (point)))
         (insert-image (create-image img-name))
@@ -536,24 +574,29 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
          (color (face-attribute 'default :foreground))
          (filename (shx--shell-quote-no-quotation-marks filename))
-         (status (call-process
-                  shx-path-to-gnuplot nil t nil "-e"
-                  (format "set term png transparent truecolor; set border lw 3 \
+         (status
+          (call-process
+           shx-path-to-gnuplot nil t nil "-e"
+           (format "set term png transparent truecolor; set border lw 3 \
                            lc rgb \"%s\"; set out \"%s\"; %s \"%s\" %s"
-                          color img-name plot-command filename line-style))))
+                   color img-name plot-command filename line-style))))
     (when (zerop status) (shx-insert-image img-name))))
 
 (defun shx--shell-quote-no-quotation-marks (str)
   "Shell-quote STR, but strip the \"'s added in some `system-type's."
   (replace-regexp-in-string  ; NOTE: in Emacs 26+ we can use `string-trim'
-   "\"$" "" (replace-regexp-in-string "^\"" "" (shell-quote-argument str))))
+   "\"$" ""
+   (replace-regexp-in-string "^\"" "" (shell-quote-argument str))))
 
 (defun shx--insert-timer (timer-number timer)
   "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
   (shx-insert
-   'font-lock-constant-face (format "%d. " timer-number)
-   'font-lock-string-face (format "%s" (shx--format-timer-string timer))
-   (when (aref timer 4) (format "\s(pulse: %d)" (aref timer 4)))))
+   'font-lock-constant-face
+   (format "%d. " timer-number)
+   'font-lock-string-face
+   (format "%s" (shx--format-timer-string timer))
+   (when (aref timer 4)
+     (format "\s(pulse: %d)" (aref timer 4)))))
 
 (defun shx--format-timer-string (timer)
   "Create a human-readable string out of TIMER."
@@ -568,9 +611,10 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
 
 (defun shx--asynch-funcall (function &optional args delay)
   "Run FUNCTION with ARGS in the buffer after a short DELAY."
-  (run-at-time (or delay 0.2) nil
-               `(lambda ()
-                  (with-current-buffer ,shx-buffer ,(cons function args)))))
+  (run-at-time
+   (or delay 0.2)
+   nil
+   `(lambda () (with-current-buffer ,shx-buffer ,(cons function args)))))
 
 (defun shx--asynch-run (command)
   "Run shell COMMAND asynchronously; bring the results over when done.
@@ -595,14 +639,16 @@ If a process is already running in the shx-asynch buffer, kill it."
     (set-buffer (process-buffer process))
     (let* ((out (buffer-substring (point-min) (point-max))))
       (set-buffer shx--asynch-calling-buffer)
-      (when (>= shx--asynch-point (point-max)) (setq-local shx--asynch-point 0))
+      (when (>= shx--asynch-point (point-max))
+        (setq-local shx--asynch-point 0))
       (save-excursion
         (goto-char shx--asynch-point)
         (let ((inhibit-read-only t))
           (shx-insert 'font-lock-comment-face (capitalize signal) 'default out)
           (unless (= 0 shx--asynch-point)
-            (delete-region (point-at-bol)
-                           (min (point-max) (1+ (point-at-eol))))))))))
+            (delete-region
+             (point-at-bol)
+             (min (point-max) (1+ (point-at-eol))))))))))
 
 (defun shx--delay-input (delay input &optional buffer repeat-interval)
   "After DELAY, process INPUT in the BUFFER.
@@ -631,7 +677,8 @@ Cancel a delayed command with :stop (`shx-cmd-stop').
     (let ((delay (match-string 1 args))
           (command (match-string 2 args)))
       (shx-insert "Delaying " 'comint-highlight-input command
-                  'default (format " %s seconds\n" delay))
+                  'default
+                  (format " %s seconds\n" delay))
       (shx--delay-input (concat delay " sec") command))
     (shx--hint "cancel a delayed command with :stop"))
    (t (shx-insert 'error "delay <delay> <command>\n"))))
@@ -647,7 +694,8 @@ Cancel a pulsing command with :stop (`shx-cmd-stop').
     (let ((delay (string-to-number (match-string 1 args)))
           (command (match-string 2 args)))
       (shx-insert "Pulsing " 'comint-highlight-input command
-                  'default (format " every %d seconds\n" delay))
+                  'default
+                  (format " every %d seconds\n" delay))
       (shx--delay-input 0 command nil delay))
     (shx--hint "cancel a pulsing command with :stop"))
    (t (shx-insert 'error "pulse <delay> <command>\n"))))
@@ -678,12 +726,14 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   :stop 3"
   (setq timer-number (1- (string-to-number timer-number)))
   (let ((shx-timer-list (shx--get-timer-list)))
-    (and (>= timer-number 0)
-         (< timer-number (length shx-timer-list))
-         (let ((timer (nth timer-number shx-timer-list)))
-           (shx-insert "Stopped " 'font-lock-string-face
-                       (shx--format-timer-string timer) "\n")
-           (cancel-timer timer))))
+    (and
+     (>= timer-number 0)
+     (< timer-number (length shx-timer-list))
+     (let ((timer (nth timer-number shx-timer-list)))
+       (shx-insert "Stopped " 'font-lock-string-face
+                   (shx--format-timer-string timer)
+                   "\n")
+       (cancel-timer timer))))
   (shx-insert-timer-list))
 
 
@@ -710,8 +760,12 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   (setq files (shx-tokenize-filenames files))
   (if (/= (length files) 2)
       (shx-insert 'error "diff <file1> <file2>" "\n")
-    (shx-insert "Diffing " 'font-lock-doc-face (car files) 'default
-                " and " 'font-lock-doc-face (cadr files) "\n")
+    (shx-insert "Diffing " 'font-lock-doc-face
+                (car files)
+                'default
+                " and " 'font-lock-doc-face
+                (cadr files)
+                "\n")
     (shx--asynch-funcall #'ediff (mapcar #'expand-file-name files))))
 
 (defun shx-cmd-edit (file)
@@ -734,7 +788,8 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
   :eval (format \"%d\" (+ 1 2))
   :eval (* 2 (+ 3 5))"
   (let ((originating-buffer (current-buffer))
-        (output (prin1-to-string (eval (car (read-from-string sexp))))))
+        (output
+         (prin1-to-string (eval (car (read-from-string sexp))))))
     (with-current-buffer originating-buffer
       (shx-insert 'font-lock-constant-face "=> " output "\n"))))
 
@@ -759,8 +814,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   (if (equal command "")
       (shx-insert 'error "pipe <command>" "\n")
     (switch-to-buffer-other-window "*shx-pipe*")
-    (let ((compilation-buffer-name-function
-           (lambda (_mode) "*shx-pipe*")))
+    (let ((compilation-buffer-name-function (lambda (_mode) "*shx-pipe*")))
       (shx-insert "Piping "
                   'comint-highlight-input command 'default
                   " to " "*shx-pipe*\n")
@@ -790,8 +844,7 @@ See `header-line-format' for formatting options.
 \nOr, adding <header ...> in markup form to your prompt:\n
   export PS1=\"<header \\$(git rev-parse --abbrev-ref HEAD)>\\\\n$PS1\"
   export PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
-  (setq header-line-format
-        (and (not (string-empty-p header)) header)))
+  (setq header-line-format (and (not (string-empty-p header)) header)))
 
 (defun shx-cmd-help (shx-command)
   "(SAFE) Display help on the SHX-COMMAND.
@@ -817,11 +870,13 @@ Each matching command is appended to the input history, enabling
 access via \\[comint-previous-input] and \\[comint-next-input].\n
 The list containing all of these commands is `shx-kept-commands'.
 That list can be added to using `shx-cmd-keep'."
-  (cond ((string-empty-p regexp)
-         (shx--reveal-kept-commands ".*" nil)
-         (shx--hint "M-x customize-variable shx-kept-commands edits this list"))
-        (t (shx--reveal-kept-commands regexp t)
-           (shx--hint "Commands have been appended to session history"))))
+  (cond
+   ((string-empty-p regexp)
+    (shx--reveal-kept-commands ".*" nil)
+    (shx--hint "M-x customize-variable shx-kept-commands edits this list"))
+   (t
+    (shx--reveal-kept-commands regexp t)
+    (shx--hint "Commands have been appended to session history"))))
 (defalias 'shx-cmd-k #'shx-cmd-kept)
 
 (defun shx-cmd-man (topic)
@@ -858,23 +913,29 @@ its own to point the process back at the local filesystem.
 \nExample:\n
   :ssh username@hostname:port
   :ssh"
-  (let ((host (substring-no-properties
-               (replace-regexp-in-string ":" "#" host))))
+  (let ((host (substring-no-properties (replace-regexp-in-string ":" "#" host))))
     (shx--restart-shell
-     (cond ((string= "" host) (getenv "HOME"))
-           ((eq tramp-syntax 'default) (format "/ssh:%s:~" host))
-           (t (concat "/" host "~:"))))))
+     (cond
+      ((string= "" host)
+       (getenv "HOME"))
+      ((eq tramp-syntax 'default)
+       (format "/ssh:%s:~" host))
+      (t (concat "/" host "~:"))))))
 
 (defun shx-cmd-docker (container-id)
   "Open a shell in a Docker container with CONTAINER-ID."
   (if (not (require 'docker-tramp nil t))
       (shx-insert 'error "Install the 'docker-tramp' package first\n")
-    (let ((host (substring-no-properties
-                 (replace-regexp-in-string ":" "#" container-id))))
+    (let ((host
+           (substring-no-properties
+            (replace-regexp-in-string ":" "#" container-id))))
       (shx--restart-shell
-       (cond ((string= "" host) (getenv "HOME"))
-             ((eq tramp-syntax 'default) (format "/docker:%s:~" host))
-             (t (concat "/" host "~:")))))))
+       (cond
+        ((string= "" host)
+         (getenv "HOME"))
+        ((eq tramp-syntax 'default)
+         (format "/docker:%s:~" host))
+        (t (concat "/" host "~:")))))))
 
 (defun shx-cmd-sedit (file)
   "Open local FILE using sudo (i.e. as super-user).
@@ -891,26 +952,28 @@ its own to point the process back at the local filesystem.
   \"Topic 1\" YHEIGHT1
   \"Topic 2\" YHEIGHT2
   \"Topic 3\" YHEIGHT3"
-  (shx-insert-plot (car (shx-tokenize-filenames filename))
-                   (concat "set boxwidth 1.5 relative;"
-                           "set style data histograms;"
-                           "set xtic rotate by -40 scale 0 font \",10\";"
-                           "set yrange [0:];"
-                           "set style fill solid 1.0 border -1;"
-                           "plot")
-                   "u 2:xticlabels(1) notitle"))
+  (shx-insert-plot
+   (car (shx-tokenize-filenames filename))
+   (concat "set boxwidth 1.5 relative;"
+           "set style data histograms;"
+           "set xtic rotate by -40 scale 0 font \",10\";"
+           "set yrange [0:];"
+           "set style fill solid 1.0 border -1;"
+           "plot")
+   "u 2:xticlabels(1) notitle"))
 
 (defun shx-cmd-plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
 \nFor example, \":plotmatrix file.dat\" where file.dat contains:\n
   1.5   2    3\n  4     5    6\n  7     8    9.5"
-  (shx-insert-plot (car (shx-tokenize-filenames filename))
-                   (concat "set view map; unset xtics; unset ytics;"
-                           "unset title; set colorbox; set palette defined"
-                           "(0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\","
-                           "3 \"#55a550\", 4 \"#1e5500\");"
-                           "plot")
-                   "u 1:(-$2):3 matrix w image notitle"))
+  (shx-insert-plot
+   (car (shx-tokenize-filenames filename))
+   (concat "set view map; unset xtics; unset ytics;"
+           "unset title; set colorbox; set palette defined"
+           "(0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\","
+           "3 \"#55a550\", 4 \"#1e5500\");"
+           "plot")
+   "u 1:(-$2):3 matrix w image notitle"))
 
 (defun shx-cmd-plotline (filename)
   "(SAFE) Show line plot of FILENAME.
@@ -918,16 +981,18 @@ its own to point the process back at the local filesystem.
   1 2\n  2 4\n  4 8\n
 Or just a single column:
   1\n  2\n  3\n  5"
-  (shx-insert-plot (car (shx-tokenize-filenames filename))
-                   "plot" "w l lw 1 notitle"))
+  (shx-insert-plot
+   (car (shx-tokenize-filenames filename))
+   "plot" "w l lw 1 notitle"))
 
 (defun shx-cmd-plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
 Read about gnuplot's expectations of the data here:
 http://www.gnuplotting.org/tag/pm3d/"
-  (shx-insert-plot (car (shx-tokenize-filenames filename))
-                   "unset tics;set view 4, 20, 1.4, 1;splot"
-                   "w pm3d notitle"))
+  (shx-insert-plot
+   (car (shx-tokenize-filenames filename))
+   "unset tics;set view 4, 20, 1.4, 1;splot"
+   "w pm3d notitle"))
 
 (defun shx-cmd-plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
@@ -935,8 +1000,9 @@ http://www.gnuplotting.org/tag/pm3d/"
   1 2\n  2 4\n  4 8\n
 Or just a single column:
   1\n  2\n  3\n  5"
-  (shx-insert-plot (car (shx-tokenize-filenames filename))
-                   "plot" "w p ps 2 pt 7 notitle"))
+  (shx-insert-plot
+   (car (shx-tokenize-filenames filename))
+   "plot" "w p ps 2 pt 7 notitle"))
 (defalias 'shx-cmd-plot #'shx-cmd-plotscatter)
 
 (defun shx-cmd-view (filename)
@@ -948,12 +1014,12 @@ Or just a single column:
 ;;; loading
 
 (defcustom shx-shell-mode-font-locks
-  `((,(shx--match-last-line (shx--quote-regexp "`"))  0 'font-lock-builtin-face)
-    (,(shx--match-last-line (shx--quote-regexp "\"")) 0 'font-lock-string-face)
-    (,(shx--match-last-line (shx--quote-regexp "'"))  0 'font-lock-string-face)
-    (,(shx--match-last-line "#.*[^#^\n]*$")           0 'font-lock-comment-face)
+  `((,(shx--match-last-line (shx--quote-regexp "`"))  0 'font-lock-builtin-face) ; nofmt
+    (,(shx--match-last-line (shx--quote-regexp "\"")) 0 'font-lock-string-face)  ; nofmt
+    (,(shx--match-last-line (shx--quote-regexp "'"))  0 'font-lock-string-face)  ; nofmt
+    (,(shx--match-last-line "#.*[^#^\n]*$")           0 'font-lock-comment-face) ; nofmt
     (,(shx--match-last-line
-       (regexp-opt '("~" ">" "<" "&" "|" ";")))       0 'font-lock-keyword-face)
+       (regexp-opt '("~" ">" "<" "&" "|" ";")))       0 'font-lock-keyword-face) ; nofmt
     ("\\(\\<git\\>\\) .*\\'"                          1 'font-lock-constant-face)
     ("\\(\\<ssh\\>\\) .*\\'"                          1 'font-lock-constant-face)
     ("\\(\\<make\\>\\) .*\\'"                         1 'font-lock-constant-face)
@@ -968,7 +1034,8 @@ Or just a single column:
 (defcustom shx-font-locks
   `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\(\\<"
               (regexp-opt (shx--all-commands 'without-prefix))
-              "\\>\\).*\\'")                          1 'font-lock-keyword-face))
+              "\\>\\).*\\'")
+     1 'font-lock-keyword-face))
   "Syntax highlighting for the shx minor mode (e.g. of builtin commands)."
   :type '(alist :key-type (choice regexp function)))
 
@@ -994,7 +1061,8 @@ comint-mode in general.  Use `shx-global-mode' to enable
     (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
     (when shx-disable-undo (buffer-disable-undo))
     ;; do this one with a delay because spacemacs tries to set this variable too:
-    (shx--asynch-funcall (lambda () (setq comint-input-sender 'shx-filter-input)))
+    (shx--asynch-funcall
+     (lambda () (setq comint-input-sender 'shx-filter-input)))
     (make-local-variable 'comint-output-filter-functions)
     (make-local-variable 'comint-input-filter-functions)
     (add-hook 'comint-input-filter-functions #'shx--directory-tracker nil t)
@@ -1067,9 +1135,10 @@ This function only works when the shx minor mode is active."
       (apply func args)
     (let* ((shx-comint-advise nil)
            (inhibit-field-text-motion t)
-           (shx-cwd (save-excursion
-                      (comint-previous-prompt 1)
-                      (get-text-property (point-at-bol) 'shx-cwd)))
+           (shx-cwd
+            (save-excursion
+              (comint-previous-prompt 1)
+              (get-text-property (point-at-bol) 'shx-cwd)))
            (default-directory (or shx-cwd default-directory)))
       (apply func args))))
 

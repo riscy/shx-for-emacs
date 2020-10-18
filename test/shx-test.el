@@ -137,9 +137,15 @@ Example:
 (defun shx-test-unit-replace-from-list ()
   "Test `shx--replace-from-list'."
   (shx-test-assert "shx--replace-from-list acts sequentially"
-                   (string= "a" (shx--replace-from-list '(("aa" "b") ("b" "a")) "aa")))
+                   (string= "a"
+                            (shx--replace-from-list
+                             '(("aa" "b") ("b" "a"))
+                             "aa")))
   (shx-test-assert "shx--replace-from-list performs the correct replacements"
-                   (string= "24" (shx--replace-from-list '(("1" "2") ("3" "4")) "13"))))
+                   (string= "24"
+                            (shx--replace-from-list
+                             '(("1" "2") ("3" "4"))
+                             "13"))))
 
 (defun shx-test-integration-magic-insert ()
   "Test `shx-magic-insert'."
@@ -151,54 +157,66 @@ Example:
     (insert previous-input " !!")
     (shx-magic-insert)
     (shx-test-assert "shx-magic-insert performs command expansion"
-                     (equal (shx--current-input)
-                            (concat previous-input " " previous-input)))
+                     (equal
+                      (shx--current-input)
+                      (concat previous-input " " previous-input)))
     (comint-kill-input)))
 
 (defun shx-test-unit-tokenize ()
   "Test string tokenizaton."
   (shx-test-assert "shx-tokenize works with apostrophes."
-                   (equal '("first" "second token" "third")
-                          (shx-tokenize "'first' 'second token' 'third'")))
+                   (equal
+                    '("first" "second token" "third")
+                    (shx-tokenize "'first' 'second token' 'third'")))
   (shx-test-assert "shx-tokenize works with partial apostrophes."
-                   (equal '("first-token" "secondtoken")
-                          (shx-tokenize "'first-token' secondtoken")))
+                   (equal
+                    '("first-token" "secondtoken")
+                    (shx-tokenize "'first-token' secondtoken")))
   (shx-test-assert "shx-tokenize returns nil when quoting doesn't match."
                    (equal nil (shx-tokenize "first/token 'second token")))
   (shx-test-assert "shx-tokenize works with apostrophes and quotation marks."
-                   (equal '("first token" "second token" "3")
-                          (shx-tokenize "'first token' \"second token\" 3")))
+                   (equal
+                    '("first token" "second token" "3")
+                    (shx-tokenize "'first token' \"second token\" 3")))
   (shx-test-assert "shx-tokenize works with escaped spaces."
-                   (equal '("first token" "secondtoken")
-                          (shx-tokenize "first\\ token secondtoken")))
+                   (equal
+                    '("first token" "secondtoken")
+                    (shx-tokenize "first\\ token secondtoken")))
   (shx-test-assert "shx-tokenize works with escaped quotation marks."
-                   (equal '("\"test file\"" "'test file'")
-                          (shx-tokenize "\\\"test\\ file\\\" \\\'test\\ file\\\'")))
+                   (equal
+                    '("\"test file\"" "'test file'")
+                    (shx-tokenize "\\\"test\\ file\\\" \\\'test\\ file\\\'")))
   (shx-test-assert "shx-tokenize works with escaped characters"
                    (equal '("a" "b c.d") (shx-tokenize "a b\\ \\c\\.d")))
   (shx-test-assert "shx-tokenize works with a directory specified."
-                   (equal '("~/././~/.spacemacs")
-                          (shx-tokenize "~/././~/.spacemacs"))))
+                   (equal
+                    '("~/././~/.spacemacs")
+                    (shx-tokenize "~/././~/.spacemacs"))))
 
 (defun shx-test-unit-tokenize-filenames ()
   "Test filename tokenization."
   (shx-test-assert
    "shx-tokenize-filenames works with relative and absolute paths."
    (let ((comint-file-name-prefix "/docker:123:"))
-     (equal '("test" "/docker:123:~/test" "/docker:123:/test")
-            (shx-tokenize-filenames "test ~/test /test")))))
+     (equal
+      '("test" "/docker:123:~/test" "/docker:123:/test")
+      (shx-tokenize-filenames "test ~/test /test")))))
 
 (defun shx-test-integration-point-predicates ()
   "Test some predicate functions on the point."
   (shx-test-assert "shx-point-on-input-p works at point-max."
-                   (save-excursion (goto-char (point-max))
-                                   (shx-point-on-input-p)))
+                   (save-excursion
+                     (goto-char (point-max))
+                     (shx-point-on-input-p)))
   (shx-test-assert "shx-point-on-input-p works on last line and point-max."
-                   (save-excursion (goto-char (point-max)) (backward-char)
-                                   (not (shx-point-on-input-p))))
+                   (save-excursion
+                     (goto-char (point-max))
+                     (backward-char)
+                     (not (shx-point-on-input-p))))
   (shx-test-assert "shx-point-on-input-p fails when not on last line."
-                   (not (save-excursion (goto-char (point-min))
-                                        (shx-point-on-input-p))))
+                   (not (save-excursion
+                          (goto-char (point-min))
+                          (shx-point-on-input-p))))
   (goto-char (point-max)))
 
 (defun shx-test-integration-propertize-prompt ()
@@ -240,8 +258,9 @@ Example:
   "Test `shx-cmd-syntax' regexps."
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":help ok")
   (shx-test-assert "shx-cmd-syntax recognizes command with arguments"
-                   (and (string= (match-string 1 ":help ok") "help")
-                        (string= (match-string 2 ":help ok") "ok")))
+                   (and
+                    (string= (match-string 1 ":help ok") "help")
+                    (string= (match-string 2 ":help ok") "ok")))
   (string-match (concat "^" shx-leader shx-cmd-syntax) ":pwd")
   (shx-test-assert "shx-cmd-syntax recognizes alphabetical command names"
                    (string= (match-string 1 ":pwd") "pwd"))
@@ -255,18 +274,22 @@ Example:
     (shx-test-assert "shx-cat concatenates strings correctly"
                      (string= concatenation "Testtest"))
     (shx-test-assert "shx-cat propertizes text correctly"
-                     (equal (get-text-property 4 'font-lock-face concatenation)
-                            'font-lock-string-face))))
+                     (equal
+                      (get-text-property 4 'font-lock-face concatenation)
+                      'font-lock-string-face))))
 
 (defun shx-test-unit-timers ()
   "Test functions that use Emacs' built-in timer."
   (if (shx--get-timer-list)
       (shx-test-warn "Warning: :stop all timers to run timing tests")
-    (shx-test-assert "shx--get-timer-list is empty" (not (shx--get-timer-list)))
+    (shx-test-assert "shx--get-timer-list is empty"
+                     (not (shx--get-timer-list)))
     (shx--delay-input "10 sec" "stub command")
-    (shx-test-assert "shx--shx-timer-list grows by 1" (eq 1 (length (shx--get-timer-list))))
+    (shx-test-assert "shx--shx-timer-list grows by 1"
+                     (eq 1 (length (shx--get-timer-list))))
     (cancel-timer (car (shx--get-timer-list)))
-    (shx-test-assert "shx--get-timer-list becomes empty" (not (shx--get-timer-list)))))
+    (shx-test-assert "shx--get-timer-list becomes empty"
+                     (not (shx--get-timer-list)))))
 
 (provide 'shx-test)
 ;;; shx-test.el ends here
