@@ -1083,7 +1083,11 @@ comint-mode in general.  Use `shx-global-mode' to enable
 
 (defun shx--global-on ()
   "Call the function `shx-mode' if appropriate for the buffer."
-  (when (derived-mode-p 'comint-mode) (shx-mode +1)))
+  (when (and
+         (derived-mode-p 'comint-mode)
+         ;; ielm is incompatible due to needing <return> (#25)
+         (not (eq major-mode 'inferior-emacs-lisp-mode)))
+    (shx-mode +1)))
 
 ;;;###autoload
 (defun shx (&optional name directory)
