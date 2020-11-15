@@ -1085,8 +1085,9 @@ comint-mode in general.  Use `shx-global-mode' to enable
   "Call the function `shx-mode' if appropriate for the buffer."
   (when (and
          (derived-mode-p 'comint-mode)
-         ;; ielm is incompatible due to needing <return> (#25)
-         (not (eq major-mode 'inferior-emacs-lisp-mode)))
+         ;; these modes are incompatible due to needing <return> (#25)
+         (not (eq major-mode 'inferior-emacs-lisp-mode))
+         (not (eq major-mode 'sly-mode)))
     (shx-mode +1)))
 
 ;;;###autoload
