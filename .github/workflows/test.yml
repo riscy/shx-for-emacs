@@ -1,9 +1,4 @@
-# melpazoid <https://github.com/riscy/melpazoid> build checks.
-
-# If your package is on GitHub, enable melpazoid's checks by copying this file
-# to .github/workflows/melpazoid.yml and modifying RECIPE and EXIST_OK below.
-
-name: melpazoid
+name: test
 on: [push, pull_request]
 
 jobs:
@@ -26,4 +21,6 @@ jobs:
         RECIPE: (shx :repo "riscy/shx-for-emacs" :fetcher github)
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
-      run: echo $EXIST_OK && make -C ~/melpazoid
+      run: |
+        echo $EXIST_OK && make -C ~/melpazoid
+        emacs --batch --script ./test/script.el

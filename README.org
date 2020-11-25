@@ -3,7 +3,7 @@
 #+AUTHOR: Chris Rayner
 #+EMAIL: dchrisrayner@gmail.com
 
-[[https://melpa.org/#/shx][https://melpa.org/packages/shx-badge.svg]] [[https://stable.melpa.org/#/shx][https://stable.melpa.org/packages/shx-badge.svg]] [[https://travis-ci.org/riscy/shx-for-emacs][https://travis-ci.org/riscy/shx-for-emacs.svg?branch=master]]
+[[https://melpa.org/#/shx][https://melpa.org/packages/shx-badge.svg]] [[https://stable.melpa.org/#/shx][https://stable.melpa.org/packages/shx-badge.svg]] [[https://github.com/riscy/shx-for-emacs/actions][https://github.com/riscy/shx-for-emacs/workflows/test/badge.svg]]
 
 [[file:img/screenshot.png]]
 
