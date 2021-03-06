@@ -335,7 +335,9 @@ This is robust to various styles of quoting and escaping."
   (mapcar
    (lambda (token)
      (shx--replace-from-list
-      '(("" "'") ("" " ") ("" "\""))
+      '(("" "'")
+        ("" " ")
+        ("" "\""))
       token))
    (ignore-errors (split-string-and-unquote str))))
 
@@ -402,8 +404,9 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
 (defun shx--timer-by-shx-p (timer)
   "Return non-nil if TIMER was created by shx."
   (declare (side-effect-free t))
-  (string-prefix-p "(lambda nil (shx--auto"
-                   (format "%s" (aref timer 5))))
+  (string-prefix-p
+   "(lambda nil (shx--auto"
+   (format "%s" (aref timer 5))))
 
 (defun shx--get-user-cmd (cmd-prefix)
   "Return user command prefixed by CMD-PREFIX, or nil."
@@ -602,8 +605,10 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
   "Create a human-readable string out of TIMER."
   (declare (side-effect-free t))
   (let* ((str (format "%s" (aref timer 5)))
-         (output (string-remove-prefix "(lambda nil (shx--auto "
-                                       (string-remove-suffix "))" str))))
+         (output
+          (string-remove-prefix
+           "(lambda nil (shx--auto "
+           (string-remove-suffix "))" str))))
     (concat "[" output "]")))
 
 
