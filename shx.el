@@ -1069,7 +1069,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
     (when shx-disable-undo (buffer-disable-undo))
     ;; do this one with a delay because spacemacs tries to set this variable too:
     (shx--asynch-funcall
-     (lambda () (setq comint-input-sender 'shx-filter-input)))
+     (lambda () (setq-local comint-input-sender 'shx-filter-input)))
     (make-local-variable 'comint-output-filter-functions)
     (make-local-variable 'comint-input-filter-functions)
     (add-hook 'comint-input-filter-functions #'shx--directory-tracker nil t)
@@ -1082,7 +1082,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
     (font-lock-remove-keywords nil shx-shell-mode-font-locks))
   (font-lock-remove-keywords nil shx-font-locks)
   (unless shx--old-undo-disabled (buffer-enable-undo))
-  (setq comint-input-sender 'comint-simple-send)
+  (setq-local comint-input-sender (default-value 'comint-input-sender))
   (setq-local font-lock-keywords-case-fold-search
               (default-value 'font-lock-keywords-case-fold-search))
   (remove-hook 'comint-input-filter-functions #'shx--directory-tracker t)
