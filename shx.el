@@ -79,7 +79,7 @@
   :type 'boolean)
 
 (defcustom shx-triggers
-  '(("https?://[A-Za-z0-9,./?=&;_-]+[^[:space:].\"'>)]+" . shx--parse-url))
+  '(("https?://[A-Za-z0-9,./?=&;_-]+[[:graph:].\"'>)]+" . shx--parse-url))
   "Triggers of the form: (regexp . function)."
   :type '(alist :key-type regexp :value-type function))
 
@@ -109,7 +109,8 @@ sacrifices the soundness of shx's markup and trigger matching."
 
 (defvar shx-cmd-prefix "shx-cmd-" "Prefix for user-command functions.")
 
-(defvar shx-cmd-syntax "\\([^[:space:]]+\\)[[:space:]]*\\(.*[^[:space:]]?\\)"
+(defvar shx-cmd-syntax
+  "\\([[:graph:]]+\\)[[:space:]]*\\(.*[[:graph:]]?\\)"
   "Regex for recognizing shx commands in input or markup.")
 
 (defvar shx-markup-syntax
@@ -1031,7 +1032,8 @@ Or just a single column:
   :type '(alist :key-type (choice regexp function)))
 
 (defcustom shx-font-locks
-  `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader "\\(\\<"
+  `((,(concat "[^[:alnum:]" shx-leader "]" shx-leader
+              "\\(\\<"
               (regexp-opt (shx--all-commands 'without-prefix))
               "\\>\\).*\\'")
      1 'font-lock-keyword-face))
@@ -1056,6 +1058,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
     (when (derived-mode-p 'shell-mode)
       (font-lock-add-keywords nil shx-shell-mode-font-locks))
     (font-lock-add-keywords nil shx-font-locks)
+    (setq-local font-lock-keywords-case-fold-search t)
     (setq-local shx-buffer (current-buffer))
     (setq-local shx--old-undo-disabled (eq t buffer-undo-list))
     (when shx-disable-undo (buffer-disable-undo))
@@ -1075,6 +1078,8 @@ comint-mode in general.  Use `shx-global-mode' to enable
   (font-lock-remove-keywords nil shx-font-locks)
   (unless shx--old-undo-disabled (buffer-enable-undo))
   (setq comint-input-sender 'comint-simple-send)
+  (setq-local font-lock-keywords-case-fold-search
+              (default-value 'font-lock-keywords-case-fold-search))
   (remove-hook 'comint-input-filter-functions #'shx--directory-tracker t)
   (remove-hook 'comint-output-filter-functions #'shx-parse-output-hook t))
 
