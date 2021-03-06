@@ -399,7 +399,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
         (format "%s" (aref second-timer 5)))))))
 
 (defun shx--timer-by-shx-p (timer)
-  "Return t if TIMER was created by shx."
+  "Return non-nil if TIMER was created by shx."
   (declare (side-effect-free t))
   (string-prefix-p "(lambda nil (shx--auto"
                    (format "%s" (aref timer 5))))
@@ -1035,7 +1035,7 @@ Or just a single column:
               (regexp-opt (shx--all-commands 'without-prefix))
               "\\>\\).*\\'")
      1 'font-lock-keyword-face))
-  "Syntax highlighting for the shx minor mode (e.g. of builtin commands)."
+  "Syntax highlighting of builtin commands for the shx minor mode."
   :type '(alist :key-type (choice regexp function)))
 
 ;;;###autoload

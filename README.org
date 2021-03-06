@@ -51,10 +51,10 @@
 
   It also extends =shell-mode='s syntax highlighting, recenters and highlights
   content for better viewing when you run commands like ~comint-previous-prompt~
-  and ~comint-kill-input~, and improves compatibility with =evil-mode= by
+  and ~comint-kill-input~, and improves compatibility with evil-mode by
   anticipating when to switch to insert mode.
 
-  Use =M-x shx RET= to start a new =shell= session with =shx-mode= enabled.
+  Use =M-x shx RET= to start a new shell session with ~shx-mode~ enabled.
 
   /This version is tested with Emacs 26.1/.  Check out the [[https://github.com/riscy/shx-for-emacs/releases][release log]].
 * Install
@@ -134,7 +134,7 @@
   #+begin_src xml
   <command arg1 arg2 ...>
   #+end_src
-  where =command= is a shx command and =arg1 ... argn= is a space-separated
+  where ~command~ is a shx command and ~arg1 ... argn~ is a space-separated
   list of arguments.  Arguments don't need to be surrounded by quotes -- the
   command will figure out how to parse them.
 
@@ -240,7 +240,7 @@
     |-----------------------------------+---------------------------------------------------|
     | =:delay <sec> <command>=          | Run a shell command after a specific delay        |
     | =:pulse <sec> <command>=          | Repeat a shell command forever with a given delay |
-    | =:repeat <count> <sec> <command>= | Repeat a shell command =<count>= times            |
+    | =:repeat <count> <sec> <command>= | Repeat a shell command ~<count>~ times            |
     | =:stop <num>=                     | Cancel a repeating or delayed command             |
 
     Use these to delay, pulse, or repeat a command a specific number of times.
@@ -257,10 +257,10 @@
     #+end_src
 *** Adding new commands
     New shx commands are written by defining single-argument elisp functions
-    named ~shx-cmd-COMMAND-NAME~, where =COMMAND-NAME= is what the user would
+    named ~shx-cmd-COMMAND-NAME~, where ~COMMAND-NAME~ is what the user would
     type to invoke it.
 ***** Example: a command to rename the buffer
-    If you evaluate the following (or add it to your =.emacs=),
+    If you evaluate the following (or add it to your ~.emacs~),
     #+begin_src elisp
     (defun shx-cmd-rename (name)
       "(SAFE) Rename the current buffer to NAME."
@@ -292,12 +292,12 @@
           (shx-insert "invoking ediff...\n")
           (shx--asynch-funcall #'ediff (mapcar #'expand-file-name files))))
       #+end_src
-      Note that =files= is supplied as a string, but it's immediately parsed
+      Note that ~files~ is supplied as a string, but it's immediately parsed
       into a list of strings using ~shx-tokenize~.  Helpfully, this function is
       able to parse various styles of quoting and escaping, for example
-      `(shx-tokenize "'file one' file\\ two")`
+      ~(shx-tokenize "'file one' file\\ two")~
       evaluates to
-      `("file one" "file two")`.
+      ~("file one" "file two")~.
 ***** Example: a command to browse URLs
       If you execute the following,
       #+begin_src elisp
