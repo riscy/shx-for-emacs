@@ -160,9 +160,10 @@ sacrifices the soundness of shx's markup and trigger matching."
   (interactive)
   (if (shx-point-on-input-p)
       (shx-send-input)
-    (let ((line
-           (string-trim
-            (buffer-substring-no-properties (point-at-bol) (point-at-eol)))))
+    (let* ((inhibit-field-text-motion t)
+           (line
+            (string-trim
+             (buffer-substring-no-properties (point-at-bol) (point-at-eol)))))
       (goto-char (point-max))
       (insert line))))
 
