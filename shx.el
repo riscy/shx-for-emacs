@@ -439,12 +439,13 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
       ;; manually align comint-file-name-prefix with the default-directory:
       (setq-local comint-file-name-prefix
                   (or (file-remote-p default-directory) ""))
-      (comint-exec (current-buffer) (buffer-name) cmd nil nil))
-    (when (file-remote-p default-directory)
-      (shx--hint
-       (format "You can return to the localhost with '%sssh'" shx-leader))))
+      (comint-exec (current-buffer) (buffer-name) cmd nil nil)
+      ;; since tramp overrides `shell-file-name' with "/bin/sh" when remote:
+      (setq-local explicit-shell-file-name cmd)))
   ;; if all that was successful, commit to the new default directory:
-  (when new-directory (setq default-directory new-directory)))
+  (when new-directory (setq default-directory new-directory))
+  (when (file-remote-p default-directory)
+    (shx--hint (format "Return to the localhost with '%sssh'" shx-leader))))
 
 (defun shx--shell-command ()
   "Get the shell command, even if on a remote host or container."
@@ -455,7 +456,7 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
     (cond
      ((file-exists-p (concat remote-id cmd))
       cmd)
-     (t (completing-read "Shell command: " nil)))))
+     (t (completing-read "Shell command: " nil nil nil "/bin/sh" nil)))))
 
 (defun shx--match-last-line (regexp)
   "Return a form to find REGEXP on the last line of the buffer."
