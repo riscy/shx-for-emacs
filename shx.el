@@ -189,7 +189,7 @@ This function overrides `comint-input-sender'."
     (if (not shx-cmd)
         (comint-simple-send process input)
       (condition-case-unless-debug error-descriptor
-          (funcall shx-cmd (substitute-env-vars (match-string 2 input)))
+          (funcall shx-cmd (substitute-env-vars (match-string 2 input) t))
         (error (shx-insert 'error (error-message-string error-descriptor) "\n")))
       (with-current-buffer (process-buffer process)
         ;; advance the process mark to trick comint-mode
