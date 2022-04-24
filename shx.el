@@ -364,9 +364,9 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
       (t (concat comint-file-name-prefix filename))))
    (shx-tokenize str)))
 
-(defun shx--hint (text)
-  "Show a hint containing TEXT."
-  (when shx-show-hints (message "Hint: %s" text)))
+(defun shx--hint (format-string &rest args)
+  "Show a hint containing FORMAT-STRING with optional ARGS."
+  (when shx-show-hints (apply #'message (cons format-string args))))
 
 (defun shx--current-prompt ()
   "Return text from start of line to current `process-mark'."
@@ -446,7 +446,7 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
   ;; if all that was successful, commit to the new default directory:
   (when new-directory (setq default-directory new-directory))
   (when (file-remote-p default-directory)
-    (shx--hint (format "Return to the localhost with '%sssh'" shx-leader))))
+    (shx--hint "Return to the localhost with '%sssh'" shx-leader)))
 
 (defun shx--shell-command ()
   "Get the shell command, even if on a remote host or container."
@@ -522,7 +522,7 @@ are sent straight through to the process to handle paging."
              (string-match "^\\s-*$" (shx--current-input))
              (string-match ":$" (shx--current-prompt)))
         (progn
-          (shx--hint (format "sending '%s'" (this-command-keys)))
+          (shx--hint "Sending '%s'" (this-command-keys))
           (process-send-string nil (this-command-keys)))
       (unless on-input (goto-char (point-max)))
       (if shx-use-magic-insert (comint-magic-space 1) (self-insert-command 1)))))
