@@ -1013,6 +1013,19 @@ Or just a single column:
    "plot" "w p ps 2 pt 7"))
 (defalias 'shx-cmd-plot #'shx-cmd-plotscatter)
 
+(defun shx-cmd-plotrug (filename)
+  "(SAFE) Show a rug plot of the one-dimensional dataset in FILENAME.
+Use \":plotrug FILENAME\" where the contents of that file might be:
+\n  50\n  25\n  12\n  6\n  3\n  1"
+  (shx-insert-plot
+   (car (shx-tokenize-filenames filename))
+   (concat "set border 1;"
+           "set xtics nomirror;"
+           "set yrange [0:1];"
+           "unset ytics;"
+           "plot")
+   "using 1:(1) with impulses"))
+
 (defun shx-cmd-view (filename)
   "(SAFE) View image with FILENAME directly in the buffer."
   (shx-insert-image (car (shx-tokenize-filenames filename))))
