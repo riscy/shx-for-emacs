@@ -571,7 +571,8 @@ are sent straight through to the process to handle paging."
       (let ((pos (point)))
         (insert-image (create-image img-name))
         (add-text-properties pos (point) `(help-echo ,filename)))))
-  (shx-insert "\n"))
+  (shx-insert "\n")
+  (shx-show-output))
 
 (defun shx-insert-plot (filename plot-command line-style)
   "Prepare a plot of the data in FILENAME.
@@ -583,9 +584,10 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
          (status
           (call-process
            shx-path-to-gnuplot nil t nil "-e"
-           (format "set term png transparent truecolor; set border lw 3 \
-                           lc rgb \"%s\"; set out \"%s\"; %s \"%s\" %s"
-                   color img-name plot-command filename line-style))))
+           (concat "set term png transparent truecolor;"
+                   "set border lc rgb \"" color "\";"
+                   "set out \"" img-name "\";"
+                   plot-command "\"" filename "\"" line-style " notitle"))))
     (when (zerop status) (shx-insert-image img-name))))
 
 (defun shx--shell-quote-no-quotation-marks (str)
@@ -968,7 +970,7 @@ its own to point the process back at the local filesystem.
            "set yrange [0:];"
            "set style fill solid 1.0 border -1;"
            "plot")
-   "u 2:xticlabels(1) notitle"))
+   "u 2:xticlabels(1)"))
 
 (defun shx-cmd-plotmatrix (filename)
   "(SAFE) Show heatmap of FILENAME.
@@ -981,7 +983,7 @@ its own to point the process back at the local filesystem.
            "(0 \"#ffffff\", 1 \"#d5e585\", 2 \"#8cc555\","
            "3 \"#55a550\", 4 \"#1e5500\");"
            "plot")
-   "u 1:(-$2):3 matrix w image notitle"))
+   "u 1:(-$2):3 matrix w image"))
 
 (defun shx-cmd-plotline (filename)
   "(SAFE) Show line plot of FILENAME.
@@ -989,9 +991,7 @@ its own to point the process back at the local filesystem.
   1 2\n  2 4\n  4 8\n
 Or just a single column:
   1\n  2\n  3\n  5"
-  (shx-insert-plot
-   (car (shx-tokenize-filenames filename))
-   "plot" "w l lw 1 notitle"))
+  (shx-insert-plot (car (shx-tokenize-filenames filename)) "plot" "w l lw 1"))
 
 (defun shx-cmd-plot3d (filename)
   "(SAFE) Show surface plot of FILENAME.
@@ -1000,7 +1000,7 @@ http://www.gnuplotting.org/tag/pm3d/"
   (shx-insert-plot
    (car (shx-tokenize-filenames filename))
    "unset tics;set view 4, 20, 1.4, 1;splot"
-   "w pm3d notitle"))
+   "w pm3d"))
 
 (defun shx-cmd-plotscatter (filename)
   "(SAFE) Show scatter plot of FILENAME.
@@ -1010,7 +1010,7 @@ Or just a single column:
   1\n  2\n  3\n  5"
   (shx-insert-plot
    (car (shx-tokenize-filenames filename))
-   "plot" "w p ps 2 pt 7 notitle"))
+   "plot" "w p ps 2 pt 7"))
 (defalias 'shx-cmd-plot #'shx-cmd-plotscatter)
 
 (defun shx-cmd-view (filename)
