@@ -801,18 +801,18 @@ If a TIMER-NUMBER is not supplied, enumerate all shx timers.
     (with-current-buffer originating-buffer
       (shx-insert 'font-lock-constant-face "=> " output "\n"))))
 
-(defun shx-cmd-find (file)
-  "Run fuzzy find for FILE.
+(defun shx-cmd-find (pattern)
+  "Run fuzzy find for PATTERN.
 Depending on the contents of the current directory, this command
 may take a while and unfortunately blocks Emacs in the meantime.
 \nExamples:\n
   :f prefix
   :f *suffix"
-  (if (equal file "")
+  (if (equal pattern "")
       (shx-insert 'error "find <prefix>" "\n")
-    (shx--asynch-run
-     (format "find . -iname '%s*'"
-             (mapconcat #'char-to-string (string-to-list file) "*")))))
+    (let ((pattern (mapconcat #'char-to-string (string-to-list pattern) "*")))
+      (shx--asynch-run
+       (format "find $PWD -not -path '*/.*' -iname '%s*'" pattern)))))
 
 (defun shx-cmd-pipe (command)
   "Pipe the output of COMMAND to a compilation buffer.
