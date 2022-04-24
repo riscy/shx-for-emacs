@@ -213,7 +213,7 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
     (add-text-properties
      (point-at-bol)
      (process-mark (get-buffer-process (current-buffer)))
-     `(help-echo ,(format-time-string "%X") shx-cwd ,default-directory))))
+     `(help-echo ,(format-time-string "%x %X") shx-cwd ,default-directory))))
 
 
 ;;; output
