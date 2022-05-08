@@ -180,7 +180,7 @@
   :ssh
   #+end_src
   [[https://github.com/p3r7][Jordan Besly]] points out that you can customize the default interpreter
-  for each "remote" [[https://www.gnu.org/software/emacs/manual/html_node/tramp/Remote-processes.html][using ~connection-profile-set-local-variables~]].
+  for each "remote" using [[https://www.gnu.org/software/emacs/manual/html_node/tramp/Remote-processes.html][connection-profile-set-local-variables]].
 
   I also use the =:kept= and =:keep= commands frequently:
   #+begin_src bash
