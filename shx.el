@@ -1074,7 +1074,7 @@ comint-mode in general.  Use `shx-global-mode' to enable
 
 (defun shx--activate ()
   "Add font-locks, tweak defaults, add hooks/advice."
-  (if (not (derived-mode-p 'comint-mode))
+  (if (not (shx--compatible-p))
       (error "WARNING: shx is incompatible with `%s'" major-mode)
     (when (derived-mode-p 'shell-mode)
       (font-lock-add-keywords nil shx-shell-mode-font-locks))
@@ -1109,11 +1109,16 @@ comint-mode in general.  Use `shx-global-mode' to enable
 
 (defun shx--global-on ()
   "Call the function `shx-mode' if appropriate for the buffer."
-  (when (and
-         (derived-mode-p 'comint-mode)
-         ;; modes requiring RET are currently incompatible (#25)
-         (eq (local-key-binding (kbd "RET")) 'comint-send-input))
-    (shx-mode +1)))
+  (when (shx--compatible-p) (shx-mode +1)))
+
+(defun shx--compatible-p ()
+  "Return non-nil if shx can be activated in the current buffer."
+  (and
+   (derived-mode-p 'comint-mode)
+   ;; modes that override comint-input-sender are incompatible (#32)
+   (eq comint-input-sender (default-value 'comint-input-sender))
+   ;; modes that override the RET binding are incompatible (#25)
+   (eq (local-key-binding (kbd "RET")) 'comint-send-input)))
 
 ;;;###autoload
 (defun shx (&optional name directory)
