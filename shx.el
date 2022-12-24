@@ -60,7 +60,8 @@
   :type 'integer)
 
 (defcustom shx-use-magic-insert t
-  "Whether to dynamically modify input using `shx-magic-insert'."
+  "Whether to dynamically modify input using `shx-magic-insert'.
+If you change this you'll have to reload shx or restart Emacs."
   :link '(function-link shx-magic-insert)
   :type 'boolean)
 
@@ -853,7 +854,7 @@ See `header-line-format' for formatting options.
   :header
 \nOr, adding <header ...> in markup form to your prompt:\n
   export PS1=\"<header \\$(git rev-parse --abbrev-ref HEAD)>\\\\n$PS1\"
-  export PS1=\"<header \\$(git status -s 2>/dev/null|paste -s -d \\\" \\\" - )>\\\\n$PS1\""
+  export PS1=\"<header \\$(git status -s 2>/dev/null|paste -sd \\\" \\\" - )>\\\\n$PS1\""
   (setq header-line-format (and (not (string-empty-p header)) header)))
 
 (defun shx-cmd-help (shx-command)
@@ -1064,8 +1065,8 @@ Use \":plotrug FILENAME\" where the contents of that file might be:
 ;;;###autoload
 (define-minor-mode shx-mode
   "Toggle shx-mode on or off.
-\nThis minor mode provides extra functionality to shell-mode and
-comint-mode in general.  Use `shx-global-mode' to enable
+\nThis minor mode provides extra functionality to `shell-mode' and
+`comint-mode' in general.  Use `shx-global-mode' to enable
 `shx-mode' in all buffers that support it.
 \nProvides the following key bindings: \n\\{shx-mode-map}"
   :lighter shx-mode-lighter
