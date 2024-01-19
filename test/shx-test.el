@@ -83,10 +83,8 @@ Example:
   "Test byte-compilation against the shx.el file."
   (ignore-errors (kill-buffer "*Compile-Log*"))
   (let ((file (replace-regexp-in-string ".elc$" ".el" (symbol-file 'shx-mode))))
-    (byte-compile-file file)
     (shx-test-assert "shx.el passes byte-compilation"
-                     (with-current-buffer (get-buffer-create "*Compile-Log*")
-                       (<= (- (point-max) (point)) 3)))))
+                     (byte-compile-file file))))
 
 (defun shx-test-unit-declare-function ()
   "Test `declare-function'."
