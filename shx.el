@@ -1064,7 +1064,7 @@ Use \":plotrug FILENAME\" where the contents of that file might be:
 
 ;;;###autoload
 (define-minor-mode shx-mode
-  "Toggle shx-mode on or off.
+  "Toggle `shx-mode' on or off.
 \nThis minor mode provides extra functionality to `shell-mode' and
 `comint-mode' in general.  Use `shx-global-mode' to enable
 `shx-mode' in all buffers that support it.
