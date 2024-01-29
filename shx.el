@@ -935,7 +935,7 @@ its own to point the process back at the local filesystem.
 
 (defun shx-cmd-docker (container-id)
   "Open a shell in a Docker container with CONTAINER-ID."
-  (if (not (require 'docker-tramp nil t))
+  (if (and (version< emacs-version "29") (not (require 'docker-tramp nil t)))
       (shx-insert 'error "Install the 'docker-tramp' package first\n")
     (let ((host
            (substring-no-properties
