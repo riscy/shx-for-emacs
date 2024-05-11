@@ -25,8 +25,7 @@
 (require 'files)
 (require 'shell)
 (require 'subr-x)
-(defvar evil-state)
-(defvar tramp-syntax)
+(eval-when-compile (defvar evil-state) (defvar tramp-syntax))
 (declare-function evil-insert-state "ext:evil-states.el" (&optional arg) t)
 
 
@@ -99,7 +98,7 @@ If you change this you'll have to reload shx or restart Emacs."
 (defcustom shx-max-input most-positive-fixnum
   "The largest input allowed in characters.
 A good value on macOS is 1024, the size of the typeahead buffer;
-or, set the terminal to canonical mode with 'stty -icanon'."
+or, set the terminal to canonical mode with `stty -icanon`."
   :type 'integer)
 
 (defcustom shx-max-output most-positive-fixnum
@@ -165,7 +164,9 @@ sacrifices the soundness of shx's markup and trigger matching."
     (let* ((inhibit-field-text-motion t)
            (line
             (string-trim
-             (buffer-substring-no-properties (point-at-bol) (point-at-eol)))))
+             (buffer-substring-no-properties
+              (line-beginning-position)
+              (line-end-position)))))
       (goto-char (point-max))
       (insert line))))
 
@@ -212,7 +213,7 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
   (let ((inhibit-read-only t)
         (inhibit-field-text-motion t))
     (add-text-properties
-     (point-at-bol)
+     (line-beginning-position)
      (process-mark (get-buffer-process (current-buffer)))
      `(help-echo ,(format-time-string "%x %X") shx-cwd ,default-directory))))
 
@@ -238,8 +239,8 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
             nil)
            ((not (shx--safe-as-markup-p command))
             (add-text-properties
-             (point-at-bol)
-             (point-at-eol)
+             (line-beginning-position)
+             (line-end-position)
              `(help-echo "shx: this markup was unsafe/undefined")))
            (t
             (replace-match "")   ; hide the markup
@@ -271,7 +272,7 @@ behavior of this function by modifying `shx-directory-tracker-regexp'."
 (defun shx--search-forward (pattern)
   "Search forward from the current point for PATTERN.
 But don't search the last line, which may be incomplete."
-  (when (< (point-at-eol) (point-max))
+  (when (< (line-end-position) (point-max))
     (re-search-forward pattern nil t)))
 
 (defun shx--break-long-line-maybe ()
@@ -353,9 +354,7 @@ This is robust to various styles of quoting and escaping."
 
 (defun shx-tokenize-filenames (str)
   "Turn STR into a list of filenames, or nil if parsing fails.
-If any path is absolute, prepend `comint-file-name-prefix' to it.
->> (shx-tokenize \"'first' 'second token' /third\")
-=> (\"first\" \"second token\" \"/third\")"
+If any path is absolute, prepend `comint-file-name-prefix' to it."
   (declare (side-effect-free t))
   (mapcar
    (lambda (filename)
@@ -378,7 +377,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
       (goto-char (point-max))
       (let ((inhibit-field-text-motion t))
         (buffer-substring-no-properties
-         (point-at-bol)
+         (line-beginning-position)
          (process-mark (get-buffer-process (current-buffer)))))))
    (t (user-error "There is no process") "")))
 
@@ -387,7 +386,7 @@ If any path is absolute, prepend `comint-file-name-prefix' to it.
   (declare (side-effect-free t))
   (buffer-substring
    (process-mark (get-buffer-process (current-buffer)))
-   (point-at-eol)))
+   (line-end-position)))
 
 (defun shx--get-timer-list ()
   "Get the list of resident timers."
@@ -464,7 +463,7 @@ If optional NEW-DIRECTORY is set, use that for `default-directory'."
   "Return a form to find REGEXP on the last line of the buffer."
   `(lambda (bound)
      (let ((inhibit-field-text-motion t))
-       (when (eq (point-max) (point-at-eol))
+       (when (eq (point-max) (line-end-position))
          (re-search-forward ,regexp bound t)))))
 
 (defun shx--quote-regexp (delimiter &optional escape max-length)
@@ -577,8 +576,8 @@ are sent straight through to the process to handle paging."
 
 (defun shx-insert-plot (filename plot-command line-style)
   "Prepare a plot of the data in FILENAME.
-Use a gnuplot specific PLOT-COMMAND (for example 'plot') and
-LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
+Use a gnuplot specific PLOT-COMMAND (for example `plot`) and
+LINE-STYLE (for example `w lp`); insert the plot in the buffer."
   (let* ((img-name (make-temp-file "tmp" nil ".png"))
          (color (face-attribute 'default :foreground))
          (filename (shx--shell-quote-no-quotation-marks filename))
@@ -592,7 +591,7 @@ LINE-STYLE (for example 'w lp'); insert the plot in the buffer."
     (when (zerop status) (shx-insert-image img-name))))
 
 (defun shx--shell-quote-no-quotation-marks (str)
-  "Shell-quote STR, but strip the \"'s added in some `system-type's."
+  "Shell-quote STR, but strip the \"s added in some `system-type's."
   (replace-regexp-in-string  ; NOTE: in Emacs 26+ we can use `string-trim'
    "\"$" ""
    (replace-regexp-in-string "^\"" "" (shell-quote-argument str))))
@@ -658,8 +657,8 @@ If a process is already running in the shx-asynch buffer, kill it."
           (shx-insert 'font-lock-comment-face (capitalize signal) 'default out)
           (unless (= 0 shx--asynch-point)
             (delete-region
-             (point-at-bol)
-             (min (point-max) (1+ (point-at-eol))))))))))
+             (line-beginning-position)
+             (min (point-max) (1+ (line-end-position))))))))))
 
 (defun shx--delay-input (delay input &optional buffer repeat-interval)
   "After DELAY, process INPUT in the BUFFER.
@@ -839,12 +838,12 @@ may take a while and unfortunately blocks Emacs in the meantime.
   "Go to a a URL, offering completions from the buffer."
   (shx--asynch-funcall #'shx-browse-urls))
 
-(defun shx-cmd-grep (pattern)
-  "Launch a grep for PATTERN.
+(defun shx-cmd-grep (args)
+  "Launch a grep using the supplied command-line ARGS.
 \nExamples:\n
-  :grep -r 'pattern' *
-  :grep 'pattern' * | grep -v 'exclusion'"
-  (grep (format "grep -nH %s" pattern)))
+  :grep -r pattern *
+  :grep pattern * | grep -v exclusion"
+  (grep (format "grep -nH %s" args)))
 
 (defun shx-cmd-header (header)
   "(SAFE) Set the header-line to HEADER.
@@ -1149,7 +1148,7 @@ This function only works when the shx minor mode is active."
 (defun shx-flash-prompt (&rest _args)
   "Flash the text on the line with the highlight face."
   (when (and shx-comint-advise (> shx-flash-prompt-time 0))
-    (setq-local shx-prompt-overlay (make-overlay (point) (point-at-eol)))
+    (setq-local shx-prompt-overlay (make-overlay (point) (line-end-position)))
     (overlay-put shx-prompt-overlay 'face 'highlight)
     (sit-for shx-flash-prompt-time)
     (delete-overlay shx-prompt-overlay)))
@@ -1173,7 +1172,7 @@ This function only works when the shx minor mode is active."
            (shx-cwd
             (save-excursion
               (comint-previous-prompt 1)
-              (get-text-property (point-at-bol) 'shx-cwd)))
+              (get-text-property (line-beginning-position) 'shx-cwd)))
            (default-directory (or shx-cwd default-directory)))
       (apply func args))))
 
