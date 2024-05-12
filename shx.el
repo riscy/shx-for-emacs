@@ -596,6 +596,10 @@ LINE-STYLE (for example `w lp`); insert the plot in the buffer."
    "\"$" ""
    (replace-regexp-in-string "^\"" "" (shell-quote-argument str))))
 
+(defun shx--protect-env-vars (str)
+  "Protect STR against `shx-filter-input's call to `substitute-env-vars'."
+  (replace-regexp-in-string "[$]" "$$" str))
+
 (defun shx--insert-timer (timer-number timer)
   "Insert a line of the form '<TIMER-NUMBER> <TIMER>'."
   (shx-insert
@@ -686,6 +690,7 @@ Cancel a delayed command with :stop (`shx-cmd-stop').
    ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
     (let ((delay (match-string 1 args))
           (command (match-string 2 args)))
+      (setq command (shx--protect-env-vars command))
       (shx-insert "Delaying " 'comint-highlight-input command
                   'default
                   (format " %s seconds\n" delay))
@@ -703,6 +708,7 @@ Cancel a pulsing command with :stop (`shx-cmd-stop').
    ((string-match "^\\([0-9.]+\\)\\s-+\\(.+\\)$" args)
     (let ((delay (string-to-number (match-string 1 args)))
           (command (match-string 2 args)))
+      (setq command (shx--protect-env-vars command))
       (shx-insert "Pulsing " 'comint-highlight-input command
                   'default
                   (format " every %d seconds\n" delay))
@@ -721,6 +727,7 @@ Cancel a repeating command with :stop (`shx-cmd-stop').
     (let ((reps (string-to-number (match-string 1 args)))
           (delay (string-to-number (match-string 2 args)))
           (command (match-string 3 args)))
+      (setq command (shx--protect-env-vars command))
       (shx-insert "Repeating " 'comint-highlight-input command 'default
                   (format " %d times every %d seconds\n" reps delay))
       (dotimes (ii reps)
