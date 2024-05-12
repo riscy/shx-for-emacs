@@ -839,7 +839,7 @@ may take a while and unfortunately blocks Emacs in the meantime.
   (shx--asynch-funcall #'shx-browse-urls))
 
 (defun shx-cmd-grep (args)
-  "Launch a grep using the supplied command-line ARGS.
+  "Launch a grep using the supplied command line ARGS.
 \nExamples:\n
   :grep -r pattern *
   :grep pattern * | grep -v exclusion"
@@ -1063,7 +1063,7 @@ Use \":plotrug FILENAME\" where the contents of that file might be:
 
 ;;;###autoload
 (define-minor-mode shx-mode
-  "Toggle shx-mode on or off.
+  "Toggle this minor mode on or off.
 \nThis minor mode provides extra functionality to `shell-mode' and
 `comint-mode' in general.  Use `shx-global-mode' to enable
 `shx-mode' in all buffers that support it.
