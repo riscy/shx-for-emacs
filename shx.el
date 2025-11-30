@@ -812,9 +812,9 @@ may take a while and unfortunately blocks Emacs in the meantime.
   :f *suffix"
   (if (equal pattern "")
       (shx-insert 'error "find <prefix>" "\n")
-    (let ((pattern (mapconcat #'char-to-string (string-to-list pattern) "*")))
-      (shx--asynch-run
-       (format "find $PWD -not -path '*/.*' -iname '%s*'" pattern)))))
+    (let ((pattern (mapconcat #'char-to-string (string-to-list pattern) "*"))
+          (filters "-not -path '*/.*' -not -path '*/__pycache__/*'"))
+      (shx--asynch-run (format "find $PWD %s -iname '%s*'" filters pattern)))))
 
 (defun shx-cmd-pipe (command)
   "Pipe the output of COMMAND to a compilation buffer.
