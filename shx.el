@@ -87,7 +87,7 @@ If you change this you'll have to reload shx or restart Emacs."
 (defcustom shx-directory-tracker-regexp nil
   "Input regexp that triggers the `shell-resync-dirs' command."
   :link '(function-link shx--directory-tracker)
-  :type '(choice regexp nil))
+  :type '(choice regexp null))
 
 (defcustom shx-kept-commands nil
   "Shell commands of the form (description . command)."

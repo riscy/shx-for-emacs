@@ -18,7 +18,7 @@ jobs:
     - name: Run
       env:
         LOCAL_REPO: ${{ github.workspace }}
-        RECIPE: (shx :repo "riscy/shx-for-emacs" :fetcher github)
+        RECIPE: (shx :fetcher github :repo "riscy/shx-for-emacs")
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
       run: |
