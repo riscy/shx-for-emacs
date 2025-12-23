@@ -161,12 +161,11 @@ sacrifices the soundness of shx's markup and trigger matching."
   (interactive)
   (if (shx-point-on-input-p)
       (shx-send-input)
-    (let* ((inhibit-field-text-motion t)
-           (line
-            (string-trim
-             (buffer-substring-no-properties
-              (line-beginning-position)
-              (line-end-position)))))
+    (let ((line
+           (string-trim
+            (buffer-substring-no-properties
+             (line-beginning-position)
+             (line-end-position)))))
       (goto-char (point-max))
       (insert line))))
 
@@ -180,7 +179,13 @@ In normal circumstances this input is additionally filtered by
     (shx--restart-shell))
    ((>= (length (shx--current-input)) shx-max-input)
     (user-error "Input line exceeds `shx-max-input'"))
-   (t (shx--propertize-prompt) (comint-send-input))))
+   (t
+    (shx--propertize-prompt)
+    (remove-text-properties
+     (process-mark (get-buffer-process (current-buffer)))
+     (point-max)
+     '(field))
+    (comint-send-input))))
 
 (defun shx-filter-input (process input)
   "Before sending to PROCESS, filter the INPUT.
