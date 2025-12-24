@@ -42,7 +42,7 @@
   "Whether to automatically disable undo in shx buffers."
   :type 'boolean)
 
-(defcustom shx-path-to-convert "convert"
+(defcustom shx-path-to-convert "magick"
   "Path to ImageMagick's convert binary."
   :type 'string)
 
