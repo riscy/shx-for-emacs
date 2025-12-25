@@ -7,7 +7,7 @@
 ;; URL: https://github.com/riscy/shx-for-emacs
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Package-Requires: ((emacs "24.4"))
-;; Version: 1.5.1
+;; Version: 1.5.2
 
 ;;; Commentary:
 
