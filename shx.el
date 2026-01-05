@@ -1,6 +1,6 @@
 ;;; shx.el --- Extras for the comint-mode shell -*- lexical-binding: t -*-
 
-;; Author: Chris Rayner and contributors
+;; Author: <https://github.com/riscy/shx-for-emacs/graphs/contributors>
 ;; Maintainer: Chris Rayner <dchrisrayner@gmail.com>
 ;; Created: May 23 2011
 ;; Keywords: terminals, processes, comint, shell, repl
